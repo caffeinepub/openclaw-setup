@@ -1,7 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useEffect, useState } from "react";
+import { MembershipTier } from "./backend.d";
 import { Footer } from "./components/Footer";
+import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
+import { TierLandingPage } from "./components/TierLandingPage";
 import { AdminPanel } from "./components/sections/AdminPanel";
 import { ChangelogSection } from "./components/sections/ChangelogSection";
 import { ConfigSection } from "./components/sections/ConfigSection";
@@ -11,12 +14,20 @@ import { HeroSection } from "./components/sections/HeroSection";
 import { PricingSection } from "./components/sections/PricingSection";
 import { SetupSection } from "./components/sections/SetupSection";
 import { StatsSection } from "./components/sections/StatsSection";
+import { WorkWithEverythingSection } from "./components/sections/WorkWithEverythingSection";
+import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import { useIsAdmin } from "./hooks/useQueries";
 
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showTierLanding, setShowTierLanding] = useState(false);
+  const [tierLandingTier, setTierLandingTier] = useState<MembershipTier>(
+    MembershipTier.silver,
+  );
   const { data: isAdmin } = useIsAdmin();
+  const { identity } = useInternetIdentity();
 
   // Apply dark mode class to html element
   useEffect(() => {
@@ -45,13 +56,20 @@ export default function App() {
         isDark={isDark}
         toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
+        onDashboardClick={() => setShowDashboard(true)}
       />
 
       {/* Main Content */}
       <main>
         <HeroSection />
         <FeaturesSection />
-        <PricingSection />
+        <WorkWithEverythingSection />
+        <PricingSection
+          onExploreTier={(tier) => {
+            setTierLandingTier(tier);
+            setShowTierLanding(true);
+          }}
+        />
         <SetupSection />
         <ConfigSection />
         <DocsSection />
@@ -65,6 +83,29 @@ export default function App() {
       {/* Admin Panel (modal) */}
       {showAdmin && isAdmin && (
         <AdminPanel onClose={() => setShowAdmin(false)} />
+      )}
+
+      {/* Member Dashboard (modal) */}
+      {showDashboard && identity && (
+        <MemberDashboard onClose={() => setShowDashboard(false)} />
+      )}
+
+      {/* Tier Landing Page */}
+      {showTierLanding && (
+        <TierLandingPage
+          tier={tierLandingTier}
+          onClose={() => setShowTierLanding(false)}
+          onPurchase={() => {
+            setShowTierLanding(false);
+            setTimeout(
+              () =>
+                document
+                  .querySelector("#pricing")
+                  ?.scrollIntoView({ behavior: "smooth" }),
+              100,
+            );
+          }}
+        />
       )}
 
       {/* Toast notifications */}

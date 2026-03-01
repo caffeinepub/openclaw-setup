@@ -6,22 +6,30 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useDownloadsByOS, useIncrementDownload } from "../../hooks/useQueries";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 interface StepProps {
   number: number;
   title: string;
   commands?: string[];
   note?: string;
+  copiedLabel: string;
 }
 
-function InstallStep({ number, title, commands, note }: StepProps) {
+function InstallStep({
+  number,
+  title,
+  commands,
+  note,
+  copiedLabel,
+}: StepProps) {
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
 
   const handleCopy = (cmd: string) => {
     void navigator.clipboard.writeText(cmd);
     setCopiedCmd(cmd);
     setTimeout(() => setCopiedCmd(null), 2000);
-    toast.success("Copied to clipboard!");
+    toast.success(copiedLabel);
   };
 
   return (
@@ -63,64 +71,29 @@ function InstallStep({ number, title, commands, note }: StepProps) {
   );
 }
 
-const STEPS = {
+const STEP_COMMANDS = {
   windows: [
-    {
-      title: "Download the Windows installer",
-      commands: ["winget install OpenClaw.OpenClaw"],
-      note: "Or download the .exe installer from GitHub Releases",
-    },
-    {
-      title: "Run setup and accept UAC prompt",
-      note: "The installer will guide you through the setup wizard",
-    },
-    {
-      title: "Configure PATH environment variable",
-      commands: ['setx PATH "%PATH%;C:\\Program Files\\OpenClaw\\bin"'],
-    },
-    {
-      title: "Launch OpenClaw",
-      commands: ["openclaw --version", "openclaw init"],
-    },
+    { commands: ["winget install OpenClaw.OpenClaw"] },
+    { commands: [] },
+    { commands: ['setx PATH "%PATH%;C:\\Program Files\\OpenClaw\\bin"'] },
+    { commands: ["openclaw --version", "openclaw init"] },
   ],
   macos: [
-    {
-      title: "Install via Homebrew (recommended)",
-      commands: ["brew tap openclaw/openclaw", "brew install openclaw"],
-    },
-    {
-      title: "Or download the .dmg installer",
-      note: "Drag OpenClaw.app to your Applications folder",
-    },
-    {
-      title: "Run initial setup",
-      commands: ["openclaw setup", "openclaw --version"],
-    },
-    {
-      title: "Grant required permissions",
-      note: "System Preferences → Security & Privacy → Allow OpenClaw",
-    },
+    { commands: ["brew tap openclaw/openclaw", "brew install openclaw"] },
+    { commands: [] },
+    { commands: ["openclaw setup", "openclaw --version"] },
+    { commands: [] },
   ],
   linux: [
     {
-      title: "Install via apt (Debian/Ubuntu)",
       commands: [
         "curl -fsSL https://openclaw.io/install.sh | sudo bash",
         "sudo apt install openclaw",
       ],
     },
-    {
-      title: "Or install via Snap",
-      commands: ["sudo snap install openclaw --classic"],
-    },
-    {
-      title: "Set executable permissions",
-      commands: ["sudo chmod +x /usr/local/bin/openclaw"],
-    },
-    {
-      title: "Initialize and run",
-      commands: ["openclaw --version", "openclaw init", "openclaw start"],
-    },
+    { commands: ["sudo snap install openclaw --classic"] },
+    { commands: ["sudo chmod +x /usr/local/bin/openclaw"] },
+    { commands: ["openclaw --version", "openclaw init", "openclaw start"] },
   ],
 };
 
@@ -139,6 +112,7 @@ const OS_LABELS = {
 export function SetupSection() {
   const { data: downloadStats } = useDownloadsByOS();
   const incrementDownload = useIncrementDownload();
+  const { t } = useLanguage();
 
   const handleDownload = (os: string) => {
     incrementDownload.mutate(os);
@@ -169,14 +143,16 @@ export function SetupSection() {
           className="text-center mb-14"
         >
           <span className="inline-block text-sm font-mono font-semibold text-cyan uppercase tracking-widest mb-4">
-            Get Started
+            {t.setup.sectionLabel}
           </span>
           <h2 className="font-display font-black text-4xl sm:text-5xl mb-4">
-            Setup & <span className="text-cyan text-glow-cyan">Download</span>
+            {t.setup.sectionTitle1}
+            <span className="text-cyan text-glow-cyan">
+              {t.setup.sectionTitle2}
+            </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Install OpenClaw on your platform in minutes. Works on all major
-            operating systems.
+            {t.setup.sectionDesc}
           </p>
         </motion.div>
 
@@ -206,6 +182,8 @@ export function SetupSection() {
 
             {(["windows", "macos", "linux"] as const).map((os) => {
               const Icon = OS_ICONS[os];
+              const stepsData = t.setup[os].steps;
+              const cmdsData = STEP_COMMANDS[os];
               return (
                 <TabsContent key={os} value={os}>
                   <div className="rounded-xl border border-border bg-card overflow-hidden">
@@ -221,7 +199,7 @@ export function SetupSection() {
                             <span className="font-mono text-cyan">
                               {getDownloadCount(os)}
                             </span>{" "}
-                            downloads
+                            {t.setup.downloads}
                           </p>
                         </div>
                       </div>
@@ -232,25 +210,30 @@ export function SetupSection() {
                         size="sm"
                       >
                         <Download className="w-4 h-4 mr-2" />
-                        Download
+                        {t.setup.download}
                         <Badge
                           variant="secondary"
                           className="ml-2 bg-background/30 text-background text-xs"
                         >
-                          Free
+                          {t.setup.free}
                         </Badge>
                       </Button>
                     </div>
 
                     {/* Steps */}
                     <div className="p-6">
-                      {STEPS[os].map((step, idx) => (
+                      {stepsData.map((step, idx) => (
                         <InstallStep
                           key={step.title}
                           number={idx + 1}
                           title={step.title}
-                          commands={step.commands}
+                          commands={
+                            cmdsData[idx]?.commands?.length
+                              ? cmdsData[idx].commands
+                              : undefined
+                          }
                           note={step.note}
+                          copiedLabel={t.setup.copiedToClipboard}
                         />
                       ))}
                     </div>

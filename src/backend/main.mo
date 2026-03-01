@@ -10,9 +10,9 @@ import Text "mo:core/Text";
 import Nat "mo:core/Nat";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -66,6 +66,12 @@ actor {
 
   public type UserProfile = {
     name : Text;
+    bio : ?Text;
+  };
+
+  public type ChatbotConfig = {
+    phoneNumber : Text;
+    enabled : Bool;
   };
 
   // State
@@ -80,6 +86,7 @@ actor {
   let savedConfigs = Map.empty<Nat, SavedConfig>();
   let userMemberships = Map.empty<Principal, MembershipRecord>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let userChatbotConfigs = Map.empty<Principal, ChatbotConfig>();
 
   var nextFAQId = 7;
   var nextChangelogId = 5;
@@ -235,6 +242,48 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
+  };
+
+  // ChatbotConfig Operations
+  public shared ({ caller }) func saveChatbotConfig(phoneNumber : Text, enabled : Bool) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save chatbot configs");
+    };
+
+    // Check if user has a valid membership record
+    let hasValidMembership = switch (userMemberships.get(caller)) {
+      case (null) { false };
+      case (?_) { true };
+    };
+
+    if (not hasValidMembership) {
+      Runtime.trap("Unauthorized: Only users with memberships can save chatbot configs");
+    };
+
+    let newConfig : ChatbotConfig = {
+      phoneNumber;
+      enabled;
+    };
+    userChatbotConfigs.add(caller, newConfig);
+  };
+
+  public query ({ caller }) func getChatbotConfig() : async ?ChatbotConfig {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can get chatbot configs");
+    };
+    userChatbotConfigs.get(caller);
+  };
+
+  public shared ({ caller }) func deleteChatbotConfig() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete chatbot configs");
+    };
+
+    if (not userChatbotConfigs.containsKey(caller)) {
+      Runtime.trap("Chatbot config not found");
+    };
+
+    userChatbotConfigs.remove(caller);
   };
 
   // Membership Operations

@@ -88,8 +88,8 @@
     /* Custom tokens */
     --cyan: 0.82 0.18 195;
     --cyan-bright: 0.9 0.22 195;
-    --glow-cyan: 0 0 20px oklch(0.82 0.18 195 / 0.7);
-    --glow-cyan-lg: 0 0 40px oklch(0.82 0.18 195 / 0.5), 0 0 80px oklch(0.7 0.2 200 / 0.25);
+    --glow-cyan: 0 0 12px oklch(0.82 0.18 195 / 0.4);
+    --glow-cyan-lg: 0 0 40px oklch(0.82 0.18 195 / 0.3), 0 0 80px oklch(0.7 0.2 200 / 0.15);
     --surface-1: 0.11 0.012 240;
     --surface-2: 0.12 0.015 240;
     --surface-3: 0.15 0.02 240;
@@ -149,7 +149,7 @@
     box-shadow: var(--glow-cyan-lg);
   }
   .text-glow-cyan {
-    text-shadow: 0 0 20px oklch(var(--cyan) / 0.8), 0 0 40px oklch(var(--cyan) / 0.4);
+    text-shadow: 0 0 20px oklch(var(--cyan) / 0.5), 0 0 40px oklch(var(--cyan) / 0.2);
   }
   .surface-1 {
     background-color: oklch(var(--surface-1));
@@ -259,8 +259,8 @@
     to { opacity: 1; transform: translateY(0); }
   }
   @keyframes border-glow {
-    0%, 100% { box-shadow: 0 0 10px oklch(var(--cyan) / 0.3); }
-    50% { box-shadow: 0 0 20px oklch(var(--cyan) / 0.7), 0 0 40px oklch(var(--cyan) / 0.3); }
+    0%, 100% { box-shadow: 0 0 8px oklch(var(--cyan) / 0.15); }
+    50% { box-shadow: 0 0 14px oklch(var(--cyan) / 0.35), 0 0 24px oklch(var(--cyan) / 0.12); }
   }
 
   .animate-glow-pulse { animation: glow-pulse 2s ease-in-out infinite; }

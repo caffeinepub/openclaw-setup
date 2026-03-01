@@ -21,18 +21,31 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { FAQ } from "../../backend.d";
 import { useAllFAQs } from "../../hooks/useQueries";
+import { useLanguage } from "../../i18n/LanguageContext";
+
+const CONFIG_OPTIONS = [
+  { name: "sensitivity", type: "number", default: "65" },
+  { name: "performanceMode", type: "string", default: '"performance"' },
+  { name: "autoDetect", type: "boolean", default: "true" },
+  { name: "plugins", type: "string[]", default: '["audio", "visual"]' },
+  { name: "theme", type: "string", default: '"dark"' },
+  { name: "logLevel", type: "string", default: '"info"' },
+  { name: "os", type: "string", default: '"auto"' },
+  { name: "cloudSync", type: "boolean", default: "false" },
+];
 
 function CodeBlock({
   code,
   language = "bash",
-}: { code: string; language?: string }) {
+  copiedLabel,
+}: { code: string; language?: string; copiedLabel: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success("Copied!");
+    toast.success(copiedLabel);
   };
 
   return (
@@ -61,58 +74,8 @@ function CodeBlock({
   );
 }
 
-const CONFIG_OPTIONS = [
-  {
-    name: "sensitivity",
-    type: "number",
-    default: "65",
-    description: "Claw sensitivity (1–100)",
-  },
-  {
-    name: "performanceMode",
-    type: "string",
-    default: '"performance"',
-    description: 'Mode: "normal" | "performance" | "ultra"',
-  },
-  {
-    name: "autoDetect",
-    type: "boolean",
-    default: "true",
-    description: "Auto-detect hardware on startup",
-  },
-  {
-    name: "plugins",
-    type: "string[]",
-    default: '["audio", "visual"]',
-    description: "Enabled plugins list",
-  },
-  {
-    name: "theme",
-    type: "string",
-    default: '"dark"',
-    description: 'UI theme: "dark" | "light" | "system" | "neon"',
-  },
-  {
-    name: "logLevel",
-    type: "string",
-    default: '"info"',
-    description: 'Log verbosity: "debug" | "info" | "warn" | "error"',
-  },
-  {
-    name: "os",
-    type: "string",
-    default: '"auto"',
-    description: "Target operating system override",
-  },
-  {
-    name: "cloudSync",
-    type: "boolean",
-    default: "false",
-    description: "Enable cloud sync via ICP",
-  },
-];
-
-function FAQList({ faqs }: { faqs: FAQ[] }) {
+function FAQList({ faqs, copiedLabel }: { faqs: FAQ[]; copiedLabel: string }) {
+  void copiedLabel;
   const categories = [...new Set(faqs.map((f) => f.category))];
 
   const fallbackFAQs = [
@@ -204,6 +167,7 @@ function FAQList({ faqs }: { faqs: FAQ[] }) {
 
 export function DocsSection() {
   const { data: faqs, isLoading: faqLoading } = useAllFAQs();
+  const { t } = useLanguage();
 
   return (
     <section id="docs" className="py-24 relative overflow-hidden">
@@ -219,13 +183,15 @@ export function DocsSection() {
           className="text-center mb-14"
         >
           <span className="inline-block text-sm font-mono font-semibold text-cyan uppercase tracking-widest mb-4">
-            Reference
+            {t.docs.sectionLabel}
           </span>
           <h2 className="font-display font-black text-4xl sm:text-5xl mb-4">
-            <span className="text-cyan text-glow-cyan">Documentation</span>
+            <span className="text-cyan text-glow-cyan">
+              {t.docs.sectionTitle}
+            </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Everything you need to know about OpenClaw in one place.
+            {t.docs.sectionDesc}
           </p>
         </motion.div>
 
@@ -241,25 +207,25 @@ export function DocsSection() {
                 value="quickstart"
                 className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
               >
-                Quick Start
+                {t.docs.tabQuickStart}
               </TabsTrigger>
               <TabsTrigger
                 value="reference"
                 className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
               >
-                Config Ref
+                {t.docs.tabConfigRef}
               </TabsTrigger>
               <TabsTrigger
                 value="advanced"
                 className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
               >
-                Advanced
+                {t.docs.tabAdvanced}
               </TabsTrigger>
               <TabsTrigger
                 value="faq"
                 className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
               >
-                FAQ
+                {t.docs.tabFAQ}
               </TabsTrigger>
             </TabsList>
 
@@ -269,29 +235,29 @@ export function DocsSection() {
                 {[
                   {
                     num: "01",
-                    title: "Install OpenClaw",
-                    desc: "Install via your preferred package manager",
+                    title: t.docs.quickStartSteps[0].title,
+                    desc: t.docs.quickStartSteps[0].desc,
                     code: "# macOS\nbrew install openclaw\n\n# Windows\nwinget install OpenClaw.OpenClaw\n\n# Linux\ncurl -fsSL https://openclaw.io/install.sh | sudo bash",
                     lang: "bash",
                   },
                   {
                     num: "02",
-                    title: "Initialize Your First Config",
-                    desc: "Run the interactive setup wizard",
+                    title: t.docs.quickStartSteps[1].title,
+                    desc: t.docs.quickStartSteps[1].desc,
                     code: "openclaw init\n# Follow the prompts to detect hardware and set up your config",
                     lang: "bash",
                   },
                   {
                     num: "03",
-                    title: "Start OpenClaw",
-                    desc: "Launch the daemon and connect to your hardware",
+                    title: t.docs.quickStartSteps[2].title,
+                    desc: t.docs.quickStartSteps[2].desc,
                     code: "openclaw start\nopenclaw status\n# Output: OpenClaw v2.4.1 running · 1 device connected",
                     lang: "bash",
                   },
                   {
                     num: "04",
-                    title: "Customize Your Configuration",
-                    desc: "Edit the config file or use the web UI",
+                    title: t.docs.quickStartSteps[3].title,
+                    desc: t.docs.quickStartSteps[3].desc,
                     code: '{\n  "sensitivity": 75,\n  "performanceMode": "performance",\n  "autoDetect": true,\n  "plugins": ["audio", "visual"]\n}',
                     lang: "json",
                   },
@@ -305,7 +271,11 @@ export function DocsSection() {
                       <p className="text-sm text-muted-foreground mb-1">
                         {step.desc}
                       </p>
-                      <CodeBlock code={step.code} language={step.lang} />
+                      <CodeBlock
+                        code={step.code}
+                        language={step.lang}
+                        copiedLabel={t.docs.copied}
+                      />
                     </div>
                   </div>
                 ))}
@@ -316,9 +286,11 @@ export function DocsSection() {
             <TabsContent value="reference">
               <div className="rounded-xl border border-border bg-card overflow-hidden">
                 <div className="p-5 border-b border-border">
-                  <h3 className="font-bold text-lg">Configuration Options</h3>
+                  <h3 className="font-bold text-lg">
+                    {t.docs.configOptions.title}
+                  </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    All available OpenClaw configuration properties
+                    {t.docs.configOptions.desc}
                   </p>
                 </div>
                 <div className="overflow-x-auto">
@@ -326,16 +298,16 @@ export function DocsSection() {
                     <TableHeader>
                       <TableRow className="border-border hover:bg-transparent">
                         <TableHead className="text-cyan font-mono">
-                          Option
+                          {t.docs.configOptions.colOption}
                         </TableHead>
                         <TableHead className="text-cyan font-mono">
-                          Type
+                          {t.docs.configOptions.colType}
                         </TableHead>
                         <TableHead className="text-cyan font-mono">
-                          Default
+                          {t.docs.configOptions.colDefault}
                         </TableHead>
                         <TableHead className="text-cyan font-mono">
-                          Description
+                          {t.docs.configOptions.colDescription}
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -360,7 +332,7 @@ export function DocsSection() {
                             {opt.default}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {opt.description}
+                            {t.docs.descriptions[opt.name] ?? opt.name}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -375,9 +347,10 @@ export function DocsSection() {
               <div className="rounded-xl border border-border bg-card p-6 space-y-6">
                 <div>
                   <h3 className="font-bold text-lg mb-2">
-                    CLI Flags Reference
+                    {t.docs.advancedSections[0].title}
                   </h3>
                   <CodeBlock
+                    copiedLabel={t.docs.copied}
                     code={`openclaw [command] [flags]
 
 Commands:
@@ -400,12 +373,15 @@ Global Flags:
                 </div>
                 <div>
                   <h3 className="font-bold text-lg mb-2">
-                    Scripting & Automation
+                    {t.docs.advancedSections[1].title}
                   </h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Use OpenClaw in CI/CD pipelines or automated scripts:
-                  </p>
+                  {t.docs.advancedSections[1].desc && (
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {t.docs.advancedSections[1].desc}
+                    </p>
+                  )}
                   <CodeBlock
+                    copiedLabel={t.docs.copied}
                     code={`#!/bin/bash
 # Example: Auto-configure on system startup
 
@@ -421,8 +397,11 @@ openclaw status --json | jq '.devices | length'`}
                   />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-2">Plugin Development</h3>
+                  <h3 className="font-bold text-lg mb-2">
+                    {t.docs.advancedSections[2].title}
+                  </h3>
                   <CodeBlock
+                    copiedLabel={t.docs.copied}
                     code={`// openclaw-plugin.json
 {
   "name": "my-custom-plugin",
@@ -455,7 +434,7 @@ module.exports = {
                   )}
                 </div>
               ) : (
-                <FAQList faqs={faqs ?? []} />
+                <FAQList faqs={faqs ?? []} copiedLabel={t.docs.copied} />
               )}
             </TabsContent>
           </Tabs>

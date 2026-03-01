@@ -1,6 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Changelog, DownloadStats, FAQ, SavedConfig } from "../backend.d";
+import type {
+  Changelog,
+  DownloadStats,
+  FAQ,
+  SavedConfig,
+  UserProfile,
+} from "../backend.d";
 import { useActor } from "./useActor";
+import { useInternetIdentity } from "./useInternetIdentity";
 
 // ---- Query Hooks ----
 
@@ -243,6 +250,38 @@ export function useDeleteChangelog() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["changelog"] });
+    },
+  });
+}
+
+// ---- User Profile Hooks ----
+
+export function useCallerUserProfile() {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  return useQuery<UserProfile | null>({
+    queryKey: ["callerUserProfile"],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getCallerUserProfile();
+    },
+    enabled: !!actor && !isFetching && !!identity,
+    staleTime: 30_000,
+  });
+}
+
+export function useSaveCallerUserProfile() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (profile: UserProfile) => {
+      if (!actor) throw new Error("Actor not available");
+      await actor.saveCallerUserProfile(profile);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["callerUserProfile"] });
     },
   });
 }

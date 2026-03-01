@@ -1,11 +1,22 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, Menu, Moon, Shield, Sun, X } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Menu,
+  Moon,
+  Shield,
+  Sun,
+  X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { MembershipTier, useMyMembership } from "../hooks/useMembership";
 import { useIsAdmin } from "../hooks/useQueries";
+import { useLanguage } from "../i18n/LanguageContext";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const MEMBERSHIP_BADGE: Record<
   MembershipTier,
@@ -32,24 +43,32 @@ interface NavbarProps {
   isDark: boolean;
   toggleTheme: () => void;
   onAdminClick: () => void;
+  onDashboardClick: () => void;
 }
 
-const NAV_LINKS = [
-  { label: "Home", href: "#hero" },
-  { label: "Features", href: "#features" },
-  { label: "Pricing", href: "#pricing" },
-  { label: "Setup", href: "#setup" },
-  { label: "Config", href: "#config" },
-  { label: "Docs", href: "#docs" },
-  { label: "Changelog", href: "#changelog" },
-];
-
-export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
+export function Navbar({
+  isDark,
+  toggleTheme,
+  onAdminClick,
+  onDashboardClick,
+}: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { login, clear, identity, isLoggingIn } = useInternetIdentity();
   const { data: isAdmin } = useIsAdmin();
   const { data: myMembership } = useMyMembership();
+  const { t } = useLanguage();
+
+  const NAV_LINKS = [
+    { label: t.nav.home, href: "#hero" },
+    { label: t.nav.features, href: "#features" },
+    { label: t.nav.integrations, href: "#integrations" },
+    { label: t.nav.pricing, href: "#pricing" },
+    { label: t.nav.setup, href: "#setup" },
+    { label: t.nav.config, href: "#config" },
+    { label: t.nav.docs, href: "#docs" },
+    { label: t.nav.changelog, href: "#changelog" },
+  ];
 
   useEffect(() => {
     const handler = () => setIsScrolled(window.scrollY > 20);
@@ -71,7 +90,7 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? "backdrop-blur-xl bg-background/85 border-b border-border shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+            ? "backdrop-blur-xl bg-background/92 border-b border-border shadow-[0_2px_12px_rgba(0,0,0,0.15)]"
             : "bg-transparent"
         }`}
       >
@@ -83,17 +102,15 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
               whileHover={{ scale: 1.02 }}
               onClick={() => handleNavClick("#hero")}
             >
-              <div className="relative">
-                <img
-                  src="/assets/generated/openclaw-logo-transparent.dim_256x256.png"
-                  alt="OpenClaw"
-                  className="w-9 h-9 object-contain"
-                />
-                <div className="absolute inset-0 bg-cyan rounded-full opacity-20 blur-md" />
-              </div>
-              <span className="font-display font-bold text-xl tracking-tight text-cyan">
-                OpenClaw
-              </span>
+              <img
+                src="/assets/generated/clawpro-logo-navbar-transparent.dim_480x120.png"
+                alt="ClawPro"
+                className="h-12 w-auto object-contain"
+                style={{
+                  filter:
+                    "drop-shadow(0 0 8px rgba(220, 38, 38, 0.4)) drop-shadow(0 0 12px rgba(0, 212, 255, 0.3))",
+                }}
+              />
             </motion.div>
 
             {/* Desktop Nav */}
@@ -120,9 +137,10 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
                   className="text-amber-400 hover:text-amber-300 hover:bg-amber-400/10"
                 >
                   <Shield className="w-4 h-4 mr-1.5" />
-                  Admin
+                  {t.nav.admin}
                 </Button>
               )}
+              <LanguageSwitcher />
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -145,13 +163,30 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
                     </Badge>
                   )}
                   <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onDashboardClick}
+                    className={`flex items-center gap-1.5 font-medium ${
+                      myMembership
+                        ? myMembership.tier === MembershipTier.silver
+                          ? "text-slate-300 hover:text-slate-200 hover:bg-slate-500/10"
+                          : myMembership.tier === MembershipTier.gold
+                            ? "text-amber-300 hover:text-amber-200 hover:bg-amber-500/10"
+                            : "text-violet-300 hover:text-violet-200 hover:bg-violet-500/10"
+                        : "text-cyan hover:text-cyan hover:bg-cyan/10"
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    {t.dashboard.navButton}
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={clear}
                     className="border-cyan/30 text-cyan hover:bg-cyan/10 hover:border-cyan/60"
                   >
                     <LogOut className="w-4 h-4 mr-1.5" />
-                    Logout
+                    {t.nav.logout}
                   </Button>
                 </div>
               ) : (
@@ -162,7 +197,7 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
                   className="bg-cyan text-background hover:bg-cyan-bright font-semibold shadow-glow-sm"
                 >
                   <LogIn className="w-4 h-4 mr-1.5" />
-                  {isLoggingIn ? "Connecting..." : "Login"}
+                  {isLoggingIn ? t.nav.connecting : t.nav.login}
                 </Button>
               )}
             </div>
@@ -215,6 +250,32 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
                     </Badge>
                   </div>
                 )}
+                {/* Language Switcher in mobile */}
+                <div className="px-1 pb-1">
+                  <LanguageSwitcher />
+                </div>
+                {identity && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsMobileOpen(false);
+                      onDashboardClick();
+                    }}
+                    className={`w-full justify-start ${
+                      myMembership
+                        ? myMembership.tier === MembershipTier.silver
+                          ? "text-slate-300 hover:bg-slate-500/10"
+                          : myMembership.tier === MembershipTier.gold
+                            ? "text-amber-300 hover:bg-amber-500/10"
+                            : "text-violet-300 hover:bg-violet-500/10"
+                        : "text-cyan hover:bg-cyan/10"
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                    {t.dashboard.navButton}
+                  </Button>
+                )}
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -226,7 +287,7 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
                     ) : (
                       <Moon className="w-4 h-4" />
                     )}
-                    {isDark ? "Light Mode" : "Dark Mode"}
+                    {isDark ? t.nav.lightMode : t.nav.darkMode}
                   </button>
                   {identity ? (
                     <Button
@@ -235,7 +296,7 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
                       onClick={clear}
                       className="flex-1 border-cyan/30 text-cyan"
                     >
-                      <LogOut className="w-4 h-4 mr-1.5" /> Logout
+                      <LogOut className="w-4 h-4 mr-1.5" /> {t.nav.logout}
                     </Button>
                   ) : (
                     <Button
@@ -244,7 +305,7 @@ export function Navbar({ isDark, toggleTheme, onAdminClick }: NavbarProps) {
                       disabled={isLoggingIn}
                       className="flex-1 bg-cyan text-background"
                     >
-                      <LogIn className="w-4 h-4 mr-1.5" /> Login
+                      <LogIn className="w-4 h-4 mr-1.5" /> {t.nav.login}
                     </Button>
                   )}
                 </div>

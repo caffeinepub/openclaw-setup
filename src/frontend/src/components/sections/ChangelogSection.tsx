@@ -6,21 +6,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import type { Changelog } from "../../backend.d";
 import { useAllChangelog } from "../../hooks/useQueries";
-
-const TYPE_STYLES: Record<string, { label: string; className: string }> = {
-  major: {
-    label: "Major",
-    className: "border-red-500/50 text-red-400 bg-red-500/10",
-  },
-  minor: {
-    label: "Minor",
-    className: "border-blue-500/50 text-blue-400 bg-blue-500/10",
-  },
-  patch: {
-    label: "Patch",
-    className: "border-green-500/50 text-green-400 bg-green-500/10",
-  },
-};
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const FALLBACK_CHANGELOG: Changelog[] = [
   {
@@ -93,6 +79,23 @@ function ChangelogCard({
   entry: Changelog;
   isLatest: boolean;
 }) {
+  const { t } = useLanguage();
+
+  const TYPE_STYLES: Record<string, { label: string; className: string }> = {
+    major: {
+      label: t.changelog.typeMajor,
+      className: "border-red-500/50 text-red-400 bg-red-500/10",
+    },
+    minor: {
+      label: t.changelog.typeMinor,
+      className: "border-blue-500/50 text-blue-400 bg-blue-500/10",
+    },
+    patch: {
+      label: t.changelog.typePatch,
+      className: "border-green-500/50 text-green-400 bg-green-500/10",
+    },
+  };
+
   const typeStyle = TYPE_STYLES[entry.changeType] ?? TYPE_STYLES.patch;
 
   return (
@@ -131,7 +134,7 @@ function ChangelogCard({
           </Badge>
           {isLatest && (
             <Badge className="bg-cyan/20 text-cyan border-cyan/40 text-xs">
-              Latest
+              {t.changelog.latest}
             </Badge>
           )}
           <span className="text-xs text-muted-foreground ml-auto font-mono">
@@ -161,6 +164,7 @@ function ChangelogCard({
 export function ChangelogSection() {
   const { data: changelog, isLoading } = useAllChangelog();
   const [showAll, setShowAll] = useState(false);
+  const { t } = useLanguage();
 
   const entries = (
     changelog && changelog.length > 0 ? changelog : FALLBACK_CHANGELOG
@@ -183,13 +187,15 @@ export function ChangelogSection() {
           className="text-center mb-14"
         >
           <span className="inline-block text-sm font-mono font-semibold text-cyan uppercase tracking-widest mb-4">
-            What's New
+            {t.changelog.sectionLabel}
           </span>
           <h2 className="font-display font-black text-4xl sm:text-5xl mb-4">
-            <span className="text-cyan text-glow-cyan">Changelog</span>
+            <span className="text-cyan text-glow-cyan">
+              {t.changelog.sectionTitle}
+            </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Track every improvement, fix, and new feature in OpenClaw.
+            {t.changelog.sectionDesc}
           </p>
         </motion.div>
 
@@ -234,7 +240,9 @@ export function ChangelogSection() {
                 onClick={() => setShowAll(!showAll)}
                 className="border-cyan/30 text-cyan hover:bg-cyan/10 hover:border-cyan/60"
               >
-                {showAll ? "Show Less" : `View All ${entries.length} Releases`}
+                {showAll
+                  ? t.changelog.showLess
+                  : `${t.changelog.viewAll} ${entries.length} ${t.changelog.releases}`}
                 <ChevronDown
                   className={`w-4 h-4 ml-2 transition-transform ${showAll ? "rotate-180" : ""}`}
                 />

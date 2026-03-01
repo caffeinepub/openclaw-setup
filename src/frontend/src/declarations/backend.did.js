@@ -28,7 +28,14 @@ export const FAQ = IDL.Record({
   'answer' : IDL.Text,
   'category' : IDL.Text,
 });
-export const UserProfile = IDL.Record({ 'name' : IDL.Text });
+export const UserProfile = IDL.Record({
+  'bio' : IDL.Opt(IDL.Text),
+  'name' : IDL.Text,
+});
+export const ChatbotConfig = IDL.Record({
+  'enabled' : IDL.Bool,
+  'phoneNumber' : IDL.Text,
+});
 export const DownloadStats = IDL.Record({
   'windowsDownloads' : IDL.Nat,
   'macosDownloads' : IDL.Nat,
@@ -71,12 +78,14 @@ export const idlService = IDL.Service({
   'addFAQ' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'deleteChangelog' : IDL.Func([IDL.Nat], [], []),
+  'deleteChatbotConfig' : IDL.Func([], [], []),
   'deleteConfig' : IDL.Func([IDL.Nat], [], []),
   'deleteFAQ' : IDL.Func([IDL.Nat], [], []),
   'getAllChangelog' : IDL.Func([], [IDL.Vec(Changelog)], ['query']),
   'getAllFAQs' : IDL.Func([], [IDL.Vec(FAQ)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getChatbotConfig' : IDL.Func([], [IDL.Opt(ChatbotConfig)], ['query']),
   'getDownloadsByOS' : IDL.Func([], [DownloadStats], ['query']),
   'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
   'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
@@ -94,6 +103,7 @@ export const idlService = IDL.Service({
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'purchaseMembership' : IDL.Func([MembershipTier], [IDL.Nat], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'saveChatbotConfig' : IDL.Func([IDL.Text, IDL.Bool], [], []),
   'saveConfig' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
 });
 
@@ -120,7 +130,14 @@ export const idlFactory = ({ IDL }) => {
     'answer' : IDL.Text,
     'category' : IDL.Text,
   });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text });
+  const UserProfile = IDL.Record({
+    'bio' : IDL.Opt(IDL.Text),
+    'name' : IDL.Text,
+  });
+  const ChatbotConfig = IDL.Record({
+    'enabled' : IDL.Bool,
+    'phoneNumber' : IDL.Text,
+  });
   const DownloadStats = IDL.Record({
     'windowsDownloads' : IDL.Nat,
     'macosDownloads' : IDL.Nat,
@@ -163,12 +180,14 @@ export const idlFactory = ({ IDL }) => {
     'addFAQ' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'deleteChangelog' : IDL.Func([IDL.Nat], [], []),
+    'deleteChatbotConfig' : IDL.Func([], [], []),
     'deleteConfig' : IDL.Func([IDL.Nat], [], []),
     'deleteFAQ' : IDL.Func([IDL.Nat], [], []),
     'getAllChangelog' : IDL.Func([], [IDL.Vec(Changelog)], ['query']),
     'getAllFAQs' : IDL.Func([], [IDL.Vec(FAQ)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getChatbotConfig' : IDL.Func([], [IDL.Opt(ChatbotConfig)], ['query']),
     'getDownloadsByOS' : IDL.Func([], [DownloadStats], ['query']),
     'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
     'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
@@ -186,6 +205,7 @@ export const idlFactory = ({ IDL }) => {
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'purchaseMembership' : IDL.Func([MembershipTier], [IDL.Nat], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'saveChatbotConfig' : IDL.Func([IDL.Text, IDL.Bool], [], []),
     'saveConfig' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
   });
 };

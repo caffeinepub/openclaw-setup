@@ -19,6 +19,10 @@ export interface MembershipRecord {
     tier: MembershipTier;
     purchasedAt: bigint;
 }
+export interface ChatbotConfig {
+    enabled: boolean;
+    phoneNumber: string;
+}
 export interface DownloadStats {
     windowsDownloads: bigint;
     macosDownloads: bigint;
@@ -40,6 +44,7 @@ export interface MembershipStats {
     totalMembers: bigint;
 }
 export interface UserProfile {
+    bio?: string;
     name: string;
 }
 export interface Changelog {
@@ -66,12 +71,14 @@ export interface backendInterface {
     addFAQ(question: string, answer: string, category: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     deleteChangelog(id: bigint): Promise<void>;
+    deleteChatbotConfig(): Promise<void>;
     deleteConfig(id: bigint): Promise<void>;
     deleteFAQ(id: bigint): Promise<void>;
     getAllChangelog(): Promise<Array<Changelog>>;
     getAllFAQs(): Promise<Array<FAQ>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getChatbotConfig(): Promise<ChatbotConfig | null>;
     getDownloadsByOS(): Promise<DownloadStats>;
     getLatestVersion(): Promise<string>;
     getMembershipStats(): Promise<MembershipStats>;
@@ -85,5 +92,6 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     purchaseMembership(tier: MembershipTier): Promise<bigint>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    saveChatbotConfig(phoneNumber: string, enabled: boolean): Promise<void>;
     saveConfig(name: string, os: string, configData: string): Promise<bigint>;
 }

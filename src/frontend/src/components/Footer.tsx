@@ -6,12 +6,14 @@ import {
   MessageCircle,
   Twitter,
 } from "lucide-react";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export function Footer() {
   const year = new Date().getFullYear();
   const hostname =
     typeof window !== "undefined" ? window.location.hostname : "";
   const caffeineUrl = `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(hostname)}`;
+  const { t } = useLanguage();
 
   return (
     <footer className="relative border-t border-border bg-card/50">
@@ -24,43 +26,51 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-3">
               <img
-                src="/assets/generated/openclaw-logo-transparent.dim_256x256.png"
-                alt="OpenClaw"
-                className="w-8 h-8 object-contain"
+                src="/assets/generated/clawpro-logo-navbar-transparent.dim_480x120.png"
+                alt="ClawPro"
+                className="h-8 w-auto object-contain"
+                style={{
+                  filter:
+                    "drop-shadow(0 0 6px rgba(220, 38, 38, 0.3)) drop-shadow(0 0 8px rgba(0, 212, 255, 0.2))",
+                }}
               />
-              <span className="font-display font-bold text-lg text-cyan">
-                OpenClaw
-              </span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              The ultimate claw configuration tool for developers and power
-              users. Multi-platform, extensible, blockchain-powered.
+              {t.footer.description}
             </p>
           </div>
 
           {/* Links */}
           <div>
             <h3 className="font-semibold text-sm mb-4 text-foreground">
-              Resources
+              {t.footer.resources}
             </h3>
             <ul className="space-y-2.5">
               {[
-                { icon: BookOpen, label: "Documentation", href: "#docs" },
+                {
+                  icon: BookOpen,
+                  label: t.footer.documentation,
+                  href: "#docs",
+                },
                 {
                   icon: Github,
                   label: "GitHub",
-                  href: "https://github.com/openclaw/openclaw",
+                  href: "https://github.com/clawpro/clawpro",
                 },
-                { icon: MessageCircle, label: "Discord Community", href: "#" },
+                {
+                  icon: MessageCircle,
+                  label: t.footer.discordCommunity,
+                  href: "#",
+                },
                 {
                   icon: Twitter,
                   label: "Twitter / X",
-                  href: "https://x.com/openclaw",
+                  href: "https://x.com/clawpro",
                 },
                 {
                   icon: Bug,
-                  label: "Bug Reports",
-                  href: "https://github.com/openclaw/openclaw/issues",
+                  label: t.footer.bugReports,
+                  href: "https://github.com/clawpro/clawpro/issues",
                 },
               ].map(({ icon: Icon, label, href }) => (
                 <li key={label}>
@@ -95,13 +105,16 @@ export function Footer() {
           {/* Status */}
           <div>
             <h3 className="font-semibold text-sm mb-4 text-foreground">
-              Platform Status
+              {t.footer.platformStatus}
             </h3>
             <div className="space-y-2">
               {[
-                { label: "API", status: "Operational" },
-                { label: "Cloud Sync", status: "Operational" },
-                { label: "Plugin Registry", status: "Operational" },
+                { label: t.footer.api, status: t.footer.operational },
+                { label: t.footer.cloudSync, status: t.footer.operational },
+                {
+                  label: t.footer.pluginRegistry,
+                  status: t.footer.operational,
+                },
               ].map(({ label, status }) => (
                 <div
                   key={label}
@@ -120,9 +133,11 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
-          <p>© {year} OpenClaw. Open source under MIT License.</p>
+          <p>
+            © {year} {t.footer.copyright}
+          </p>
           <p className="flex items-center gap-1.5">
-            Built with{" "}
+            {t.footer.builtWith}{" "}
             <Heart className="w-3.5 h-3.5 text-cyan fill-cyan animate-glow-pulse" />{" "}
             using{" "}
             <a

@@ -19,6 +19,7 @@ export interface Changelog {
   'releaseDate' : string,
   'changesList' : Array<string>,
 }
+export interface ChatbotConfig { 'enabled' : boolean, 'phoneNumber' : string }
 export interface DownloadStats {
   'windowsDownloads' : bigint,
   'macosDownloads' : bigint,
@@ -54,7 +55,7 @@ export interface SavedConfig {
   'createdAt' : bigint,
   'configData' : string,
 }
-export interface UserProfile { 'name' : string }
+export interface UserProfile { 'bio' : [] | [string], 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -67,12 +68,14 @@ export interface _SERVICE {
   'addFAQ' : ActorMethod<[string, string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'deleteChangelog' : ActorMethod<[bigint], undefined>,
+  'deleteChatbotConfig' : ActorMethod<[], undefined>,
   'deleteConfig' : ActorMethod<[bigint], undefined>,
   'deleteFAQ' : ActorMethod<[bigint], undefined>,
   'getAllChangelog' : ActorMethod<[], Array<Changelog>>,
   'getAllFAQs' : ActorMethod<[], Array<FAQ>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getChatbotConfig' : ActorMethod<[], [] | [ChatbotConfig]>,
   'getDownloadsByOS' : ActorMethod<[], DownloadStats>,
   'getLatestVersion' : ActorMethod<[], string>,
   'getMembershipStats' : ActorMethod<[], MembershipStats>,
@@ -86,6 +89,7 @@ export interface _SERVICE {
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'purchaseMembership' : ActorMethod<[MembershipTier], bigint>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'saveChatbotConfig' : ActorMethod<[string, boolean], undefined>,
   'saveConfig' : ActorMethod<[string, string, string], bigint>,
 }
 export declare const idlService: IDL.ServiceClass;

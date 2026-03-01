@@ -6,6 +6,8 @@ import {
   useTotalConfigsCount,
   useTotalDownloads,
 } from "../../hooks/useQueries";
+import { useLanguage } from "../../i18n/LanguageContext";
+import { WorldMap } from "../WorldMap";
 
 function useCountUp(target: number, duration = 2000, shouldStart = false) {
   const [count, setCount] = useState(0);
@@ -19,7 +21,6 @@ function useCountUp(target: number, duration = 2000, shouldStart = false) {
       const now = Date.now();
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // Ease out cubic
       const eased = 1 - (1 - progress) ** 3;
       setCount(Math.round(eased * target));
       if (now < endTime) requestAnimationFrame(tick);
@@ -79,25 +80,21 @@ function StatCard({
       transition={{ duration: 0.5 }}
       className="relative rounded-xl border border-border bg-card p-8 text-center hover:border-cyan/40 transition-all duration-300 hover:shadow-glow-sm overflow-hidden group"
     >
-      {/* Background glow */}
       <div
         className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${color}`}
       />
 
-      {/* Icon */}
       <div className="relative z-10 flex justify-center mb-4">
         <div className="w-14 h-14 rounded-full bg-cyan/10 border border-cyan/30 flex items-center justify-center">
           {icon}
         </div>
       </div>
 
-      {/* Number */}
       <div className="relative z-10 font-display font-black text-5xl sm:text-6xl mb-1 text-cyan text-glow-cyan">
         {formatted}
         {suffix}
       </div>
 
-      {/* Label */}
       <p className="relative z-10 font-bold text-lg text-foreground mb-1">
         {label}
       </p>
@@ -110,6 +107,7 @@ export function StatsSection() {
   const { data: totalDownloads } = useTotalDownloads();
   const { data: totalConfigs } = useTotalConfigsCount();
   const { data: totalMembers } = useTotalMembersCount();
+  const { t } = useLanguage();
 
   const downloadsNum = totalDownloads ? Number(totalDownloads) : 52000;
   const configsNum = totalConfigs ? Number(totalConfigs) : 8400;
@@ -118,7 +116,6 @@ export function StatsSection() {
   return (
     <section className="py-24 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
-      {/* Cyber background */}
       <div className="absolute inset-0 gradient-cyber opacity-50" />
       <div className="absolute inset-0 hex-grid-bg opacity-25" />
 
@@ -147,15 +144,15 @@ export function StatsSection() {
           <StatCard
             icon={<Download className="w-6 h-6 text-cyan" />}
             value={downloadsNum}
-            label="Total Downloads"
-            desc="Across all platforms and versions"
+            label={t.stats.totalDownloads}
+            desc={t.stats.downloadsDesc}
             color="bg-gradient-to-br from-cyan/10 to-transparent"
           />
           <StatCard
             icon={<Settings className="w-6 h-6 text-purple-400" />}
             value={configsNum}
-            label="Saved Configs"
-            desc="Stored on ICP blockchain"
+            label={t.stats.savedConfigs}
+            desc={t.stats.configsDesc}
             color="bg-gradient-to-br from-purple-500/10 to-transparent"
           />
           <StatCard
@@ -169,11 +166,14 @@ export function StatsSection() {
           <StatCard
             icon={<Crown className="w-6 h-6 text-amber-400" />}
             value={membersNum}
-            label="Total Member"
-            desc="Pengguna dengan membership aktif"
+            label="Total Members"
+            desc={t.stats.activeSessions}
             color="bg-gradient-to-br from-amber-500/10 to-transparent"
           />
         </div>
+
+        {/* Interactive World Map */}
+        <WorldMap />
       </div>
     </section>
   );
