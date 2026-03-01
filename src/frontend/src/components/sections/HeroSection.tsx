@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Fingerprint,
   Loader2,
+  LogIn,
   User,
   Zap,
 } from "lucide-react";
@@ -136,14 +137,57 @@ function RobotMascot() {
   );
 }
 
+function GlowCorner({
+  position,
+}: {
+  position: "tl" | "tr" | "bl" | "br";
+}) {
+  const posClass = {
+    tl: "top-0 left-0",
+    tr: "top-0 right-0 rotate-90",
+    bl: "bottom-0 left-0 -rotate-90",
+    br: "bottom-0 right-0 rotate-180",
+  }[position];
+
+  return (
+    <span
+      className={`absolute ${posClass} w-6 h-6 pointer-events-none`}
+      style={{ zIndex: 2 }}
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        aria-label="corner decoration"
+        role="img"
+      >
+        <title>corner decoration</title>
+        <path
+          d="M2 22 L2 4 Q2 2 4 2 L22 2"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          className="text-cyan"
+          style={{
+            filter:
+              "drop-shadow(0 0 6px oklch(0.85 0.22 210)) drop-shadow(0 0 12px oklch(0.75 0.22 210))",
+          }}
+        />
+      </svg>
+    </span>
+  );
+}
+
 function HandleClaimCard() {
-  const { identity } = useInternetIdentity();
+  const { identity, login } = useInternetIdentity();
   const { data: profile } = useCallerUserProfile();
   const saveProfile = useSaveCallerUserProfile();
 
   const [handle, setHandle] = useState("");
   const [fullName, setFullName] = useState("");
   const [saved, setSaved] = useState(false);
+  const [pendingSave, setPendingSave] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -152,7 +196,26 @@ function HandleClaimCard() {
     }
   }, [profile]);
 
-  if (!identity) return null;
+  // After login with pending save, auto-save
+  useEffect(() => {
+    if (identity && pendingSave && handle.trim()) {
+      setPendingSave(false);
+      void (async () => {
+        const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+        try {
+          await saveProfile.mutateAsync({
+            name: trimmedHandle,
+            bio: fullName.trim() || undefined,
+          });
+          setSaved(true);
+          toast.success("Handle saved! Your ClawPro.ai profile is set.");
+          setTimeout(() => setSaved(false), 3000);
+        } catch {
+          toast.error("Failed to save profile. Please try again.");
+        }
+      })();
+    }
+  }, [identity, pendingSave, handle, fullName, saveProfile]);
 
   const handleSave = async () => {
     const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
@@ -160,6 +223,15 @@ function HandleClaimCard() {
       toast.error("Please enter a valid handle (letters, numbers, _ or -).");
       return;
     }
+
+    if (!identity) {
+      // Not logged in: store intent and trigger login
+      setPendingSave(true);
+      toast.info("Please login to save your handle.");
+      login();
+      return;
+    }
+
     try {
       await saveProfile.mutateAsync({
         name: trimmedHandle,
@@ -175,80 +247,210 @@ function HandleClaimCard() {
 
   return (
     <div className="w-full max-w-lg">
+      {/* Outer glow pulse ring */}
       <div
-        className="rounded-2xl border border-cyan/20 bg-background/60 backdrop-blur-md p-5 space-y-4"
+        className="relative rounded-2xl"
         style={{
-          boxShadow:
-            "0 0 40px oklch(0.75 0.18 210 / 8%), 0 4px 20px rgba(0,0,0,0.3)",
+          background: "transparent",
+          padding: "1px",
         }}
       >
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-6 h-6 rounded-full bg-cyan/15 border border-cyan/30 flex items-center justify-center">
-            <AtSign className="w-3.5 h-3.5 text-cyan" />
-          </div>
-          <span className="text-sm font-semibold text-foreground/90">
-            Claim your ClawPro handle
-          </span>
-          {saved && (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-auto" />
-          )}
-        </div>
+        {/* Animated border gradient */}
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.85 0.22 210), oklch(0.65 0.28 300), oklch(0.85 0.22 210))",
+            backgroundSize: "200% 200%",
+            animation: "borderGlow 3s ease infinite",
+            opacity: 0.7,
+            zIndex: 0,
+          }}
+        />
+        {/* Inner card */}
+        <div
+          className="relative rounded-2xl bg-background/80 backdrop-blur-md p-5 space-y-4"
+          style={{
+            zIndex: 1,
+            boxShadow:
+              "0 0 30px oklch(0.75 0.22 210 / 20%), 0 0 60px oklch(0.65 0.28 300 / 10%), 0 4px 20px rgba(0,0,0,0.4)",
+          }}
+        >
+          {/* Glowing corners */}
+          <GlowCorner position="tl" />
+          <GlowCorner position="tr" />
+          <GlowCorner position="bl" />
+          <GlowCorner position="br" />
 
-        {/* Handle field */}
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Username</Label>
-          <div className="flex items-center rounded-lg border border-border bg-background/80 overflow-hidden focus-within:border-cyan/50 transition-colors">
-            <span className="px-3 py-2 text-xs font-mono text-cyan/70 bg-cyan/5 border-r border-border whitespace-nowrap flex-shrink-0">
-              ClawPro.ai/
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-1">
+            <div
+              className="w-7 h-7 rounded-full bg-cyan/15 border border-cyan/50 flex items-center justify-center"
+              style={{
+                boxShadow: "0 0 10px oklch(0.85 0.22 210 / 50%)",
+              }}
+            >
+              <AtSign className="w-3.5 h-3.5 text-cyan" />
+            </div>
+            <span
+              className="text-sm font-semibold text-foreground/90"
+              style={{
+                textShadow: "0 0 10px oklch(0.85 0.22 210 / 40%)",
+              }}
+            >
+              Claim your ClawPro handle
             </span>
-            <input
-              type="text"
-              value={handle}
-              onChange={(e) =>
-                setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
-              }
-              placeholder="your-handle"
-              className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
-              autoComplete="username"
+            {saved && (
+              <CheckCircle2
+                className="w-4 h-4 text-emerald-400 ml-auto"
+                style={{ filter: "drop-shadow(0 0 6px #34d399)" }}
+              />
+            )}
+            {!identity && (
+              <span className="ml-auto text-xs text-cyan/60 flex items-center gap-1">
+                <LogIn className="w-3 h-3" />
+                Login to save
+              </span>
+            )}
+          </div>
+
+          {/* Handle field */}
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Username</Label>
+            <div
+              className="flex items-center rounded-lg border border-cyan/30 bg-background/80 overflow-hidden transition-all duration-300 focus-within:border-cyan/70"
+              style={{
+                boxShadow: "0 0 0 0 transparent",
+              }}
+              onFocus={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 0 12px oklch(0.85 0.22 210 / 30%)";
+              }}
+              onBlur={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 0 0 0 transparent";
+              }}
+            >
+              <span
+                className="px-3 py-2 text-xs font-mono text-cyan bg-cyan/10 border-r border-cyan/20 whitespace-nowrap flex-shrink-0"
+                style={{ textShadow: "0 0 8px oklch(0.85 0.22 210 / 60%)" }}
+              >
+                ClawPro.ai/
+              </span>
+              <input
+                type="text"
+                value={handle}
+                onChange={(e) =>
+                  setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
+                }
+                placeholder="your-handle"
+                className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
+                autoComplete="username"
+              />
+            </div>
+          </div>
+
+          {/* Full name field */}
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <User className="w-3 h-3" />
+              Full Name
+            </Label>
+            <Input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Your real name"
+              className="bg-background/80 border-cyan/20 focus:border-cyan/60 text-sm h-9 transition-all duration-300"
+              style={{
+                boxShadow: "none",
+              }}
+              onFocus={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow =
+                  "0 0 10px oklch(0.85 0.22 210 / 20%)";
+              }}
+              onBlur={(e) => {
+                (e.currentTarget as HTMLElement).style.boxShadow = "none";
+              }}
             />
           </div>
-        </div>
 
-        {/* Full name field */}
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-            <User className="w-3 h-3" />
-            Full Name
-          </Label>
-          <Input
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="Your real name"
-            className="bg-background/80 border-border focus:border-cyan/50 text-sm h-9"
-          />
+          {/* Glowing Save Button */}
+          <Button
+            onClick={handleSave}
+            disabled={saveProfile.isPending || !handle.trim()}
+            size="sm"
+            className="w-full font-semibold h-10 text-sm relative overflow-hidden transition-all duration-300"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.85 0.22 210), oklch(0.7 0.25 250))",
+              color: "#000",
+              boxShadow: handle.trim()
+                ? "0 0 20px oklch(0.85 0.22 210 / 60%), 0 0 40px oklch(0.75 0.22 210 / 30%), 0 4px 15px rgba(0,0,0,0.3)"
+                : "none",
+              transform: "translateY(0)",
+            }}
+            onMouseEnter={(e) => {
+              if (!handle.trim()) return;
+              const el = e.currentTarget as HTMLElement;
+              el.style.boxShadow =
+                "0 0 30px oklch(0.85 0.22 210 / 80%), 0 0 60px oklch(0.75 0.22 210 / 50%), 0 6px 20px rgba(0,0,0,0.4)";
+              el.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              if (!handle.trim()) return;
+              const el = e.currentTarget as HTMLElement;
+              el.style.boxShadow =
+                "0 0 20px oklch(0.85 0.22 210 / 60%), 0 0 40px oklch(0.75 0.22 210 / 30%), 0 4px 15px rgba(0,0,0,0.3)";
+              el.style.transform = "translateY(0)";
+            }}
+          >
+            {/* Button shine sweep */}
+            <span
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%)",
+                backgroundSize: "200% 100%",
+                animation: handle.trim()
+                  ? "btnShine 2.5s ease infinite"
+                  : "none",
+              }}
+            />
+            {saveProfile.isPending ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                Saving...
+              </>
+            ) : saved ? (
+              <>
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                Saved!
+              </>
+            ) : !identity ? (
+              <>
+                <LogIn className="w-3.5 h-3.5 mr-1.5" />
+                Login & Save Handle
+              </>
+            ) : (
+              "Save Handle"
+            )}
+          </Button>
         </div>
-
-        <Button
-          onClick={handleSave}
-          disabled={saveProfile.isPending || !handle.trim()}
-          size="sm"
-          className="w-full bg-cyan text-background hover:bg-cyan-bright font-semibold h-9 text-sm"
-        >
-          {saveProfile.isPending ? (
-            <>
-              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-              Saving...
-            </>
-          ) : saved ? (
-            <>
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-              Saved!
-            </>
-          ) : (
-            "Save Handle"
-          )}
-        </Button>
       </div>
+
+      {/* CSS keyframes injected inline via style tag */}
+      <style>{`
+        @keyframes borderGlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes btnShine {
+          0% { background-position: -100% 0; }
+          60% { background-position: 200% 0; }
+          100% { background-position: 200% 0; }
+        }
+      `}</style>
     </div>
   );
 }
