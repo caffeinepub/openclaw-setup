@@ -1,0 +1,180 @@
+import { Crown, Download, Settings, Users } from "lucide-react";
+import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { useTotalMembersCount } from "../../hooks/useMembership";
+import {
+  useTotalConfigsCount,
+  useTotalDownloads,
+} from "../../hooks/useQueries";
+
+function useCountUp(target: number, duration = 2000, shouldStart = false) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!shouldStart || target === 0) return;
+    const startTime = Date.now();
+    const endTime = startTime + duration;
+
+    const tick = () => {
+      const now = Date.now();
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased = 1 - (1 - progress) ** 3;
+      setCount(Math.round(eased * target));
+      if (now < endTime) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, [target, duration, shouldStart]);
+
+  return count;
+}
+
+interface StatCardProps {
+  icon: React.ReactNode;
+  value: number;
+  suffix?: string;
+  label: string;
+  desc: string;
+  color: string;
+}
+
+function StatCard({
+  icon,
+  value,
+  suffix = "",
+  label,
+  desc,
+  color,
+}: StatCardProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  const count = useCountUp(value, 1800, inView);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const formatted =
+    count >= 1000
+      ? `${(count / 1000).toFixed(count >= 100000 ? 0 : 1)}K`
+      : count.toString();
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className="relative rounded-xl border border-border bg-card p-8 text-center hover:border-cyan/40 transition-all duration-300 hover:shadow-glow-sm overflow-hidden group"
+    >
+      {/* Background glow */}
+      <div
+        className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${color}`}
+      />
+
+      {/* Icon */}
+      <div className="relative z-10 flex justify-center mb-4">
+        <div className="w-14 h-14 rounded-full bg-cyan/10 border border-cyan/30 flex items-center justify-center">
+          {icon}
+        </div>
+      </div>
+
+      {/* Number */}
+      <div className="relative z-10 font-display font-black text-5xl sm:text-6xl mb-1 text-cyan text-glow-cyan">
+        {formatted}
+        {suffix}
+      </div>
+
+      {/* Label */}
+      <p className="relative z-10 font-bold text-lg text-foreground mb-1">
+        {label}
+      </p>
+      <p className="relative z-10 text-sm text-muted-foreground">{desc}</p>
+    </motion.div>
+  );
+}
+
+export function StatsSection() {
+  const { data: totalDownloads } = useTotalDownloads();
+  const { data: totalConfigs } = useTotalConfigsCount();
+  const { data: totalMembers } = useTotalMembersCount();
+
+  const downloadsNum = totalDownloads ? Number(totalDownloads) : 52000;
+  const configsNum = totalConfigs ? Number(totalConfigs) : 8400;
+  const membersNum = totalMembers ? Number(totalMembers) : 0;
+
+  return (
+    <section className="py-24 relative overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
+      {/* Cyber background */}
+      <div className="absolute inset-0 gradient-cyber opacity-50" />
+      <div className="absolute inset-0 hex-grid-bg opacity-25" />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-14"
+        >
+          <span className="inline-block text-sm font-mono font-semibold text-cyan uppercase tracking-widest mb-4">
+            By the Numbers
+          </span>
+          <h2 className="font-display font-black text-4xl sm:text-5xl mb-4">
+            Community & <span className="text-cyan text-glow-cyan">Impact</span>
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            OpenClaw powers thousands of setups worldwide.
+          </p>
+        </motion.div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            icon={<Download className="w-6 h-6 text-cyan" />}
+            value={downloadsNum}
+            label="Total Downloads"
+            desc="Across all platforms and versions"
+            color="bg-gradient-to-br from-cyan/10 to-transparent"
+          />
+          <StatCard
+            icon={<Settings className="w-6 h-6 text-purple-400" />}
+            value={configsNum}
+            label="Saved Configs"
+            desc="Stored on ICP blockchain"
+            color="bg-gradient-to-br from-purple-500/10 to-transparent"
+          />
+          <StatCard
+            icon={<Users className="w-6 h-6 text-green-400" />}
+            value={100000}
+            suffix="+"
+            label="Community Members"
+            desc="Active users in our ecosystem"
+            color="bg-gradient-to-br from-green-500/10 to-transparent"
+          />
+          <StatCard
+            icon={<Crown className="w-6 h-6 text-amber-400" />}
+            value={membersNum}
+            label="Total Member"
+            desc="Pengguna dengan membership aktif"
+            color="bg-gradient-to-br from-amber-500/10 to-transparent"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
