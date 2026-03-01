@@ -8,28 +8,8 @@ import {
   Users,
   Webhook,
 } from "lucide-react";
-import { motion } from "motion/react";
 import type React from "react";
 import { useLanguage } from "../../i18n/LanguageContext";
-
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.1 },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
-    },
-  },
-};
 
 export function FeaturesSection() {
   const { t } = useLanguage();
@@ -107,58 +87,42 @@ export function FeaturesSection() {
 
   return (
     <section id="features" className="py-16 relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-12">
           <span className="inline-block text-sm font-mono font-semibold text-cyan uppercase tracking-widest mb-4">
             {t.features.sectionLabel}
           </span>
           <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl mb-4">
             {t.features.sectionTitle1}
-            <span className="text-cyan text-glow-cyan">
-              {t.features.sectionTitle2}
-            </span>
+            <span className="text-cyan">{t.features.sectionTitle2}</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             {t.features.sectionDesc}
           </p>
-        </motion.div>
+        </div>
 
         {/* Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((feature) => {
             const Icon = feature.icon;
             return (
-              <motion.div
+              <div
                 key={feature.title}
-                variants={cardVariants}
-                className="group relative rounded-xl border border-border bg-card p-6 hover:border-cyan/40 transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.15)] overflow-hidden cursor-default"
+                className="group relative rounded-xl border border-border bg-card p-6 hover:border-cyan/40 transition-colors duration-200 overflow-hidden cursor-default"
               >
                 {/* Gradient fill on hover */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                  className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
                 />
 
                 {/* Content */}
                 <div className="relative z-10">
                   {/* Icon row with optional badge */}
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-lg bg-background/50 border border-border flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-12 h-12 rounded-lg bg-background/50 border border-border flex items-center justify-center">
                       <Icon className={`w-6 h-6 ${feature.iconColor}`} />
                     </div>
                     {feature.badge && (
@@ -189,7 +153,7 @@ export function FeaturesSection() {
                           <MessageCircle className="w-3 h-3 text-green-400" />
                         </div>
                         <span className="text-xs font-semibold text-green-400">
-                          OpenClaw Bot
+                          ClawPro Bot
                         </span>
                         <span className="ml-auto text-[10px] text-green-500/60">
                           ● Online
@@ -246,17 +210,10 @@ export function FeaturesSection() {
                     </div>
                   )}
                 </div>
-
-                {/* Corner accent */}
-                <div className="absolute top-0 right-0 w-16 h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div
-                    className={`absolute top-0 right-0 w-full h-full ${feature.iconColor.replace("text-", "bg-").replace("400", "500")} opacity-10 rounded-bl-3xl`}
-                  />
-                </div>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

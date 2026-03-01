@@ -1,5 +1,4 @@
 import { Crown, Download, Settings, Users } from "lucide-react";
-import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { useTotalMembersCount } from "../../hooks/useMembership";
 import {
@@ -7,9 +6,8 @@ import {
   useTotalDownloads,
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
-import { WorldMap } from "../WorldMap";
 
-function useCountUp(target: number, duration = 2000, shouldStart = false) {
+function useCountUp(target: number, duration = 1500, shouldStart = false) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -50,7 +48,7 @@ function StatCard({
 }: StatCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
-  const count = useCountUp(value, 1800, inView);
+  const count = useCountUp(value, 1500, inView);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -72,16 +70,12 @@ function StatCard({
       : count.toString();
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-      className="relative rounded-xl border border-border bg-card p-8 text-center hover:border-cyan/40 transition-all duration-300 hover:shadow-glow-sm overflow-hidden group"
+      className="relative rounded-xl border border-border bg-card p-8 text-center hover:border-cyan/40 transition-colors duration-200 overflow-hidden group"
     >
       <div
-        className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${color}`}
+        className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ${color}`}
       />
 
       <div className="relative z-10 flex justify-center mb-4">
@@ -90,7 +84,7 @@ function StatCard({
         </div>
       </div>
 
-      <div className="relative z-10 font-display font-black text-5xl sm:text-6xl mb-1 text-cyan text-glow-cyan">
+      <div className="relative z-10 font-display font-black text-5xl sm:text-6xl mb-1 text-cyan">
         {formatted}
         {suffix}
       </div>
@@ -99,7 +93,7 @@ function StatCard({
         {label}
       </p>
       <p className="relative z-10 text-sm text-muted-foreground">{desc}</p>
-    </motion.div>
+    </div>
   );
 }
 
@@ -114,30 +108,22 @@ export function StatsSection() {
   const membersNum = totalMembers ? Number(totalMembers) : 0;
 
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
-      <div className="absolute inset-0 gradient-cyber opacity-50" />
-      <div className="absolute inset-0 hex-grid-bg opacity-25" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-14"
-        >
+        <div className="text-center mb-12">
           <span className="inline-block text-sm font-mono font-semibold text-cyan uppercase tracking-widest mb-4">
             By the Numbers
           </span>
           <h2 className="font-display font-black text-4xl sm:text-5xl mb-4">
-            Community & <span className="text-cyan text-glow-cyan">Impact</span>
+            Community & <span className="text-cyan">Impact</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            OpenClaw powers thousands of setups worldwide.
+            ClawPro powers thousands of setups worldwide.
           </p>
-        </motion.div>
+        </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -171,9 +157,6 @@ export function StatsSection() {
             color="bg-gradient-to-br from-amber-500/10 to-transparent"
           />
         </div>
-
-        {/* Interactive World Map */}
-        <WorldMap />
       </div>
     </section>
   );

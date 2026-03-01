@@ -384,11 +384,11 @@ export function WorldMap() {
       alpha: true,
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 0);
 
     // Globe sphere
-    const geometry = new THREE.SphereGeometry(RADIUS, 64, 64);
+    const geometry = new THREE.SphereGeometry(RADIUS, 32, 32);
     const texture = new THREE.CanvasTexture(textureCanvas);
     texture.needsUpdate = true;
 
@@ -403,7 +403,7 @@ export function WorldMap() {
     globeScene.add(globe);
 
     // Atmosphere glow
-    const atmGeo = new THREE.SphereGeometry(RADIUS * 1.05, 32, 32);
+    const atmGeo = new THREE.SphereGeometry(RADIUS * 1.05, 16, 16);
     const atmMat = new THREE.MeshPhongMaterial({
       color: new THREE.Color(0x0a3060),
       transparent: true,
@@ -421,7 +421,7 @@ export function WorldMap() {
       opacity: 0.3,
     });
     // Latitude lines
-    for (let lat = -80; lat <= 80; lat += 20) {
+    for (let lat = -80; lat <= 80; lat += 30) {
       const pts: THREE.Vector3[] = [];
       for (let lon = 0; lon <= 360; lon += 3) {
         const [x, y, z] = latLonToXYZ(lat, lon - 180, RADIUS + 0.5);
@@ -431,7 +431,7 @@ export function WorldMap() {
       graticuleGroup.add(new THREE.Line(geo, lineMat));
     }
     // Longitude lines
-    for (let lon = 0; lon < 360; lon += 20) {
+    for (let lon = 0; lon < 360; lon += 30) {
       const pts: THREE.Vector3[] = [];
       for (let lat = -90; lat <= 90; lat += 3) {
         const [x, y, z] = latLonToXYZ(lat, lon - 180, RADIUS + 0.5);
@@ -444,7 +444,7 @@ export function WorldMap() {
 
     // Country dot markers
     const dotGroup = new THREE.Group();
-    const dotGeo = new THREE.SphereGeometry(2, 8, 8);
+    const dotGeo = new THREE.SphereGeometry(2, 6, 6);
     for (const c of COUNTRY_LABELS) {
       const [x, y, z] = latLonToXYZ(c.lat, c.lon, RADIUS + 2);
       const mat = new THREE.MeshBasicMaterial({ color: 0x00d4ff });

@@ -31,7 +31,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("openclaw-lang");
     if (
       stored &&
-      (stored === "en" || stored === "id" || stored === "ar" || stored === "ru")
+      (stored === "en" ||
+        stored === "id" ||
+        stored === "ar" ||
+        stored === "ru" ||
+        stored === "zh")
     ) {
       return stored as Language;
     }

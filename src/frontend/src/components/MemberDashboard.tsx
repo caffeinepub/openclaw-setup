@@ -255,60 +255,48 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
           <div className="flex-1 overflow-hidden">
             <Tabs defaultValue="overview" className="h-full flex flex-col">
               {/* Tab list — 6 tabs with compact sizing */}
-              <TabsList className="flex mx-4 mt-3 mb-0 bg-[oklch(0.08_0.01_240)] border border-[oklch(1_0_0_/_8%)] flex-shrink-0 h-auto p-0.5 gap-0.5">
+              <TabsList className="flex mx-4 mt-3 mb-0 bg-[oklch(0.08_0.01_240)] border border-[oklch(1_0_0_/_8%)] flex-shrink-0 h-auto p-0.5 gap-0.5 overflow-x-auto">
                 <TabsTrigger
                   value="overview"
-                  className="flex-1 text-[10px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.12_210)]/20 data-[state=active]:text-[oklch(0.75_0.12_210)] flex items-center justify-center gap-1 rounded-md"
+                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.12_210)]/20 data-[state=active]:text-[oklch(0.75_0.12_210)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
                 >
                   <User className="w-3 h-3 flex-shrink-0" />
-                  <span className="hidden sm:inline">
-                    {t.dashboard.overview}
-                  </span>
-                  <span className="sm:hidden">Me</span>
+                  <span className="text-[9px]">Profile</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="configs"
-                  className="flex-1 text-[10px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.12_210)]/20 data-[state=active]:text-[oklch(0.75_0.12_210)] flex items-center justify-center gap-1 rounded-md"
+                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.12_210)]/20 data-[state=active]:text-[oklch(0.75_0.12_210)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
                 >
                   <Settings className="w-3 h-3 flex-shrink-0" />
-                  <span className="hidden sm:inline">
-                    {t.dashboard.savedConfigs}
-                  </span>
-                  <span className="sm:hidden">CFG</span>
+                  <span className="text-[9px]">Configs</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="chatbot"
-                  className="flex-1 text-[10px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.65_0.18_150)]/20 data-[state=active]:text-[oklch(0.75_0.15_150)] flex items-center justify-center gap-1 rounded-md"
+                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.65_0.18_150)]/20 data-[state=active]:text-[oklch(0.75_0.15_150)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
                 >
                   <Bot className="w-3 h-3 flex-shrink-0" />
-                  <span className="hidden sm:inline">
-                    {t.dashboard.chatbotSetup}
-                  </span>
-                  <span className="sm:hidden">Bot</span>
+                  <span className="text-[9px]">Bot</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="ai"
-                  className="flex-1 text-[10px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.22_290)]/20 data-[state=active]:text-[oklch(0.80_0.18_290)] flex items-center justify-center gap-1 rounded-md"
+                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.22_290)]/20 data-[state=active]:text-[oklch(0.80_0.18_290)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
                 >
                   <Sparkles className="w-3 h-3 flex-shrink-0" />
-                  <span className="hidden sm:inline">AI</span>
-                  <span className="sm:hidden">AI</span>
+                  <span className="text-[9px]">AI</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="api"
-                  className="flex-1 text-[10px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.18_200)]/20 data-[state=active]:text-[oklch(0.78_0.15_200)] flex items-center justify-center gap-1 rounded-md"
+                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.18_200)]/20 data-[state=active]:text-[oklch(0.78_0.15_200)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
                 >
                   <Terminal className="w-3 h-3 flex-shrink-0" />
-                  <span className="hidden sm:inline">API</span>
-                  <span className="sm:hidden">API</span>
+                  <span className="text-[9px]">API</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="transactions"
-                  className="flex-1 text-[10px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.18_60)]/20 data-[state=active]:text-[oklch(0.80_0.15_60)] flex items-center justify-center gap-1 rounded-md"
+                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.18_60)]/20 data-[state=active]:text-[oklch(0.80_0.15_60)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
                 >
                   <Receipt className="w-3 h-3 flex-shrink-0" />
-                  <span className="hidden sm:inline">Txns</span>
-                  <span className="sm:hidden">$</span>
+                  <span className="text-[9px]">Txns</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -700,7 +688,9 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
               No transactions yet
             </p>
             <p className="text-xs text-[oklch(0.35_0.01_210)] mt-1">
-              Your payment history will appear here.
+              {membership
+                ? "Your payment history will appear here."
+                : "Purchase a plan to start tracking transactions"}
             </p>
           </div>
         ) : (
