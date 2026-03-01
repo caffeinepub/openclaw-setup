@@ -1,32 +1,26 @@
 # ClawPro
 
 ## Current State
-- ClawPro is a full-stack web app with hero section, membership tiers (Silver/Gold/Platinum), dashboard, multilingual support (EN/ID/AR/RU/ZH), and various sections.
-- Users can log in via ICP Identity and claim a ClawPro handle (stored as `name` in `UserProfile`), with full name stored in `bio`.
-- Backend `UserProfile` has `name` (handle) and `bio` (full name).
-- Currently, profiles can only be looked up by Principal — no public lookup by handle/username.
-- Hero section shows `HandleClaimCard` after login for setting handle/full name, but there is no read-only display card showing the user's current profile info.
-- No public profile page at `/u/[handle]`.
+App is a full-featured ClawPro.ai website with membership tiers (Silver/Gold/Platinum). The `WorkWithEverythingSection` has an `IntegrationDetailModal` that shows tier buttons (Silver, Gold, Platinum) under "Get Started". These buttons always appear identical regardless of whether the user already owns that tier. The user's membership tier is tracked via `useMyMembership()` hook.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Backend: `getPublicProfileByHandle(handle: Text)` query that returns only the username/handle (not full name) for public viewing.
-- Backend: `UserHandleMap` — a lookup map from handle (Text) to Principal, so handle-based lookup is O(1).
-- Frontend: `PublicProfilePage` component — shown when URL is `/u/[handle]`, displays only the username (handle), membership tier badge, and a "Join ClawPro" CTA. Does NOT show full name.
-- Frontend: `ProfileDisplayCard` component in HeroSection — shown after the ClawPro logo animation when user is logged in. Displays: handle name (ClawPro.ai/handle), full name, and ICP username (Principal short form). This is a read-only display below the logo.
+- In `IntegrationDetailModal`, read the user's current membership tier from `useMyMembership()`.
+- For the tier button matching the user's active tier: show an "Active" badge/label, change the button style to indicate it's already owned (e.g. muted/disabled appearance with a checkmark), and disable the click action.
+- For tiers lower than the user's current tier (already included): also show as "Active" or "Owned" since higher tiers typically include lower tier benefits.
+- For tiers the user doesn't own: keep the existing clickable "Get Started" style.
+- If user is not logged in, all tier buttons remain clickable as before.
 
 ### Modify
-- `main.mo`: Add `userHandleMap` state, update `saveCallerUserProfile` to also register handle → Principal mapping. Add `getPublicProfileByHandle` query (public, no auth required, returns only `{ handle: Text }` or null).
-- `App.tsx`: Add URL-based routing so `/u/[handle]` renders `PublicProfilePage` overlay/page.
-- `HeroSection.tsx`: Add `ProfileDisplayCard` below the big logo title — renders only when user is logged in and has saved a handle.
+- `IntegrationDetailModal` in `WorkWithEverythingSection.tsx`: accept or read current user tier, apply conditional styles and disabled state to tier buttons.
 
 ### Remove
 - Nothing removed.
 
 ## Implementation Plan
-1. Update `main.mo`: add `userHandleMap` (Map<Text, Principal>), update `saveCallerUserProfile` to register handle, add `getPublicProfileByHandle(handle: Text): async ?{ handle: Text }` public query.
-2. Update `backend.d.ts` to include the new `getPublicProfileByHandle` function.
-3. Create `PublicProfilePage.tsx` component: reads handle from URL hash (`#/u/handle`), calls `getPublicProfileByHandle`, shows username, tier badge if available (from public lookup), and "Join ClawPro" CTA.
-4. Update `HeroSection.tsx`: add `ProfileDisplayCard` that shows the current user's handle, full name, and short Principal username — displayed as a stylish info card below the logo title, only when logged in and handle is set.
-5. Update `App.tsx`: add hash-based routing for `#/u/[handle]` to render `PublicProfilePage`.
+1. In `IntegrationDetailModal`, call `useMyMembership()` to get the user's current tier.
+2. Define tier rank: silver=1, gold=2, platinum=3.
+3. For each tier button, if `userTierRank >= buttonTierRank`, render it as "Active" (disabled, green checkmark badge, muted style, no onClick).
+4. If user has no tier or is not logged in, all buttons are clickable as before.
+5. Validate and build.

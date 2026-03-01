@@ -22,6 +22,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { MembershipTier } from "../../backend.d";
+import { useMyMembership } from "../../hooks/useMembership";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
 
@@ -859,6 +860,12 @@ interface IntegrationDetailModalProps {
   onGetStarted?: (tier: MembershipTier) => void;
 }
 
+const TIER_RANK: Record<MembershipTier, number> = {
+  [MembershipTier.silver]: 1,
+  [MembershipTier.gold]: 2,
+  [MembershipTier.platinum]: 3,
+};
+
 function IntegrationDetailModal({
   platform,
   onClose,
@@ -866,6 +873,9 @@ function IntegrationDetailModal({
 }: IntegrationDetailModalProps) {
   const { t } = useLanguage();
   const details = platform ? PLATFORM_DETAILS[platform.id] : null;
+  const { data: membership } = useMyMembership();
+  const userTier = membership?.tier ?? null;
+  const userTierRank = userTier !== null ? TIER_RANK[userTier] : 0;
 
   const TIER_BUTTONS: {
     tier: MembershipTier;
@@ -980,21 +990,47 @@ function IntegrationDetailModal({
                   {t.pricing.choosePayment ?? "Choose Plan"}
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  {TIER_BUTTONS.map((btn) => (
-                    <button
-                      key={btn.tier}
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onGetStarted?.(btn.tier);
-                      }}
-                      className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs transition-all duration-200 cursor-pointer ${btn.cls}`}
-                    >
-                      {btn.icon}
-                      <span className="font-bold">{btn.label}</span>
-                      <span className="opacity-80">{btn.price}/mo</span>
-                    </button>
-                  ))}
+                  {TIER_BUTTONS.map((btn) => {
+                    const isActive =
+                      userTierRank > 0 && userTierRank >= TIER_RANK[btn.tier];
+                    return (
+                      <div key={btn.tier} className="flex flex-col gap-1">
+                        {isActive && (
+                          <div className="flex items-center justify-center gap-1">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 rounded-full px-2 py-0.5">
+                              <CheckCircle2 className="w-2.5 h-2.5" />
+                              Active
+                            </span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          disabled={isActive}
+                          onClick={
+                            isActive
+                              ? undefined
+                              : () => {
+                                  onClose();
+                                  onGetStarted?.(btn.tier);
+                                }
+                          }
+                          className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs transition-all duration-200 ${
+                            isActive
+                              ? "bg-emerald-900/40 border border-emerald-500/50 text-emerald-300 cursor-not-allowed opacity-80"
+                              : `cursor-pointer ${btn.cls}`
+                          }`}
+                        >
+                          {isActive ? (
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          ) : (
+                            btn.icon
+                          )}
+                          <span className="font-bold">{btn.label}</span>
+                          <span className="opacity-80">{btn.price}/mo</span>
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
