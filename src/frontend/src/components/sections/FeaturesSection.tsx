@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { DotsBackground } from "../DotsBackground";
 
 export function FeaturesSection() {
   const { t } = useLanguage();
@@ -87,6 +88,7 @@ export function FeaturesSection() {
 
   return (
     <section id="features" className="py-16 relative overflow-hidden">
+      <DotsBackground />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

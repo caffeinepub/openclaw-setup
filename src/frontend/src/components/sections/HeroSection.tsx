@@ -1,9 +1,28 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Download, Zap } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { useLatestVersion, useTotalDownloads } from "../../hooks/useQueries";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  ArrowRight,
+  AtSign,
+  BookOpen,
+  CheckCircle2,
+  Download,
+  Loader2,
+  User,
+  Zap,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useInternetIdentity } from "../../hooks/useInternetIdentity";
+import {
+  useCallerUserProfile,
+  useLatestVersion,
+  useSaveCallerUserProfile,
+  useTotalDownloads,
+} from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { DotsBackground } from "../DotsBackground";
 
 const ORBS = [
   { color: "#00f5ff", r: 160 },
@@ -114,6 +133,123 @@ function RobotMascot() {
   );
 }
 
+function HandleClaimCard() {
+  const { identity } = useInternetIdentity();
+  const { data: profile } = useCallerUserProfile();
+  const saveProfile = useSaveCallerUserProfile();
+
+  const [handle, setHandle] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setHandle(profile.name ?? "");
+      setFullName(profile.bio ?? "");
+    }
+  }, [profile]);
+
+  if (!identity) return null;
+
+  const handleSave = async () => {
+    const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!trimmedHandle) {
+      toast.error("Please enter a valid handle (letters, numbers, _ or -).");
+      return;
+    }
+    try {
+      await saveProfile.mutateAsync({
+        name: trimmedHandle,
+        bio: fullName.trim() || undefined,
+      });
+      setSaved(true);
+      toast.success("Handle saved! Your ClawPro.ai profile is set.");
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      toast.error("Failed to save profile. Please try again.");
+    }
+  };
+
+  return (
+    <div className="mt-8 w-full max-w-md">
+      <div
+        className="rounded-2xl border border-cyan/20 bg-background/60 backdrop-blur-md p-5 space-y-4"
+        style={{
+          boxShadow:
+            "0 0 40px oklch(0.75 0.18 210 / 8%), 0 4px 20px rgba(0,0,0,0.3)",
+        }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-6 h-6 rounded-full bg-cyan/15 border border-cyan/30 flex items-center justify-center">
+            <AtSign className="w-3.5 h-3.5 text-cyan" />
+          </div>
+          <span className="text-sm font-semibold text-foreground/90">
+            Claim your ClawPro handle
+          </span>
+          {saved && (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-auto" />
+          )}
+        </div>
+
+        {/* Handle field */}
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Username</Label>
+          <div className="flex items-center rounded-lg border border-border bg-background/80 overflow-hidden focus-within:border-cyan/50 transition-colors">
+            <span className="px-3 py-2 text-xs font-mono text-cyan/70 bg-cyan/5 border-r border-border whitespace-nowrap flex-shrink-0">
+              ClawPro.ai/
+            </span>
+            <input
+              type="text"
+              value={handle}
+              onChange={(e) =>
+                setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
+              }
+              placeholder="your-handle"
+              className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
+              autoComplete="username"
+            />
+          </div>
+        </div>
+
+        {/* Full name field */}
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <User className="w-3 h-3" />
+            Full Name
+          </Label>
+          <Input
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            placeholder="Your real name"
+            className="bg-background/80 border-border focus:border-cyan/50 text-sm h-9"
+          />
+        </div>
+
+        <Button
+          onClick={handleSave}
+          disabled={saveProfile.isPending || !handle.trim()}
+          size="sm"
+          className="w-full bg-cyan text-background hover:bg-cyan-bright font-semibold h-9 text-sm"
+        >
+          {saveProfile.isPending ? (
+            <>
+              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              Saving...
+            </>
+          ) : saved ? (
+            <>
+              <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+              Saved!
+            </>
+          ) : (
+            "Save Handle"
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function HeroSection() {
   const { data: latestVersion } = useLatestVersion();
   const { data: totalDownloads } = useTotalDownloads();
@@ -137,6 +273,9 @@ export function HeroSection() {
       {/* Colorful animated background */}
       <ColorfulBackground />
 
+      {/* Moving dots overlay */}
+      <DotsBackground />
+
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat z-[1]"
@@ -150,7 +289,7 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background z-[2]" />
 
       {/* Content: two-column on lg+, stacked on mobile */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-0">
           {/* Left: Text content */}
           <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left">
@@ -214,6 +353,9 @@ export function HeroSection() {
                 {t.hero.viewDocs}
               </Button>
             </div>
+
+            {/* Handle Claim — shown only when logged in */}
+            <HandleClaimCard />
           </div>
 
           {/* Right: Robot mascot (desktop) */}
@@ -234,7 +376,7 @@ export function HeroSection() {
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
         <div className="w-6 h-10 rounded-full border-2 border-cyan/40 flex items-start justify-center pt-2 animate-float">
           <div className="w-1.5 h-1.5 rounded-full bg-cyan" />
         </div>

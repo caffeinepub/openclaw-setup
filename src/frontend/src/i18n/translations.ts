@@ -227,6 +227,15 @@ export type TranslationKey = {
     availableNow: string;
     viewDetails: string;
   };
+  // Partner / Subscribe section
+  partner: {
+    stayUpdated: string;
+    stayUpdatedDesc: string;
+    emailPlaceholder: string;
+    subscribe: string;
+    successMsg: string;
+    errorMsg: string;
+  };
   // Admin
   admin: {
     title: string;
@@ -577,6 +586,15 @@ const en: TranslationKey = {
     availableNow: "Available",
     viewDetails: "View Details",
   },
+  partner: {
+    stayUpdated: "Stay Updated",
+    stayUpdatedDesc:
+      "Get the latest ClawPro updates, tips, and releases directly to your inbox.",
+    emailPlaceholder: "Enter your email address",
+    subscribe: "Subscribe",
+    successMsg: "You're subscribed! Welcome to ClawPro updates.",
+    errorMsg: "Please enter a valid email address.",
+  },
   admin: {
     title: "Admin Panel",
     close: "Close",
@@ -926,6 +944,15 @@ const id: TranslationKey = {
     availableNow: "Tersedia",
     viewDetails: "Lihat Detail",
   },
+  partner: {
+    stayUpdated: "Tetap Terkini",
+    stayUpdatedDesc:
+      "Dapatkan pembaruan, tips, dan rilis ClawPro terbaru langsung ke kotak masukmu.",
+    emailPlaceholder: "Masukkan alamat email Anda",
+    subscribe: "Berlangganan",
+    successMsg: "Kamu sudah berlangganan! Selamat datang di pembaruan ClawPro.",
+    errorMsg: "Masukkan alamat email yang valid.",
+  },
   admin: {
     title: "Panel Admin",
     close: "Tutup",
@@ -1268,6 +1295,15 @@ const ar: TranslationKey = {
     useCases: "حالات الاستخدام",
     availableNow: "متاح",
     viewDetails: "عرض التفاصيل",
+  },
+  partner: {
+    stayUpdated: "ابقَ مطّلعاً",
+    stayUpdatedDesc:
+      "احصل على أحدث تحديثات ClawPro والنصائح والإصدارات مباشرة في بريدك الوارد.",
+    emailPlaceholder: "أدخل عنوان بريدك الإلكتروني",
+    subscribe: "اشتراك",
+    successMsg: "أنت مشترك الآن! مرحباً بك في تحديثات ClawPro.",
+    errorMsg: "يرجى إدخال عنوان بريد إلكتروني صحيح.",
   },
   admin: {
     title: "لوحة المشرف",
@@ -1615,6 +1651,15 @@ const ru: TranslationKey = {
     availableNow: "Доступно",
     viewDetails: "Подробнее",
   },
+  partner: {
+    stayUpdated: "Будьте в курсе",
+    stayUpdatedDesc:
+      "Получайте последние обновления, советы и релизы ClawPro прямо на почту.",
+    emailPlaceholder: "Введите адрес электронной почты",
+    subscribe: "Подписаться",
+    successMsg: "Вы подписались! Добро пожаловать в обновления ClawPro.",
+    errorMsg: "Пожалуйста, введите корректный адрес электронной почты.",
+  },
   admin: {
     title: "Панель администратора",
     close: "Закрыть",
@@ -1955,6 +2000,14 @@ const zh: TranslationKey = {
     useCases: "使用场景",
     availableNow: "可用",
     viewDetails: "查看详情",
+  },
+  partner: {
+    stayUpdated: "保持更新",
+    stayUpdatedDesc: "直接将 ClawPro 的最新更新、技巧和版本发送到您的收件箱。",
+    emailPlaceholder: "输入您的电子邮件地址",
+    subscribe: "订阅",
+    successMsg: "您已成功订阅！欢迎加入 ClawPro 更新。",
+    errorMsg: "请输入有效的电子邮件地址。",
   },
   admin: {
     title: "管理员面板",

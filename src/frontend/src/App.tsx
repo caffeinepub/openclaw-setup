@@ -11,6 +11,8 @@ import { ConfigSection } from "./components/sections/ConfigSection";
 import { DocsSection } from "./components/sections/DocsSection";
 import { FeaturesSection } from "./components/sections/FeaturesSection";
 import { HeroSection } from "./components/sections/HeroSection";
+import { LogoMarqueeSection } from "./components/sections/LogoMarqueeSection";
+import { PartnerSection } from "./components/sections/PartnerSection";
 import { PricingSection } from "./components/sections/PricingSection";
 import { SetupSection } from "./components/sections/SetupSection";
 import { StatsSection } from "./components/sections/StatsSection";
@@ -62,6 +64,7 @@ export default function App() {
       {/* Main Content */}
       <main>
         <HeroSection />
+        <LogoMarqueeSection />
         <FeaturesSection />
         <WorkWithEverythingSection />
         <PricingSection
@@ -75,6 +78,7 @@ export default function App() {
         <DocsSection />
         <ChangelogSection />
         <StatsSection />
+        <PartnerSection />
       </main>
 
       {/* Footer */}

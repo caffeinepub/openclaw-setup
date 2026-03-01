@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { DotsBackground } from "../DotsBackground";
 
 interface Platform {
   id: string;
@@ -1121,6 +1122,7 @@ export function WorkWithEverythingSection() {
 
   return (
     <section id="integrations" className="relative py-24 overflow-hidden">
+      <DotsBackground />
       {/* Subtle background grid */}
       <div className="absolute inset-0 hex-grid-bg opacity-20 pointer-events-none" />
       {/* Top glow */}

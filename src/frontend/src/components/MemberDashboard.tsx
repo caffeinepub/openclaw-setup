@@ -10,10 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  AtSign,
+  Bell,
   Bot,
   CheckCircle2,
   ChevronRight,
@@ -22,9 +25,13 @@ import {
   Crown,
   Eye,
   EyeOff,
+  Globe2,
   Loader2,
   Lock,
+  Plug,
+  Plus,
   Receipt,
+  Save,
   Send,
   Settings,
   Sparkles,
@@ -57,31 +64,35 @@ import {
 } from "../hooks/useQueries";
 import { useLanguage } from "../i18n/LanguageContext";
 
+// ---- Constants ----
+
 const TIER_STYLES: Record<
   MembershipTier,
-  { label: string; badge: string; glow: string; icon: string }
+  { label: string; badge: string; glow: string; icon: string; color: string }
 > = {
   [MembershipTier.silver]: {
     label: "Silver",
     badge: "bg-slate-500/20 text-slate-200 border-slate-400/40",
-    glow: "shadow-[0_0_20px_rgba(148,163,184,0.15)]",
+    glow: "shadow-[0_0_30px_rgba(148,163,184,0.12)]",
     icon: "⬥",
+    color: "oklch(0.75 0.05 220)",
   },
   [MembershipTier.gold]: {
     label: "Gold",
     badge: "bg-amber-500/20 text-amber-200 border-amber-400/40",
-    glow: "shadow-[0_0_20px_rgba(251,191,36,0.15)]",
+    glow: "shadow-[0_0_30px_rgba(251,191,36,0.15)]",
     icon: "★",
+    color: "oklch(0.80 0.18 60)",
   },
   [MembershipTier.platinum]: {
     label: "Platinum",
     badge: "bg-violet-500/20 text-violet-200 border-violet-400/40",
-    glow: "shadow-[0_0_20px_rgba(167,139,250,0.2)]",
+    glow: "shadow-[0_0_30px_rgba(167,139,250,0.2)]",
     icon: "◆",
+    color: "oklch(0.75 0.20 290)",
   },
 };
 
-// Token constants: $1 = 100 tokens
 const TIER_PRICES: Record<MembershipTier, number> = {
   [MembershipTier.silver]: 9.99,
   [MembershipTier.gold]: 29.99,
@@ -89,9 +100,9 @@ const TIER_PRICES: Record<MembershipTier, number> = {
 };
 
 const TIER_TOKENS: Record<MembershipTier, number> = {
-  [MembershipTier.silver]: Math.round(9.99 * 100), // 999
-  [MembershipTier.gold]: Math.round(29.99 * 100), // 2999
-  [MembershipTier.platinum]: Math.round(79.99 * 100), // 7999
+  [MembershipTier.silver]: Math.round(9.99 * 100),
+  [MembershipTier.gold]: Math.round(29.99 * 100),
+  [MembershipTier.platinum]: Math.round(79.99 * 100),
 };
 
 const PAYMENT_METHODS = ["Card", "PayPal", "Bitcoin", "QRIS"] as const;
@@ -122,34 +133,54 @@ function saveTransactions(txs: Transaction[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(txs));
 }
 
+// ---- Main Dashboard ----
+
 interface MemberDashboardProps {
   onClose: () => void;
 }
 
 export function MemberDashboard({ onClose }: MemberDashboardProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { identity } = useInternetIdentity();
   const { data: membership } = useMyMembership();
   const { data: profile } = useCallerUserProfile();
+  const { data: chatbotConfig } = useChatbotConfig();
   const { data: configs } = useMyConfigs();
   const saveProfile = useSaveCallerUserProfile();
   const deleteConfig = useDeleteConfig();
 
   // Profile form state
-  const [profileName, setProfileName] = useState("");
-  const [profileBio, setProfileBio] = useState("");
+  const [handle, setHandle] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [activeTab, setActiveTab] = useState("profile");
+
+  // Settings toggles (localStorage)
+  const [notificationsOn, setNotificationsOn] = useState(
+    () => localStorage.getItem("clawpro_notifications") !== "false",
+  );
+  const [autoSave, setAutoSave] = useState(
+    () => localStorage.getItem("clawpro_autosave") !== "false",
+  );
 
   // Sync profile data when loaded
   useEffect(() => {
     if (profile) {
-      setProfileName(profile.name ?? "");
-      setProfileBio(profile.bio ?? "");
+      setHandle(profile.name ?? "");
+      setFullName(profile.bio ?? "");
     }
   }, [profile]);
 
   const handleSaveProfile = async () => {
+    const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!trimmedHandle) {
+      toast.error("Please enter a valid handle.");
+      return;
+    }
     try {
-      await saveProfile.mutateAsync({ name: profileName, bio: profileBio });
+      await saveProfile.mutateAsync({
+        name: trimmedHandle,
+        bio: fullName.trim() || undefined,
+      });
       toast.success(t.dashboard.profileSaved);
     } catch {
       toast.error(t.dashboard.profileError);
@@ -165,6 +196,15 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
     }
   };
 
+  const goToPricing = () => {
+    onClose();
+    setTimeout(() => {
+      document
+        .querySelector("#pricing")
+        ?.scrollIntoView({ behavior: "smooth" });
+    }, 300);
+  };
+
   const principalStr = identity?.getPrincipal().toString() ?? "";
   const tierStyle = membership ? TIER_STYLES[membership.tier] : null;
 
@@ -172,9 +212,33 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
     const ms = Number(nanoseconds) / 1_000_000;
     return new Date(ms).toLocaleDateString(undefined, {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
+  };
+
+  // Avatar initials
+  const initials = fullName
+    ? fullName
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : handle
+      ? handle.slice(0, 2).toUpperCase()
+      : "CP";
+
+  // Integration status
+  const hasWhatsapp = !!chatbotConfig?.phoneNumber;
+  const hasOpenAI = !!localStorage.getItem("openclaw_openai_key");
+
+  const LANG_NAMES: Record<string, string> = {
+    en: "English",
+    id: "Bahasa Indonesia",
+    ar: "العربية",
+    ru: "Русский",
+    zh: "中文",
   };
 
   return (
@@ -184,364 +248,626 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >
         <motion.div
-          initial={{ scale: 0.92, opacity: 0, y: 24 }}
+          initial={{ scale: 0.94, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.92, opacity: 0, y: 24 }}
+          exit={{ scale: 0.94, opacity: 0, y: 20 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-[oklch(0.10_0.015_240)] border border-[oklch(1_0_0_/_10%)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-[0_30px_80px_rgba(0,0,0,0.6)]"
+          className="bg-[oklch(0.09_0.012_240)] border border-[oklch(1_0_0_/_8%)] rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-hidden flex flex-col shadow-[0_40px_100px_rgba(0,0,0,0.7)]"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
-          <div
-            className={`flex items-center justify-between px-6 py-4 border-b border-[oklch(1_0_0_/_8%)] ${tierStyle ? tierStyle.glow : ""}`}
-            style={{
-              background: membership
-                ? membership.tier === MembershipTierEnum.silver
-                  ? "linear-gradient(135deg, oklch(0.13 0.018 240) 0%, oklch(0.15 0.02 210) 100%)"
-                  : membership.tier === MembershipTierEnum.gold
-                    ? "linear-gradient(135deg, oklch(0.13 0.018 240) 0%, oklch(0.16 0.04 60) 100%)"
-                    : "linear-gradient(135deg, oklch(0.13 0.018 240) 0%, oklch(0.16 0.04 290) 100%)"
-                : "oklch(0.11 0.015 240)",
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="relative w-10 h-10 rounded-full bg-[oklch(0.18_0.02_240)] border border-[oklch(1_0_0_/_12%)] flex items-center justify-center">
-                <User className="w-5 h-5 text-[oklch(0.75_0.12_210)]" />
-              </div>
-              <div>
-                <h2 className="font-bold text-base text-[oklch(0.95_0.02_210)] leading-tight">
-                  {profile?.name || t.dashboard.title}
-                </h2>
-                {membership && tierStyle ? (
-                  <Badge
-                    className={`border text-[10px] px-1.5 py-0 h-4 mt-0.5 ${tierStyle.badge}`}
-                  >
-                    {tierStyle.icon} {tierStyle.label}
-                  </Badge>
-                ) : (
-                  <span className="text-xs text-[oklch(0.5_0.02_210)]">
-                    {t.dashboard.noMembership}
-                  </span>
-                )}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-[oklch(1_0_0_/_8%)] text-[oklch(0.5_0.02_210)] hover:text-[oklch(0.9_0.02_210)] transition-colors"
-              aria-label="Close dashboard"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Principal */}
-          <div className="px-6 py-2 bg-[oklch(0.09_0.01_240)] border-b border-[oklch(1_0_0_/_6%)]">
-            <p className="text-[10px] font-mono text-[oklch(0.4_0.02_210)] truncate">
-              <span className="text-[oklch(0.45_0.04_210)] mr-1">
-                {t.dashboard.principal}:
-              </span>
-              {principalStr}
-            </p>
-          </div>
-
-          {/* Tabs Content */}
-          <div className="flex-1 overflow-hidden">
-            <Tabs defaultValue="overview" className="h-full flex flex-col">
-              {/* Tab list — 6 tabs with compact sizing */}
-              <TabsList className="flex mx-4 mt-3 mb-0 bg-[oklch(0.08_0.01_240)] border border-[oklch(1_0_0_/_8%)] flex-shrink-0 h-auto p-0.5 gap-0.5 overflow-x-auto">
-                <TabsTrigger
-                  value="overview"
-                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.12_210)]/20 data-[state=active]:text-[oklch(0.75_0.12_210)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
-                >
-                  <User className="w-3 h-3 flex-shrink-0" />
-                  <span className="text-[9px]">Profile</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="configs"
-                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.12_210)]/20 data-[state=active]:text-[oklch(0.75_0.12_210)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
-                >
-                  <Settings className="w-3 h-3 flex-shrink-0" />
-                  <span className="text-[9px]">Configs</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="chatbot"
-                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.65_0.18_150)]/20 data-[state=active]:text-[oklch(0.75_0.15_150)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
-                >
-                  <Bot className="w-3 h-3 flex-shrink-0" />
-                  <span className="text-[9px]">Bot</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="ai"
-                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.22_290)]/20 data-[state=active]:text-[oklch(0.80_0.18_290)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
-                >
-                  <Sparkles className="w-3 h-3 flex-shrink-0" />
-                  <span className="text-[9px]">AI</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="api"
-                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.18_200)]/20 data-[state=active]:text-[oklch(0.78_0.15_200)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
-                >
-                  <Terminal className="w-3 h-3 flex-shrink-0" />
-                  <span className="text-[9px]">API</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="transactions"
-                  className="flex-1 text-[9px] py-1.5 px-1 data-[state=active]:bg-[oklch(0.75_0.18_60)]/20 data-[state=active]:text-[oklch(0.80_0.15_60)] flex items-center justify-center gap-1 rounded-md whitespace-nowrap"
-                >
-                  <Receipt className="w-3 h-3 flex-shrink-0" />
-                  <span className="text-[9px]">Txns</span>
-                </TabsTrigger>
-              </TabsList>
-
-              <ScrollArea className="flex-1 mt-3">
-                {/* Overview Tab */}
-                <TabsContent
-                  value="overview"
-                  className="px-6 pb-6 mt-0 space-y-4"
-                >
-                  {/* Profile Edit Card */}
-                  <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.015_240)] p-4 space-y-4">
-                    <h3 className="text-sm font-semibold text-[oklch(0.85_0.05_210)] flex items-center gap-2">
-                      <User className="w-4 h-4 text-[oklch(0.65_0.12_210)]" />
-                      Profile
-                    </h3>
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-[oklch(0.55_0.03_210)]">
-                          {t.dashboard.profileName}
-                        </Label>
-                        <Input
-                          value={profileName}
-                          onChange={(e) => setProfileName(e.target.value)}
-                          placeholder="Your display name..."
-                          className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-9 focus:border-[oklch(0.65_0.12_210)]/50"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs text-[oklch(0.55_0.03_210)]">
-                          {t.dashboard.profileBio}
-                        </Label>
-                        <Textarea
-                          value={profileBio}
-                          onChange={(e) => setProfileBio(e.target.value)}
-                          placeholder="Tell us about yourself..."
-                          className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm min-h-16 resize-none focus:border-[oklch(0.65_0.12_210)]/50"
-                          rows={2}
-                        />
-                      </div>
-                      <Button
-                        onClick={handleSaveProfile}
-                        disabled={saveProfile.isPending}
-                        size="sm"
-                        className="bg-[oklch(0.65_0.15_210)] hover:bg-[oklch(0.72_0.15_210)] text-white font-semibold h-8"
+          {/* Two-column layout */}
+          <div className="flex flex-1 overflow-hidden min-h-0">
+            {/* ─── LEFT SIDEBAR ─── */}
+            <aside className="w-[260px] flex-shrink-0 border-r border-[oklch(1_0_0_/_7%)] bg-[oklch(0.08_0.012_240)] flex flex-col overflow-hidden hidden md:flex">
+              <ScrollArea className="flex-1">
+                <div className="p-5 space-y-5">
+                  {/* User Identity Card */}
+                  <div className="space-y-3">
+                    {/* Avatar */}
+                    <div className="flex flex-col items-center text-center pt-2">
+                      <div
+                        className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-white mb-3 relative"
+                        style={{
+                          background: tierStyle
+                            ? `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`
+                            : "linear-gradient(135deg, oklch(0.65 0.15 210), oklch(0.45 0.12 240))",
+                          boxShadow: tierStyle
+                            ? `0 0 0 2px oklch(0.15 0.02 240), 0 0 20px ${tierStyle.color}60`
+                            : "0 0 0 2px oklch(0.15 0.02 240)",
+                        }}
                       >
-                        {saveProfile.isPending ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                            {t.dashboard.savingProfile}
-                          </>
-                        ) : (
-                          t.dashboard.saveProfile
+                        {initials}
+                      </div>
+
+                      {/* Full Name */}
+                      <p className="font-bold text-base text-[oklch(0.95_0.02_210)] leading-tight truncate w-full px-2">
+                        {fullName || (
+                          <span className="text-[oklch(0.45_0.02_210)] font-normal italic text-sm">
+                            Set your name
+                          </span>
                         )}
-                      </Button>
+                      </p>
+
+                      {/* Handle */}
+                      <p className="text-sm text-[oklch(0.55_0.12_210)] mt-0.5 font-mono truncate w-full px-2">
+                        {handle ? (
+                          <span>
+                            <span className="text-[oklch(0.45_0.06_210)]">
+                              @
+                            </span>
+                            {handle}
+                          </span>
+                        ) : (
+                          <span className="text-[oklch(0.35_0.02_210)] italic text-xs">
+                            set-handle
+                          </span>
+                        )}
+                      </p>
+
+                      {/* Tier badge */}
+                      <div className="mt-2">
+                        {membership && tierStyle ? (
+                          <Badge
+                            className={`border text-xs px-2.5 py-1 ${tierStyle.badge}`}
+                          >
+                            {tierStyle.icon} {tierStyle.label}
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="text-xs text-[oklch(0.40_0.02_210)] border-[oklch(1_0_0_/_12%)] px-2.5 py-1"
+                          >
+                            No membership
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Token balance */}
+                      {membership && (
+                        <div className="mt-2.5 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                          <Coins className="w-3.5 h-3.5 text-amber-400" />
+                          <span className="text-xs font-bold text-amber-300">
+                            {TIER_TOKENS[membership.tier].toLocaleString()}
+                          </span>
+                          <span className="text-[10px] text-amber-400/60">
+                            tokens
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <Separator className="bg-[oklch(1_0_0_/_6%)]" />
+                  </div>
+
+                  {/* Integrations */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Plug className="w-3.5 h-3.5 text-[oklch(0.55_0.08_210)]" />
+                      <span className="text-[11px] font-semibold text-[oklch(0.50_0.04_210)] uppercase tracking-wider">
+                        Integrations
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {/* WhatsApp Bot */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("chatbot")}
+                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all text-center group"
+                        style={{
+                          background: hasWhatsapp
+                            ? "oklch(0.55 0.18 150 / 8%)"
+                            : "oklch(0.12 0.01 240)",
+                          borderColor: hasWhatsapp
+                            ? "oklch(0.55 0.18 150 / 30%)"
+                            : "oklch(1 0 0 / 8%)",
+                        }}
+                      >
+                        <SiWhatsapp
+                          className="w-5 h-5"
+                          style={{
+                            color: hasWhatsapp
+                              ? "oklch(0.65 0.18 150)"
+                              : "oklch(0.40 0.02 210)",
+                          }}
+                        />
+                        <span className="text-[9px] text-[oklch(0.65_0.03_210)] leading-tight">
+                          WhatsApp
+                        </span>
+                        {hasWhatsapp && (
+                          <span className="text-[8px] text-[oklch(0.65_0.18_150)] font-semibold">
+                            Active
+                          </span>
+                        )}
+                      </button>
+
+                      {/* OpenAI */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("ai")}
+                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all text-center group"
+                        style={{
+                          background: hasOpenAI
+                            ? "oklch(0.60 0.20 290 / 8%)"
+                            : "oklch(0.12 0.01 240)",
+                          borderColor: hasOpenAI
+                            ? "oklch(0.60 0.20 290 / 30%)"
+                            : "oklch(1 0 0 / 8%)",
+                        }}
+                      >
+                        <Sparkles
+                          className="w-5 h-5"
+                          style={{
+                            color: hasOpenAI
+                              ? "oklch(0.75 0.22 290)"
+                              : "oklch(0.40 0.02 210)",
+                          }}
+                        />
+                        <span className="text-[9px] text-[oklch(0.65_0.03_210)] leading-tight">
+                          AI Assist
+                        </span>
+                        {hasOpenAI && (
+                          <span className="text-[8px] text-[oklch(0.75_0.22_290)] font-semibold">
+                            Active
+                          </span>
+                        )}
+                      </button>
+
+                      {/* OpenClaw API */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("api")}
+                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.01_240)] transition-all text-center"
+                      >
+                        <Terminal className="w-5 h-5 text-[oklch(0.65_0.15_200)]" />
+                        <span className="text-[9px] text-[oklch(0.65_0.03_210)] leading-tight">
+                          API
+                        </span>
+                        <span className="text-[8px] text-[oklch(0.55_0.12_200)] font-semibold">
+                          Explorer
+                        </span>
+                      </button>
+
+                      {/* Add Integration */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("profile")}
+                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border border-dashed border-[oklch(1_0_0_/_12%)] bg-transparent transition-all text-center hover:border-[oklch(0.65_0.12_210)]/40 hover:bg-[oklch(0.65_0.12_210)]/5"
+                      >
+                        <Plus className="w-5 h-5 text-[oklch(0.38_0.02_210)]" />
+                        <span className="text-[9px] text-[oklch(0.38_0.02_210)] leading-tight">
+                          Add more
+                        </span>
+                      </button>
                     </div>
                   </div>
 
-                  {/* Membership Card */}
-                  <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.015_240)] p-4">
-                    <h3 className="text-sm font-semibold text-[oklch(0.85_0.05_210)] flex items-center gap-2 mb-3">
-                      <Crown className="w-4 h-4 text-amber-400" />
-                      {t.dashboard.membershipTier}
-                    </h3>
-                    {membership && tierStyle ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
+                  <Separator className="bg-[oklch(1_0_0_/_6%)]" />
+
+                  {/* Settings */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-1.5">
+                      <Settings className="w-3.5 h-3.5 text-[oklch(0.55_0.08_210)]" />
+                      <span className="text-[11px] font-semibold text-[oklch(0.50_0.04_210)] uppercase tracking-wider">
+                        Settings
+                      </span>
+                    </div>
+
+                    {/* Notifications toggle */}
+                    <div className="flex items-center justify-between py-1.5">
+                      <div className="flex items-center gap-2">
+                        <Bell className="w-3.5 h-3.5 text-[oklch(0.45_0.03_210)]" />
+                        <span className="text-xs text-[oklch(0.65_0.03_210)]">
+                          Notifications
+                        </span>
+                      </div>
+                      <Switch
+                        checked={notificationsOn}
+                        onCheckedChange={(v) => {
+                          setNotificationsOn(v);
+                          localStorage.setItem(
+                            "clawpro_notifications",
+                            v ? "true" : "false",
+                          );
+                        }}
+                        className="scale-75 data-[state=checked]:bg-[oklch(0.65_0.15_210)]"
+                      />
+                    </div>
+
+                    {/* Auto-save toggle */}
+                    <div className="flex items-center justify-between py-1.5">
+                      <div className="flex items-center gap-2">
+                        <Save className="w-3.5 h-3.5 text-[oklch(0.45_0.03_210)]" />
+                        <span className="text-xs text-[oklch(0.65_0.03_210)]">
+                          Auto-save
+                        </span>
+                      </div>
+                      <Switch
+                        checked={autoSave}
+                        onCheckedChange={(v) => {
+                          setAutoSave(v);
+                          localStorage.setItem(
+                            "clawpro_autosave",
+                            v ? "true" : "false",
+                          );
+                        }}
+                        className="scale-75 data-[state=checked]:bg-[oklch(0.65_0.15_210)]"
+                      />
+                    </div>
+
+                    {/* Language display */}
+                    <div className="flex items-center gap-2 py-1.5">
+                      <Globe2 className="w-3.5 h-3.5 text-[oklch(0.45_0.03_210)]" />
+                      <span className="text-xs text-[oklch(0.65_0.03_210)]">
+                        Language
+                      </span>
+                      <span className="ml-auto text-[10px] text-[oklch(0.55_0.08_210)] font-medium">
+                        {LANG_NAMES[language] ?? language}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Principal */}
+                  <div className="pt-1">
+                    <p className="text-[9px] font-mono text-[oklch(0.32_0.02_210)] truncate leading-relaxed">
+                      <span className="text-[oklch(0.38_0.04_210)]">ID: </span>
+                      {principalStr || "—"}
+                    </p>
+                  </div>
+                </div>
+              </ScrollArea>
+            </aside>
+
+            {/* ─── RIGHT MAIN PANEL ─── */}
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+              {/* Top bar with close button */}
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-[oklch(1_0_0_/_7%)] bg-[oklch(0.10_0.012_240)] flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  {/* Mobile: avatar + name inline */}
+                  <div
+                    className="md:hidden w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                    style={{
+                      background: tierStyle
+                        ? `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`
+                        : "linear-gradient(135deg, oklch(0.65 0.15 210), oklch(0.45 0.12 240))",
+                    }}
+                  >
+                    {initials}
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-sm text-[oklch(0.92_0.03_210)] leading-tight">
+                      {fullName || handle || t.dashboard.title}
+                    </h2>
+                    <div className="flex items-center gap-2">
+                      {handle && (
+                        <span className="text-[10px] font-mono text-[oklch(0.50_0.10_210)]">
+                          @{handle}
+                        </span>
+                      )}
+                      {membership && tierStyle && (
+                        <Badge
+                          className={`border text-[9px] px-1.5 py-0 h-4 ${tierStyle.badge}`}
+                        >
+                          {tierStyle.icon} {tierStyle.label}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="p-2 rounded-lg hover:bg-[oklch(1_0_0_/_8%)] text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.88_0.02_210)] transition-colors flex-shrink-0"
+                  aria-label="Close dashboard"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="flex-1 flex flex-col overflow-hidden"
+              >
+                <TabsList className="flex mx-4 mt-3 mb-0 bg-[oklch(0.08_0.01_240)] border border-[oklch(1_0_0_/_7%)] flex-shrink-0 h-auto p-1 gap-0.5 overflow-x-auto rounded-xl">
+                  {[
+                    {
+                      value: "profile",
+                      icon: <User className="w-3.5 h-3.5" />,
+                      label: "Profile",
+                      color: "oklch(0.75_0.12_210)",
+                    },
+                    {
+                      value: "configs",
+                      icon: <Settings className="w-3.5 h-3.5" />,
+                      label: "Configs",
+                      color: "oklch(0.75_0.12_210)",
+                    },
+                    {
+                      value: "chatbot",
+                      icon: <Bot className="w-3.5 h-3.5" />,
+                      label: "Bot",
+                      color: "oklch(0.65_0.18_150)",
+                    },
+                    {
+                      value: "ai",
+                      icon: <Sparkles className="w-3.5 h-3.5" />,
+                      label: "AI",
+                      color: "oklch(0.75_0.22_290)",
+                    },
+                    {
+                      value: "api",
+                      icon: <Terminal className="w-3.5 h-3.5" />,
+                      label: "API",
+                      color: "oklch(0.75_0.18_200)",
+                    },
+                    {
+                      value: "transactions",
+                      icon: <Receipt className="w-3.5 h-3.5" />,
+                      label: "Txns",
+                      color: "oklch(0.75_0.18_60)",
+                    },
+                  ].map((tab) => (
+                    <TabsTrigger
+                      key={tab.value}
+                      value={tab.value}
+                      className="flex-1 py-2 px-2 flex items-center justify-center gap-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all data-[state=active]:bg-[oklch(1_0_0_/_10%)] data-[state=active]:text-[oklch(0.90_0.04_210)] text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.03_210)]"
+                    >
+                      {tab.icon}
+                      <span className="hidden sm:inline">{tab.label}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                <ScrollArea className="flex-1 mt-3">
+                  {/* ── Profile Tab ── */}
+                  <TabsContent value="profile" className="px-5 pb-6 mt-0">
+                    <div className="space-y-5 max-w-lg">
+                      {/* Handle card */}
+                      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] p-5 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <AtSign className="w-4 h-4 text-[oklch(0.65_0.15_210)]" />
+                          <h3 className="text-sm font-semibold text-[oklch(0.88_0.04_210)]">
+                            Your ClawPro Handle
+                          </h3>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-[oklch(0.55_0.03_210)]">
+                            Username
+                          </Label>
+                          <div className="flex items-center rounded-lg border border-[oklch(1_0_0_/_10%)] bg-[oklch(0.09_0.01_240)] overflow-hidden focus-within:border-[oklch(0.65_0.15_210)]/50 transition-colors">
+                            <span className="px-3 py-2.5 text-xs font-mono text-[oklch(0.55_0.12_210)] bg-[oklch(0.65_0.15_210)]/8 border-r border-[oklch(1_0_0_/_8%)] whitespace-nowrap flex-shrink-0 select-none">
+                              ClawPro.ai/
+                            </span>
+                            <input
+                              type="text"
+                              value={handle}
+                              onChange={(e) =>
+                                setHandle(
+                                  e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""),
+                                )
+                              }
+                              placeholder="your-handle"
+                              className="flex-1 bg-transparent px-3 py-2.5 text-sm text-[oklch(0.90_0.04_210)] placeholder:text-[oklch(0.35_0.02_210)] outline-none font-mono"
+                              autoComplete="username"
+                            />
+                          </div>
+                          <p className="text-[10px] text-[oklch(0.38_0.02_210)]">
+                            Letters, numbers, hyphens and underscores only.
+                          </p>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <Label className="text-xs text-[oklch(0.55_0.03_210)]">
+                            Full Name
+                          </Label>
+                          <Input
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            placeholder="Your real name (optional)"
+                            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-10 focus:border-[oklch(0.65_0.15_210)]/50"
+                          />
+                          <p className="text-[10px] text-[oklch(0.38_0.02_210)]">
+                            Shown on your profile card.
+                          </p>
+                        </div>
+
+                        <Button
+                          onClick={handleSaveProfile}
+                          disabled={saveProfile.isPending || !handle.trim()}
+                          className="bg-[oklch(0.62_0.15_210)] hover:bg-[oklch(0.70_0.15_210)] text-white font-semibold h-9 text-sm w-full"
+                        >
+                          {saveProfile.isPending ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                              {t.dashboard.savingProfile}
+                            </>
+                          ) : (
+                            t.dashboard.saveProfile
+                          )}
+                        </Button>
+                      </div>
+
+                      {/* Membership card */}
+                      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] p-5">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Crown className="w-4 h-4 text-amber-400" />
+                          <h3 className="text-sm font-semibold text-[oklch(0.88_0.04_210)]">
+                            {t.dashboard.membershipTier}
+                          </h3>
+                        </div>
+
+                        {membership && tierStyle ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border ${tierStyle.badge}`}
+                              >
+                                {tierStyle.icon}
+                              </div>
+                              <div>
+                                <p className="font-bold text-base text-[oklch(0.90_0.04_210)]">
+                                  {tierStyle.label}
+                                </p>
+                                <p className="text-xs text-[oklch(0.45_0.02_210)]">
+                                  {t.dashboard.memberSince}{" "}
+                                  {formatDate(membership.purchasedAt)}
+                                </p>
+                              </div>
+                              <Badge
+                                className={`ml-auto border text-xs px-2 py-1 ${tierStyle.badge}`}
+                              >
+                                Active
+                              </Badge>
+                            </div>
+
+                            {/* Token Balance */}
                             <div
-                              className={`w-10 h-10 rounded-full flex items-center justify-center text-lg border ${tierStyle.badge}`}
+                              className="flex items-center justify-between px-4 py-3 rounded-xl border"
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, oklch(0.22 0.07 60 / 40%), oklch(0.16 0.04 55 / 30%))",
+                                borderColor: "oklch(0.7 0.15 60 / 20%)",
+                              }}
                             >
-                              {tierStyle.icon}
+                              <div className="flex items-center gap-2">
+                                <Coins className="w-4 h-4 text-amber-400" />
+                                <span className="text-xs font-medium text-[oklch(0.70_0.04_210)]">
+                                  Token Balance
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-black text-xl text-amber-200">
+                                  {TIER_TOKENS[
+                                    membership.tier
+                                  ].toLocaleString()}
+                                </span>
+                                <span className="text-xs text-amber-400/60">
+                                  tokens
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-4 py-2">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-[oklch(0.14_0.01_240)] border border-[oklch(1_0_0_/_8%)] text-[oklch(0.40_0.02_210)] text-lg">
+                              —
                             </div>
                             <div>
-                              <p
-                                className={`font-bold text-base ${tierStyle.badge.includes("slate") ? "text-slate-300" : tierStyle.badge.includes("amber") ? "text-amber-300" : "text-violet-300"}`}
+                              <p className="text-sm text-[oklch(0.50_0.02_210)]">
+                                {t.dashboard.noMembership}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={goToPricing}
+                                className="text-xs text-[oklch(0.62_0.15_210)] hover:text-[oklch(0.75_0.15_210)] transition-colors flex items-center gap-1 mt-1 font-medium"
                               >
-                                {tierStyle.label}
-                              </p>
-                              <p className="text-[11px] text-[oklch(0.45_0.02_210)]">
-                                {t.dashboard.memberSince}{" "}
-                                {formatDate(membership.purchasedAt)}
-                              </p>
+                                View plans <ChevronRight className="w-3 h-3" />
+                              </button>
                             </div>
                           </div>
-                          <Badge
-                            className={`border text-xs px-2 py-1 ${tierStyle.badge}`}
-                          >
-                            Active
-                          </Badge>
-                        </div>
-                        {/* Token Balance Row */}
-                        <div className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-gradient-to-r from-amber-500/10 to-yellow-500/5 border border-amber-500/20">
-                          <div className="flex items-center gap-2">
-                            <Coins className="w-4 h-4 text-amber-400" />
-                            <span className="text-xs font-medium text-[oklch(0.70_0.04_210)]">
-                              Token Balance
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-sm text-amber-300">
-                              {TIER_TOKENS[membership.tier].toLocaleString()}
-                            </span>
-                            <span className="text-[10px] text-amber-400/60">
-                              tokens
-                            </span>
-                          </div>
-                        </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-3 py-2">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[oklch(0.15_0.01_240)] border border-[oklch(1_0_0_/_8%)] text-[oklch(0.4_0.02_210)]">
-                          —
-                        </div>
-                        <div>
-                          <p className="text-sm text-[oklch(0.5_0.02_210)]">
-                            {t.dashboard.noMembership}
-                          </p>
+                    </div>
+                  </TabsContent>
+
+                  {/* ── Configs Tab ── */}
+                  <TabsContent
+                    value="configs"
+                    className="px-5 pb-6 mt-0 space-y-2"
+                  >
+                    {configs && configs.length > 0 ? (
+                      configs.map((cfg) => (
+                        <motion.div
+                          key={cfg.id.toString()}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] group hover:border-[oklch(1_0_0_/_14%)] transition-all"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-[oklch(0.65_0.12_210)]/12 flex items-center justify-center flex-shrink-0">
+                            <Settings className="w-4 h-4 text-[oklch(0.62_0.12_210)]" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[oklch(0.88_0.04_210)] truncate">
+                              {cfg.name}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] border-[oklch(1_0_0_/_12%)] text-[oklch(0.50_0.03_210)] px-1.5 py-0 h-4"
+                              >
+                                {cfg.os}
+                              </Badge>
+                              <span className="text-[10px] text-[oklch(0.40_0.02_210)]">
+                                {formatDate(cfg.createdAt)}
+                              </span>
+                            </div>
+                          </div>
                           <button
                             type="button"
-                            onClick={() => {
-                              onClose();
-                              setTimeout(() => {
-                                document
-                                  .querySelector("#pricing")
-                                  ?.scrollIntoView({ behavior: "smooth" });
-                              }, 300);
-                            }}
-                            className="text-xs text-[oklch(0.65_0.15_210)] hover:text-[oklch(0.75_0.15_210)] transition-colors flex items-center gap-1 mt-0.5"
+                            onClick={() => handleDeleteConfig(cfg.id)}
+                            disabled={deleteConfig.isPending}
+                            className="p-1.5 rounded-lg text-[oklch(0.40_0.02_210)] hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
+                            aria-label="Delete config"
                           >
-                            View plans <ChevronRight className="w-3 h-3" />
+                            {deleteConfig.isPending ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
                           </button>
-                        </div>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <Settings className="w-10 h-10 text-[oklch(0.28_0.02_210)] mb-3" />
+                        <p className="text-sm text-[oklch(0.45_0.02_210)]">
+                          {t.dashboard.noConfigs}
+                        </p>
                       </div>
                     )}
-                  </div>
-                </TabsContent>
+                  </TabsContent>
 
-                {/* Saved Configs Tab */}
-                <TabsContent
-                  value="configs"
-                  className="px-6 pb-6 mt-0 space-y-2"
-                >
-                  {configs && configs.length > 0 ? (
-                    configs.map((cfg) => (
-                      <motion.div
-                        key={cfg.id.toString()}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.015_240)] group hover:border-[oklch(1_0_0_/_14%)] transition-all"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-[oklch(0.75_0.12_210)]/15 flex items-center justify-center flex-shrink-0">
-                          <Settings className="w-4 h-4 text-[oklch(0.65_0.12_210)]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[oklch(0.88_0.04_210)] truncate">
-                            {cfg.name}
-                          </p>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] border-[oklch(1_0_0_/_12%)] text-[oklch(0.5_0.03_210)] px-1.5 py-0 h-4"
-                            >
-                              {cfg.os}
-                            </Badge>
-                            <span className="text-[10px] text-[oklch(0.4_0.02_210)]">
-                              {formatDate(cfg.createdAt)}
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteConfig(cfg.id)}
-                          disabled={deleteConfig.isPending}
-                          className="p-1.5 rounded-lg text-[oklch(0.4_0.02_210)] hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0"
-                          aria-label="Delete config"
-                        >
-                          {deleteConfig.isPending ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
-                        </button>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <Settings className="w-10 h-10 text-[oklch(0.3_0.02_210)] mb-3" />
-                      <p className="text-sm text-[oklch(0.45_0.02_210)]">
-                        {t.dashboard.noConfigs}
-                      </p>
-                    </div>
-                  )}
-                </TabsContent>
+                  {/* ── Chatbot Tab ── */}
+                  <TabsContent value="chatbot" className="px-5 pb-6 mt-0">
+                    <ChatbotSetupTab
+                      membership={membership ?? null}
+                      onGoToPricing={goToPricing}
+                    />
+                  </TabsContent>
 
-                {/* Chatbot Setup Tab */}
-                <TabsContent value="chatbot" className="px-6 pb-6 mt-0">
-                  <ChatbotSetupTab
-                    membership={membership ?? null}
-                    onGoToPricing={() => {
-                      onClose();
-                      setTimeout(() => {
-                        document
-                          .querySelector("#pricing")
-                          ?.scrollIntoView({ behavior: "smooth" });
-                      }, 300);
-                    }}
-                  />
-                </TabsContent>
+                  {/* ── AI Tab ── */}
+                  <TabsContent value="ai" className="px-5 pb-6 mt-0">
+                    <AIAssistantTab
+                      membership={membership ?? null}
+                      onGoToPricing={goToPricing}
+                    />
+                  </TabsContent>
 
-                {/* AI Assistant Tab */}
-                <TabsContent value="ai" className="px-6 pb-6 mt-0">
-                  <AIAssistantTab
-                    membership={membership ?? null}
-                    onGoToPricing={() => {
-                      onClose();
-                      setTimeout(() => {
-                        document
-                          .querySelector("#pricing")
-                          ?.scrollIntoView({ behavior: "smooth" });
-                      }, 300);
-                    }}
-                  />
-                </TabsContent>
+                  {/* ── API Tab ── */}
+                  <TabsContent value="api" className="px-5 pb-6 mt-0">
+                    <APIExplorerTab
+                      membership={membership ?? null}
+                      onGoToPricing={goToPricing}
+                    />
+                  </TabsContent>
 
-                {/* API Explorer Tab */}
-                <TabsContent value="api" className="px-6 pb-6 mt-0">
-                  <APIExplorerTab
-                    membership={membership ?? null}
-                    onGoToPricing={() => {
-                      onClose();
-                      setTimeout(() => {
-                        document
-                          .querySelector("#pricing")
-                          ?.scrollIntoView({ behavior: "smooth" });
-                      }, 300);
-                    }}
-                  />
-                </TabsContent>
-
-                {/* Transactions Tab */}
-                <TabsContent value="transactions" className="px-6 pb-6 mt-0">
-                  <TransactionsTab membership={membership ?? null} />
-                </TabsContent>
-              </ScrollArea>
-            </Tabs>
+                  {/* ── Transactions Tab ── */}
+                  <TabsContent value="transactions" className="px-5 pb-6 mt-0">
+                    <TransactionsTab membership={membership ?? null} />
+                  </TabsContent>
+                </ScrollArea>
+              </Tabs>
+            </div>
           </div>
         </motion.div>
       </motion.div>
@@ -549,7 +875,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
   );
 }
 
-// ---- Transactions Sub-component ----
+// ── Transactions Sub-component ──
 
 interface TransactionsTabProps {
   membership: { tier: MembershipTier; purchasedAt: bigint } | null;
@@ -582,7 +908,6 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
   const [transactions] = useState<Transaction[]>(() => {
     const existing = loadTransactions();
     if (existing.length === 0 && membership) {
-      // Auto-populate with current membership purchase
       const purchasedAtMs = Number(membership.purchasedAt) / 1_000_000;
       const seedTx: Transaction = {
         id: `tx-seed-${membership.tier}`,
@@ -620,12 +945,11 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Token Balance Summary Card */}
+    <div className="space-y-4 max-w-2xl">
+      {/* Token Balance Summary */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
         className="relative rounded-xl overflow-hidden"
         style={{
           background:
@@ -635,34 +959,34 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
         }}
       >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(0.8_0.20_60_/_12%),transparent_60%)]" />
-        <div className="relative p-4">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
-                <Coins className="w-4 h-4 text-amber-300" />
+        <div className="relative p-5">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
+                <Coins className="w-5 h-5 text-amber-300" />
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-amber-300/70 uppercase tracking-wider">
+                <p className="text-[11px] font-bold text-amber-300/70 uppercase tracking-wider">
                   Token Balance
                 </p>
-                <p className="text-[9px] text-amber-200/50">$1 = 100 tokens</p>
+                <p className="text-[10px] text-amber-200/50">$1 = 100 tokens</p>
               </div>
             </div>
             <div className="text-right">
               <p
-                className="font-black text-2xl text-amber-200 leading-none"
+                className="font-black text-3xl text-amber-200 leading-none"
                 style={{ textShadow: "0 0 20px oklch(0.8 0.18 60 / 60%)" }}
               >
                 {totalTokens.toLocaleString()}
               </p>
-              <p className="text-[10px] text-amber-300/60 mt-0.5">
+              <p className="text-[11px] text-amber-300/60 mt-0.5">
                 total tokens
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-2 border-t border-amber-400/15">
-            <span className="text-[11px] text-amber-200/60">Total spent</span>
-            <span className="text-xs font-semibold text-amber-200">
+          <div className="flex items-center justify-between pt-3 border-t border-amber-400/15">
+            <span className="text-xs text-amber-200/60">Total spent</span>
+            <span className="text-sm font-bold text-amber-200">
               ${totalSpent.toFixed(2)}
             </span>
           </div>
@@ -670,20 +994,20 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
       </motion.div>
 
       {/* Transaction History */}
-      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.015_240)] overflow-hidden">
+      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] overflow-hidden">
         <div className="flex items-center justify-between px-4 py-3 border-b border-[oklch(1_0_0_/_6%)]">
-          <h3 className="text-xs font-semibold text-[oklch(0.70_0.05_210)] flex items-center gap-2">
-            <Receipt className="w-3.5 h-3.5 text-[oklch(0.65_0.12_60)]" />
+          <h3 className="text-xs font-semibold text-[oklch(0.68_0.05_210)] flex items-center gap-2">
+            <Receipt className="w-3.5 h-3.5 text-[oklch(0.62_0.12_60)]" />
             Transaction History
           </h3>
-          <span className="text-[10px] text-[oklch(0.4_0.02_210)]">
+          <span className="text-[10px] text-[oklch(0.40_0.02_210)]">
             {transactions.length} record{transactions.length !== 1 ? "s" : ""}
           </span>
         </div>
 
         {transactions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-10 text-center px-6">
-            <Receipt className="w-10 h-10 text-[oklch(0.3_0.02_210)] mb-3" />
+          <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+            <Receipt className="w-10 h-10 text-[oklch(0.28_0.02_210)] mb-3" />
             <p className="text-sm text-[oklch(0.45_0.02_210)] font-medium">
               No transactions yet
             </p>
@@ -707,19 +1031,16 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
                   transition={{ duration: 0.2, delay: i * 0.05 }}
                   className="flex items-center gap-3 px-4 py-3 hover:bg-[oklch(1_0_0_/_2%)] transition-colors"
                 >
-                  {/* Date */}
                   <div className="w-16 flex-shrink-0">
                     <p className="text-[10px] text-[oklch(0.45_0.02_210)] leading-tight">
                       {formatTxDate(tx.date)}
                     </p>
                   </div>
-                  {/* Tier Badge */}
                   <Badge
                     className={`border text-[10px] px-1.5 py-0 h-4 flex-shrink-0 ${tierBadge}`}
                   >
                     {tierName}
                   </Badge>
-                  {/* Amount */}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-[oklch(0.85_0.05_210)]">
                       ${tx.amount.toFixed(2)}
@@ -731,13 +1052,11 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
                       </span>
                     </div>
                   </div>
-                  {/* Payment Method */}
                   <span
                     className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium flex-shrink-0 ${pmStyle.bg} ${pmStyle.text}`}
                   >
                     {pmStyle.label}
                   </span>
-                  {/* Status */}
                   <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 flex-shrink-0">
                     ✓ Done
                   </span>
@@ -749,7 +1068,7 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
       </div>
 
       {/* Conversion Info */}
-      <div className="rounded-xl border border-[oklch(1_0_0_/_6%)] bg-[oklch(0.10_0.01_240)] p-3">
+      <div className="rounded-xl border border-[oklch(1_0_0_/_6%)] bg-[oklch(0.09_0.01_240)] p-3">
         <p className="text-[10px] text-[oklch(0.45_0.03_210)] text-center">
           <Coins className="w-3 h-3 inline mr-1 text-amber-400/70" />
           Token conversion:{" "}
@@ -763,7 +1082,7 @@ function TransactionsTab({ membership }: TransactionsTabProps) {
   );
 }
 
-// ---- Chatbot Setup Sub-component ----
+// ── Chatbot Setup Sub-component ──
 
 interface ChatbotSetupTabProps {
   membership: { tier: MembershipTier } | null;
@@ -779,7 +1098,6 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [enabled, setEnabled] = useState(false);
 
-  // Sync config into form
   useEffect(() => {
     if (chatbotConfig) {
       setPhoneNumber(chatbotConfig.phoneNumber);
@@ -818,22 +1136,22 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
 
   if (!hasMembership) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.65_0.18_150)]/10 border border-[oklch(0.65_0.18_150)]/20 flex items-center justify-center">
-          <SiWhatsapp className="w-8 h-8 text-[oklch(0.65_0.18_150)]" />
+      <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.55_0.18_150)]/10 border border-[oklch(0.55_0.18_150)]/20 flex items-center justify-center">
+          <SiWhatsapp className="w-8 h-8 text-[oklch(0.62_0.18_150)]" />
         </div>
         <div>
           <h3 className="font-bold text-[oklch(0.85_0.05_210)] mb-1">
             {t.chatbot.lockedTitle}
           </h3>
-          <p className="text-sm text-[oklch(0.5_0.02_210)] max-w-xs mx-auto">
+          <p className="text-sm text-[oklch(0.50_0.02_210)] max-w-xs mx-auto">
             {t.chatbot.lockedDesc}
           </p>
         </div>
         <Button
           onClick={onGoToPricing}
           size="sm"
-          className="bg-[oklch(0.65_0.18_150)] hover:bg-[oklch(0.72_0.18_150)] text-white font-semibold"
+          className="bg-[oklch(0.55_0.18_150)] hover:bg-[oklch(0.62_0.18_150)] text-white font-semibold"
         >
           {t.chatbot.upgradeCta}
         </Button>
@@ -842,23 +1160,23 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-lg">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 rounded-xl border border-[oklch(0.65_0.18_150)]/20 bg-[oklch(0.65_0.18_150)]/5">
-        <div className="w-10 h-10 rounded-xl bg-[oklch(0.65_0.18_150)]/15 border border-[oklch(0.65_0.18_150)]/25 flex items-center justify-center flex-shrink-0">
-          <SiWhatsapp className="w-5 h-5 text-[oklch(0.70_0.18_150)]" />
+      <div className="flex items-center gap-3 p-4 rounded-xl border border-[oklch(0.55_0.18_150)]/20 bg-[oklch(0.55_0.18_150)]/5">
+        <div className="w-10 h-10 rounded-xl bg-[oklch(0.55_0.18_150)]/15 border border-[oklch(0.55_0.18_150)]/25 flex items-center justify-center flex-shrink-0">
+          <SiWhatsapp className="w-5 h-5 text-[oklch(0.65_0.18_150)]" />
         </div>
         <div>
           <h3 className="font-bold text-sm text-[oklch(0.88_0.04_210)]">
             {t.chatbot.title}
           </h3>
-          <p className="text-xs text-[oklch(0.5_0.02_210)] leading-relaxed">
+          <p className="text-xs text-[oklch(0.50_0.02_210)] leading-relaxed">
             {t.chatbot.description}
           </p>
         </div>
       </div>
 
-      {/* Current Status (if config exists) */}
+      {/* Current Status */}
       {chatbotConfig && (
         <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-[oklch(0.10_0.01_240)] border border-[oklch(1_0_0_/_8%)]">
           <div className="flex items-center gap-2 text-xs text-[oklch(0.55_0.03_210)]">
@@ -870,15 +1188,15 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
           <div className="flex items-center gap-1.5">
             {chatbotConfig.enabled ? (
               <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.65_0.18_150)]" />
-                <span className="text-[11px] text-[oklch(0.65_0.18_150)]">
+                <CheckCircle2 className="w-3.5 h-3.5 text-[oklch(0.62_0.18_150)]" />
+                <span className="text-[11px] text-[oklch(0.62_0.18_150)]">
                   {t.chatbot.active}
                 </span>
               </>
             ) : (
               <>
-                <XCircle className="w-3.5 h-3.5 text-[oklch(0.5_0.02_210)]" />
-                <span className="text-[11px] text-[oklch(0.5_0.02_210)]">
+                <XCircle className="w-3.5 h-3.5 text-[oklch(0.50_0.02_210)]" />
+                <span className="text-[11px] text-[oklch(0.50_0.02_210)]">
                   {t.chatbot.inactive}
                 </span>
               </>
@@ -887,28 +1205,24 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
         </div>
       )}
 
-      {/* Configuration Form */}
-      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.015_240)] p-4 space-y-4">
-        {/* Phone Number */}
+      {/* Config Form */}
+      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] p-4 space-y-4">
         <div className="space-y-1.5">
           <Label className="text-xs text-[oklch(0.55_0.03_210)]">
             {t.chatbot.phoneLabel}
           </Label>
-          <div className="flex gap-2">
-            <Input
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder={t.chatbot.phonePlaceholder}
-              type="tel"
-              className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-9 font-mono focus:border-[oklch(0.65_0.18_150)]/50"
-            />
-          </div>
-          <p className="text-[10px] text-[oklch(0.4_0.02_210)]">
+          <Input
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder={t.chatbot.phonePlaceholder}
+            type="tel"
+            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-10 font-mono focus:border-[oklch(0.55_0.18_150)]/50"
+          />
+          <p className="text-[10px] text-[oklch(0.40_0.02_210)]">
             Include country code, e.g. +62 for Indonesia, +1 for US
           </p>
         </div>
 
-        {/* Enable Toggle */}
         <div className="flex items-center justify-between py-2 border-t border-[oklch(1_0_0_/_6%)]">
           <div>
             <p className="text-sm font-medium text-[oklch(0.82_0.04_210)]">
@@ -921,15 +1235,14 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
           <Switch
             checked={enabled}
             onCheckedChange={setEnabled}
-            className="data-[state=checked]:bg-[oklch(0.65_0.18_150)]"
+            className="data-[state=checked]:bg-[oklch(0.55_0.18_150)]"
           />
         </div>
 
-        {/* Save Button */}
         <Button
           onClick={handleSave}
           disabled={saveChatbot.isPending}
-          className="w-full bg-[oklch(0.55_0.18_150)] hover:bg-[oklch(0.62_0.18_150)] text-white font-semibold h-9 text-sm"
+          className="w-full bg-[oklch(0.50_0.18_150)] hover:bg-[oklch(0.58_0.18_150)] text-white font-semibold h-9 text-sm"
         >
           {saveChatbot.isPending ? (
             <>
@@ -944,7 +1257,6 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
           )}
         </Button>
 
-        {/* Delete Button */}
         {chatbotConfig && (
           <Button
             onClick={handleDelete}
@@ -970,7 +1282,7 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
 
       {/* How It Works */}
       <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.10_0.01_240)] p-4 space-y-3">
-        <h4 className="text-xs font-semibold text-[oklch(0.60_0.05_210)] uppercase tracking-wider">
+        <h4 className="text-xs font-semibold text-[oklch(0.58_0.05_210)] uppercase tracking-wider">
           {t.chatbot.howItWorks}
         </h4>
         <div className="space-y-2">
@@ -981,8 +1293,8 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
             t.chatbot.step4,
           ].map((step, i) => (
             <div key={`step-${i + 1}`} className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-[oklch(0.65_0.18_150)]/15 border border-[oklch(0.65_0.18_150)]/25 flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-[10px] font-bold text-[oklch(0.65_0.18_150)]">
+              <div className="w-5 h-5 rounded-full bg-[oklch(0.55_0.18_150)]/15 border border-[oklch(0.55_0.18_150)]/25 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-[10px] font-bold text-[oklch(0.62_0.18_150)]">
                   {i + 1}
                 </span>
               </div>
@@ -1002,9 +1314,9 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
         className="flex items-center justify-center gap-3 w-full py-3.5 px-5 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.52 0.18 150) 0%, oklch(0.45 0.20 145) 100%)",
+            "linear-gradient(135deg, oklch(0.48 0.18 150) 0%, oklch(0.42 0.20 145) 100%)",
           boxShadow:
-            "0 4px 20px oklch(0.52 0.18 150 / 40%), 0 2px 8px oklch(0.52 0.18 150 / 25%)",
+            "0 4px 20px oklch(0.50 0.18 150 / 40%), 0 2px 8px oklch(0.50 0.18 150 / 25%)",
         }}
       >
         <SiWhatsapp className="w-5 h-5 flex-shrink-0" />
@@ -1017,7 +1329,7 @@ function ChatbotSetupTab({ membership, onGoToPricing }: ChatbotSetupTabProps) {
   );
 }
 
-// ---- AI Assistant Sub-component ----
+// ── AI Assistant Sub-component ──
 
 interface AIMessage {
   id: string;
@@ -1034,10 +1346,10 @@ const PLATINUM_PRESETS = [
   {
     name: "Troubleshooter",
     prompt:
-      "You are an OpenClaw hardware troubleshooting expert. Help diagnose and fix issues with claw mechanisms, servo calibration, and electronic components. Ask targeted diagnostic questions.",
+      "You are an OpenClaw hardware troubleshooting expert. Help diagnose and fix issues with claw mechanisms, servo calibration, and electronic components.",
   },
   {
-    name: "Advanced Setup Guide",
+    name: "Advanced Setup",
     prompt:
       "You are an OpenClaw advanced setup assistant. Walk users through complex multi-axis configurations, PID tuning, and custom firmware integration step by step.",
   },
@@ -1164,15 +1476,15 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
 
   if (!hasMembership) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.75_0.22_290)]/10 border border-[oklch(0.75_0.22_290)]/20 flex items-center justify-center">
-          <Sparkles className="w-8 h-8 text-[oklch(0.75_0.22_290)]" />
+      <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.60_0.22_290)]/10 border border-[oklch(0.60_0.22_290)]/20 flex items-center justify-center">
+          <Sparkles className="w-8 h-8 text-[oklch(0.72_0.22_290)]" />
         </div>
         <div>
           <h3 className="font-bold text-[oklch(0.85_0.05_210)] mb-1">
             AI Assistant
           </h3>
-          <p className="text-sm text-[oklch(0.5_0.02_210)] max-w-xs mx-auto">
+          <p className="text-sm text-[oklch(0.50_0.02_210)] max-w-xs mx-auto">
             Upgrade to Silver or higher to access the GPT-4o powered AI
             assistant for OpenClaw configuration help.
           </p>
@@ -1180,7 +1492,7 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
         <Button
           onClick={onGoToPricing}
           size="sm"
-          className="bg-[oklch(0.60_0.20_290)] hover:bg-[oklch(0.68_0.20_290)] text-white font-semibold"
+          className="bg-[oklch(0.58_0.20_290)] hover:bg-[oklch(0.65_0.20_290)] text-white font-semibold"
         >
           <Lock className="w-3.5 h-3.5 mr-1.5" />
           Upgrade to Silver+
@@ -1190,63 +1502,60 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-2xl">
       {/* Header */}
-      <div className="flex items-center gap-3 p-3 rounded-xl border border-[oklch(0.75_0.22_290)]/20 bg-[oklch(0.75_0.22_290)]/5">
-        <div className="w-9 h-9 rounded-xl bg-[oklch(0.75_0.22_290)]/15 border border-[oklch(0.75_0.22_290)]/25 flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-4.5 h-4.5 text-[oklch(0.80_0.18_290)]" />
+      <div className="flex items-center gap-3 p-3 rounded-xl border border-[oklch(0.60_0.22_290)]/20 bg-[oklch(0.60_0.22_290)]/5">
+        <div className="w-9 h-9 rounded-xl bg-[oklch(0.60_0.22_290)]/15 border border-[oklch(0.60_0.22_290)]/25 flex items-center justify-center flex-shrink-0">
+          <Sparkles className="w-4 h-4 text-[oklch(0.75_0.18_290)]" />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-sm text-[oklch(0.88_0.04_210)]">
             AI Assistant
           </h3>
-          <p className="text-xs text-[oklch(0.5_0.02_210)]">
+          <p className="text-xs text-[oklch(0.50_0.02_210)]">
             Powered by OpenAI · GPT-4o ready
           </p>
         </div>
-        <Badge className="border text-[10px] px-1.5 py-0.5 bg-[oklch(0.75_0.22_290)]/15 text-[oklch(0.80_0.18_290)] border-[oklch(0.75_0.22_290)]/30 flex-shrink-0">
+        <Badge className="border text-[10px] px-1.5 py-0.5 bg-[oklch(0.60_0.22_290)]/15 text-[oklch(0.75_0.18_290)] border-[oklch(0.60_0.22_290)]/30 flex-shrink-0">
           Beta
         </Badge>
       </div>
 
-      {/* API Key */}
-      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.015_240)] p-4 space-y-3">
+      {/* API Key & Config */}
+      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] p-4 space-y-3">
         <div className="space-y-1.5">
           <Label className="text-xs text-[oklch(0.55_0.03_210)]">
             OpenAI API Key
           </Label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Input
-                type={showKey ? "text" : "password"}
-                value={apiKey}
-                onChange={(e) => saveApiKey(e.target.value)}
-                placeholder="sk-..."
-                className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-9 font-mono pr-10 focus:border-[oklch(0.75_0.22_290)]/50"
-              />
-              <button
-                type="button"
-                onClick={() => setShowKey(!showKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.03_210)] transition-colors"
-              >
-                {showKey ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
+          <div className="relative">
+            <Input
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => saveApiKey(e.target.value)}
+              placeholder="sk-..."
+              className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-10 font-mono pr-10 focus:border-[oklch(0.60_0.22_290)]/50"
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey(!showKey)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.03_210)] transition-colors"
+            >
+              {showKey ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
           </div>
           <p className="text-[10px] text-[oklch(0.38_0.02_210)]">
             Your key is stored locally and never sent to our servers.
           </p>
         </div>
 
-        {/* Model selector */}
         <div className="space-y-1.5">
           <Label className="text-xs text-[oklch(0.55_0.03_210)]">Model</Label>
           <Select value={model} onValueChange={setModel}>
-            <SelectTrigger className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-9">
+            <SelectTrigger className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-sm h-10">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -1262,7 +1571,6 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
           </Select>
         </div>
 
-        {/* System prompt */}
         <div className="space-y-1.5">
           <Label className="text-xs text-[oklch(0.55_0.03_210)]">
             System Prompt
@@ -1270,7 +1578,7 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
           <Textarea
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
-            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs min-h-14 resize-none focus:border-[oklch(0.75_0.22_290)]/50 font-mono"
+            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs min-h-14 resize-none focus:border-[oklch(0.60_0.22_290)]/50 font-mono"
             rows={2}
           />
         </div>
@@ -1278,10 +1586,10 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
 
       {/* Platinum Presets */}
       {isPlatinum && (
-        <div className="rounded-xl border border-[oklch(0.6_0.22_290)]/25 bg-[oklch(0.6_0.22_290)]/5 p-4 space-y-2">
+        <div className="rounded-xl border border-[oklch(0.55_0.22_290)]/25 bg-[oklch(0.55_0.22_290)]/5 p-4 space-y-2">
           <div className="flex items-center gap-2 mb-2">
-            <Crown className="w-3.5 h-3.5 text-[oklch(0.75_0.22_290)]" />
-            <span className="text-xs font-semibold text-[oklch(0.75_0.22_290)]">
+            <Crown className="w-3.5 h-3.5 text-[oklch(0.72_0.22_290)]" />
+            <span className="text-xs font-semibold text-[oklch(0.72_0.22_290)]">
               Platinum: Custom AI Presets
             </span>
           </div>
@@ -1291,7 +1599,7 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
                 key={preset.name}
                 type="button"
                 onClick={() => applyPreset(preset)}
-                className="text-[10px] px-2.5 py-1.5 rounded-lg border border-[oklch(0.6_0.22_290)]/30 text-[oklch(0.75_0.22_290)] hover:bg-[oklch(0.6_0.22_290)]/15 transition-colors"
+                className="text-[10px] px-2.5 py-1.5 rounded-lg border border-[oklch(0.55_0.22_290)]/30 text-[oklch(0.72_0.22_290)] hover:bg-[oklch(0.55_0.22_290)]/15 transition-colors"
               >
                 {preset.name}
               </button>
@@ -1302,11 +1610,11 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
 
       {/* Chat Messages */}
       <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.09_0.01_240)] overflow-hidden">
-        <div className="h-52 overflow-y-auto p-3 space-y-3">
+        <div className="h-56 overflow-y-auto p-3 space-y-3">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-4">
-              <Sparkles className="w-8 h-8 text-[oklch(0.35_0.05_290)] mb-2" />
-              <p className="text-xs text-[oklch(0.4_0.02_210)]">
+              <Sparkles className="w-8 h-8 text-[oklch(0.32_0.05_290)] mb-2" />
+              <p className="text-xs text-[oklch(0.40_0.02_210)]">
                 Ask anything about OpenClaw configuration
               </p>
             </div>
@@ -1319,8 +1627,8 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold ${
                     msg.role === "user"
-                      ? "bg-[oklch(0.65_0.12_210)]/20 text-[oklch(0.75_0.12_210)]"
-                      : "bg-[oklch(0.75_0.22_290)]/20 text-[oklch(0.75_0.22_290)]"
+                      ? "bg-[oklch(0.62_0.12_210)]/20 text-[oklch(0.72_0.12_210)]"
+                      : "bg-[oklch(0.60_0.22_290)]/20 text-[oklch(0.72_0.22_290)]"
                   }`}
                 >
                   {msg.role === "user" ? "U" : "AI"}
@@ -1328,7 +1636,7 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
                 <div
                   className={`max-w-[80%] rounded-xl px-3 py-2 text-xs leading-relaxed ${
                     msg.role === "user"
-                      ? "bg-[oklch(0.65_0.12_210)]/15 text-[oklch(0.85_0.05_210)]"
+                      ? "bg-[oklch(0.62_0.12_210)]/15 text-[oklch(0.85_0.05_210)]"
                       : "bg-[oklch(0.14_0.015_240)] text-[oklch(0.78_0.04_210)] border border-[oklch(1_0_0_/_6%)]"
                   }`}
                 >
@@ -1341,11 +1649,11 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
           )}
           {isLoading && (
             <div className="flex gap-2">
-              <div className="w-6 h-6 rounded-full bg-[oklch(0.75_0.22_290)]/20 text-[oklch(0.75_0.22_290)] flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-[oklch(0.60_0.22_290)]/20 text-[oklch(0.72_0.22_290)] flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                 AI
               </div>
               <div className="bg-[oklch(0.14_0.015_240)] border border-[oklch(1_0_0_/_6%)] rounded-xl px-3 py-2 flex items-center gap-2">
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-[oklch(0.75_0.22_290)]" />
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-[oklch(0.72_0.22_290)]" />
                 <span className="text-xs text-[oklch(0.45_0.02_210)]">
                   Thinking...
                 </span>
@@ -1355,21 +1663,20 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
         <div className="border-t border-[oklch(1_0_0_/_8%)] p-3 flex gap-2">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Ask about OpenClaw... (Enter to send)"
-            className="bg-[oklch(0.12_0.015_240)] border-[oklch(1_0_0_/_10%)] text-xs min-h-8 max-h-24 resize-none focus:border-[oklch(0.75_0.22_290)]/50 flex-1"
+            className="bg-[oklch(0.12_0.015_240)] border-[oklch(1_0_0_/_10%)] text-xs min-h-8 max-h-24 resize-none focus:border-[oklch(0.60_0.22_290)]/50 flex-1"
             rows={1}
           />
           <Button
             onClick={sendMessage}
             disabled={isLoading || !input.trim()}
             size="sm"
-            className="bg-[oklch(0.60_0.20_290)] hover:bg-[oklch(0.68_0.20_290)] text-white h-8 w-8 p-0 flex-shrink-0"
+            className="bg-[oklch(0.55_0.20_290)] hover:bg-[oklch(0.62_0.20_290)] text-white h-8 w-8 p-0 flex-shrink-0"
           >
             {isLoading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1385,7 +1692,7 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
           variant="ghost"
           size="sm"
           onClick={() => setMessages([])}
-          className="w-full text-xs text-[oklch(0.4_0.02_210)] hover:text-[oklch(0.6_0.03_210)] h-7"
+          className="w-full text-xs text-[oklch(0.40_0.02_210)] hover:text-[oklch(0.60_0.03_210)] h-7"
         >
           <Trash2 className="w-3 h-3 mr-1.5" />
           Clear conversation
@@ -1395,7 +1702,7 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
   );
 }
 
-// ---- API Explorer Sub-component ----
+// ── API Explorer Sub-component ──
 
 interface RequestHistoryEntry {
   method: string;
@@ -1523,18 +1830,17 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
     }
   };
 
-  // Locked state for non-members
   if (!membership) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.75_0.18_200)]/10 border border-[oklch(0.75_0.18_200)]/20 flex items-center justify-center">
-          <Terminal className="w-8 h-8 text-[oklch(0.75_0.18_200)]" />
+      <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.62_0.18_200)]/10 border border-[oklch(0.62_0.18_200)]/20 flex items-center justify-center">
+          <Terminal className="w-8 h-8 text-[oklch(0.70_0.18_200)]" />
         </div>
         <div>
           <h3 className="font-bold text-[oklch(0.85_0.05_210)] mb-1">
             API Explorer
           </h3>
-          <p className="text-sm text-[oklch(0.5_0.02_210)] max-w-xs mx-auto">
+          <p className="text-sm text-[oklch(0.50_0.02_210)] max-w-xs mx-auto">
             Upgrade to Gold or higher to access the interactive OpenClaw API
             Explorer.
           </p>
@@ -1551,20 +1857,18 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
     );
   }
 
-  // Silver locked state
   if (isSilver) {
     return (
-      <div className="flex flex-col items-center justify-center py-10 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.75_0.18_200)]/10 border border-[oklch(0.75_0.18_200)]/20 flex items-center justify-center">
-          <Lock className="w-8 h-8 text-[oklch(0.75_0.18_200)]" />
+      <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-[oklch(0.62_0.18_200)]/10 border border-[oklch(0.62_0.18_200)]/20 flex items-center justify-center">
+          <Lock className="w-8 h-8 text-[oklch(0.70_0.18_200)]" />
         </div>
         <div>
           <h3 className="font-bold text-[oklch(0.85_0.05_210)] mb-1">
             Gold+ Feature
           </h3>
-          <p className="text-sm text-[oklch(0.5_0.02_210)] max-w-xs mx-auto">
-            The API Explorer is available for Gold and Platinum members. Upgrade
-            to unlock interactive REST API testing.
+          <p className="text-sm text-[oklch(0.50_0.02_210)] max-w-xs mx-auto">
+            The API Explorer is available for Gold and Platinum members.
           </p>
         </div>
         <Button
@@ -1582,24 +1886,24 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
   if (!hasGoldOrHigher) return null;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-2xl">
       {/* Header */}
-      <div className="flex items-center gap-3 p-3 rounded-xl border border-[oklch(0.75_0.18_200)]/20 bg-[oklch(0.75_0.18_200)]/5">
-        <div className="w-9 h-9 rounded-xl bg-[oklch(0.75_0.18_200)]/15 border border-[oklch(0.75_0.18_200)]/25 flex items-center justify-center flex-shrink-0">
-          <Terminal className="w-4.5 h-4.5 text-[oklch(0.78_0.15_200)]" />
+      <div className="flex items-center gap-3 p-3 rounded-xl border border-[oklch(0.62_0.18_200)]/20 bg-[oklch(0.62_0.18_200)]/5">
+        <div className="w-9 h-9 rounded-xl bg-[oklch(0.62_0.18_200)]/15 border border-[oklch(0.62_0.18_200)]/25 flex items-center justify-center flex-shrink-0">
+          <Terminal className="w-4 h-4 text-[oklch(0.72_0.15_200)]" />
         </div>
         <div>
           <h3 className="font-bold text-sm text-[oklch(0.88_0.04_210)]">
             API Explorer
           </h3>
-          <p className="text-xs text-[oklch(0.5_0.02_210)]">
+          <p className="text-xs text-[oklch(0.50_0.02_210)]">
             OpenClaw REST API · Interactive tester
           </p>
         </div>
       </div>
 
       {/* Config */}
-      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.015_240)] p-4 space-y-3">
+      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] p-4 space-y-3">
         <div className="space-y-1.5">
           <Label className="text-xs text-[oklch(0.55_0.03_210)]">
             Base URL
@@ -1608,7 +1912,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
             value={baseUrl}
             onChange={(e) => setBaseUrl(e.target.value)}
             placeholder="https://api.openclaw.ai/v1"
-            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs h-9 font-mono focus:border-[oklch(0.75_0.18_200)]/50"
+            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs h-10 font-mono focus:border-[oklch(0.62_0.18_200)]/50"
           />
         </div>
         <div className="space-y-1.5">
@@ -1619,7 +1923,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
               value={apiKey}
               onChange={(e) => saveApiKey(e.target.value)}
               placeholder="your-api-key"
-              className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs h-9 font-mono pr-10 focus:border-[oklch(0.75_0.18_200)]/50"
+              className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs h-10 font-mono pr-10 focus:border-[oklch(0.62_0.18_200)]/50"
             />
             <button
               type="button"
@@ -1643,7 +1947,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
           value={selectedEndpointIdx.toString()}
           onValueChange={(v) => setSelectedEndpointIdx(Number(v))}
         >
-          <SelectTrigger className="bg-[oklch(0.12_0.015_240)] border-[oklch(1_0_0_/_10%)] text-xs h-9">
+          <SelectTrigger className="bg-[oklch(0.11_0.012_240)] border-[oklch(1_0_0_/_10%)] text-xs h-10">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -1670,7 +1974,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
           <Textarea
             value={requestBody}
             onChange={(e) => setRequestBody(e.target.value)}
-            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs min-h-20 resize-none focus:border-[oklch(0.75_0.18_200)]/50 font-mono"
+            className="bg-[oklch(0.09_0.01_240)] border-[oklch(1_0_0_/_10%)] text-xs min-h-20 resize-none focus:border-[oklch(0.62_0.18_200)]/50 font-mono"
             rows={4}
           />
         </div>
@@ -1680,7 +1984,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
       <Button
         onClick={sendRequest}
         disabled={isLoading}
-        className="w-full bg-[oklch(0.55_0.18_200)] hover:bg-[oklch(0.62_0.18_200)] text-white font-semibold h-9 text-sm"
+        className="w-full bg-[oklch(0.50_0.18_200)] hover:bg-[oklch(0.58_0.18_200)] text-white font-semibold h-10 text-sm"
       >
         {isLoading ? (
           <>
@@ -1733,7 +2037,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
                 setHistory([]);
                 localStorage.removeItem("openclaw_api_history");
               }}
-              className="text-[10px] text-[oklch(0.4_0.02_210)] hover:text-destructive transition-colors"
+              className="text-[10px] text-[oklch(0.40_0.02_210)] hover:text-destructive transition-colors"
             >
               Clear
             </button>

@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useDownloadsByOS, useIncrementDownload } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { DotsBackground } from "../DotsBackground";
 
 interface StepProps {
   number: number;
@@ -131,6 +132,7 @@ export function SetupSection() {
 
   return (
     <section id="setup" className="py-24 relative overflow-hidden">
+      <DotsBackground />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -6,6 +6,7 @@ import {
   useTotalDownloads,
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { DotsBackground } from "../DotsBackground";
 
 function useCountUp(target: number, duration = 1500, shouldStart = false) {
   const [count, setCount] = useState(0);
@@ -109,6 +110,7 @@ export function StatsSection() {
 
   return (
     <section className="py-20 relative overflow-hidden">
+      <DotsBackground />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
