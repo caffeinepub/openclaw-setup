@@ -1,9 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MembershipTier } from "./backend.d";
 import { Footer } from "./components/Footer";
 import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
+import { PublicProfilePage } from "./components/PublicProfilePage";
 import { TierLandingPage } from "./components/TierLandingPage";
 import { AdminPanel } from "./components/sections/AdminPanel";
 import { ChangelogSection } from "./components/sections/ChangelogSection";
@@ -20,6 +21,12 @@ import { WorkWithEverythingSection } from "./components/sections/WorkWithEveryth
 import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import { useIsAdmin } from "./hooks/useQueries";
 
+function extractPublicProfileHandle(hash: string): string | null {
+  if (!hash.startsWith("#/u/")) return null;
+  const handle = hash.slice(4).trim();
+  return handle.length > 0 ? handle : null;
+}
+
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -28,8 +35,27 @@ export default function App() {
   const [tierLandingTier, setTierLandingTier] = useState<MembershipTier>(
     MembershipTier.silver,
   );
+  const [publicProfileHandle, setPublicProfileHandle] = useState<string | null>(
+    () => extractPublicProfileHandle(window.location.hash),
+  );
   const { data: isAdmin } = useIsAdmin();
   const { identity } = useInternetIdentity();
+
+  // Hash-based routing for public profiles
+  const handleHashChange = useCallback(() => {
+    const handle = extractPublicProfileHandle(window.location.hash);
+    setPublicProfileHandle(handle);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [handleHashChange]);
+
+  const closePublicProfile = useCallback(() => {
+    window.location.hash = "";
+    setPublicProfileHandle(null);
+  }, []);
 
   // Apply dark mode class to html element
   useEffect(() => {
@@ -109,6 +135,14 @@ export default function App() {
               100,
             );
           }}
+        />
+      )}
+
+      {/* Public Profile Page (hash-based overlay) */}
+      {publicProfileHandle && (
+        <PublicProfilePage
+          handle={publicProfileHandle}
+          onClose={closePublicProfile}
         />
       )}
 

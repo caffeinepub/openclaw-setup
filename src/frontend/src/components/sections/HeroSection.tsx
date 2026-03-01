@@ -7,7 +7,10 @@ import {
   AtSign,
   BookOpen,
   CheckCircle2,
+  Copy,
   Download,
+  ExternalLink,
+  Fingerprint,
   Loader2,
   User,
   Zap,
@@ -250,6 +253,118 @@ function HandleClaimCard() {
   );
 }
 
+function ProfileDisplayCard() {
+  const { identity } = useInternetIdentity();
+  const { data: profile } = useCallerUserProfile();
+  const [copied, setCopied] = useState(false);
+
+  if (!identity || !profile?.name) return null;
+
+  const handle = profile.name;
+  const fullName = profile.bio || "—";
+  const principalStr = identity.getPrincipal().toString();
+  const shortPrincipal =
+    principalStr.length > 12 ? `${principalStr.slice(0, 12)}...` : principalStr;
+  const profileUrl = `${window.location.origin}${window.location.pathname}#/u/${handle}`;
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      toast.success("Profile link copied!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy link.");
+    }
+  };
+
+  const openPublicProfile = () => {
+    window.location.hash = `#/u/${handle}`;
+  };
+
+  return (
+    <div className="mt-4 w-full max-w-md">
+      <div
+        className="rounded-2xl border border-cyan/15 bg-background/40 backdrop-blur-md p-4 space-y-3"
+        style={{
+          boxShadow:
+            "0 0 30px oklch(0.75 0.18 210 / 6%), 0 4px 16px rgba(0,0,0,0.25)",
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded-full bg-cyan/10 border border-cyan/25 flex items-center justify-center">
+              <AtSign className="w-3 h-3 text-cyan" />
+            </div>
+            <span className="text-xs font-semibold text-foreground/70">
+              Your ClawPro Profile
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={openPublicProfile}
+            className="flex items-center gap-1 text-xs text-cyan/70 hover:text-cyan transition-colors"
+            title="View public profile"
+          >
+            <ExternalLink className="w-3 h-3" />
+            View
+          </button>
+        </div>
+
+        {/* Handle name row */}
+        <div className="flex items-center justify-between rounded-lg border border-border/50 bg-background/60 px-3 py-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-mono text-cyan/60 flex-shrink-0">
+              ClawPro.ai/
+            </span>
+            <span className="text-sm font-mono font-bold text-foreground truncate">
+              {handle}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={copyLink}
+            className="flex-shrink-0 ml-2 w-6 h-6 flex items-center justify-center rounded border border-border/50 hover:border-cyan/40 hover:bg-cyan/5 transition-colors"
+            title="Copy profile link"
+          >
+            {copied ? (
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            ) : (
+              <Copy className="w-3 h-3 text-muted-foreground" />
+            )}
+          </button>
+        </div>
+
+        {/* Full name row */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/30 bg-background/40">
+          <User className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+          <span className="text-xs text-muted-foreground flex-shrink-0">
+            Full Name
+          </span>
+          <span className="text-xs font-medium text-foreground/80 truncate ml-auto">
+            {fullName}
+          </span>
+        </div>
+
+        {/* Username (ICP principal) row */}
+        <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/30 bg-background/40">
+          <Fingerprint className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+          <span className="text-xs text-muted-foreground flex-shrink-0">
+            Username
+          </span>
+          <span
+            className="text-xs font-mono text-foreground/60 truncate ml-auto"
+            title={principalStr}
+          >
+            {shortPrincipal}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function HeroSection() {
   const { data: latestVersion } = useLatestVersion();
   const { data: totalDownloads } = useTotalDownloads();
@@ -353,6 +468,9 @@ export function HeroSection() {
                 {t.hero.viewDocs}
               </Button>
             </div>
+
+            {/* Profile display card — shown when handle is saved */}
+            <ProfileDisplayCard />
 
             {/* Handle Claim — shown only when logged in */}
             <HandleClaimCard />

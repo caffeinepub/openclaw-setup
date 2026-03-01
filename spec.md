@@ -1,50 +1,32 @@
 # ClawPro
 
 ## Current State
-- Full-stack ICP app with React frontend + Motoko backend
-- Backend has `UserProfile` type with `name: Text` and `bio: ?Text` fields, plus `saveCallerUserProfile` / `getCallerUserProfile` APIs
-- `MemberDashboard` is a modal (full-screen overlay) with 6 tabs: Profile, Configs, Bot, AI, API, Transactions
-- Dashboard header shows user avatar, name, membership badge, and principal
-- Hero section (`HeroSection.tsx`) has colorful animated background, robot mascot, version badge, download counter, CTA buttons
-- App.tsx shows `MemberDashboard` as a modal, only visible when `identity` is truthy (logged in)
+- ClawPro is a full-stack web app with hero section, membership tiers (Silver/Gold/Platinum), dashboard, multilingual support (EN/ID/AR/RU/ZH), and various sections.
+- Users can log in via ICP Identity and claim a ClawPro handle (stored as `name` in `UserProfile`), with full name stored in `bio`.
+- Backend `UserProfile` has `name` (handle) and `bio` (full name).
+- Currently, profiles can only be looked up by Principal — no public lookup by handle/username.
+- Hero section shows `HandleClaimCard` after login for setting handle/full name, but there is no read-only display card showing the user's current profile info.
+- No public profile page at `/u/[handle]`.
 
 ## Requested Changes (Diff)
 
 ### Add
-1. **Handle Name input in Hero Section** (after logo area, visible only when logged in):
-   - Input styled as `ClawPro.ai/ [username handle]` — prefix text "ClawPro.ai/" shown as static label, input for the handle
-   - Second input below for "Full Name / Real Name"
-   - Saves to backend `saveCallerUserProfile` (handle stored in `name` field as the username handle, full name stored in `bio` field — or better: store handle in `name` and real name as separate key in `bio` with JSON format)
-   - Only visible after login; shows current handle if already set
-   - Compact, elegant design — does not break hero layout
-
-2. **Redesigned professional two-column Dashboard**:
-   - Change from modal overlay to full-page dashboard layout (or very wide modal max-w-6xl)
-   - **LEFT COLUMN** (sidebar, ~280px fixed):
-     - Top: User avatar (large), below it Full Name (large), below it `@username` handle, below it membership tier badge (Silver/Gold/Platinum with styled badge)
-     - Token balance display
-     - **Installed Integration Products** section: grid of integration logos with names (WhatsApp, OpenAI, ChatGPT, Claude, etc.) — shown as "installed/active" cards based on user's configured chatbot and API settings
-     - Default settings toggle section
-     - User preference settings (language preference, notification preferences)
-   - **RIGHT COLUMN** (main content area, flex-1):
-     - Large content area showing current active tab content
-     - Tab navigation at the top of the right column (Profile, Configs, Bot, AI, API, Transactions)
-     - Each tab's content renders in the large right column
-   - Overall: dark professional look, consistent with ClawPro design system
+- Backend: `getPublicProfileByHandle(handle: Text)` query that returns only the username/handle (not full name) for public viewing.
+- Backend: `UserHandleMap` — a lookup map from handle (Text) to Principal, so handle-based lookup is O(1).
+- Frontend: `PublicProfilePage` component — shown when URL is `/u/[handle]`, displays only the username (handle), membership tier badge, and a "Join ClawPro" CTA. Does NOT show full name.
+- Frontend: `ProfileDisplayCard` component in HeroSection — shown after the ClawPro logo animation when user is logged in. Displays: handle name (ClawPro.ai/handle), full name, and ICP username (Principal short form). This is a read-only display below the logo.
 
 ### Modify
-- `MemberDashboard.tsx`: complete redesign to two-column layout
-- `HeroSection.tsx`: add handle/name input section after the hero content, only visible when logged in
-- Profile tab: show handle name field (`ClawPro.ai/handle`) and full name field separately
-- The profile save now stores `name` = handle, `bio` = real full name (or vice versa — use `name` = display handle, `bio` = real name)
+- `main.mo`: Add `userHandleMap` state, update `saveCallerUserProfile` to also register handle → Principal mapping. Add `getPublicProfileByHandle` query (public, no auth required, returns only `{ handle: Text }` or null).
+- `App.tsx`: Add URL-based routing so `/u/[handle]` renders `PublicProfilePage` overlay/page.
+- `HeroSection.tsx`: Add `ProfileDisplayCard` below the big logo title — renders only when user is logged in and has saved a handle.
 
 ### Remove
-- Nothing removed, only restructured
+- Nothing removed.
 
 ## Implementation Plan
-1. Modify `HeroSection.tsx` to add a compact handle-name claim section below the CTA buttons, only shown when user is logged in (use `useInternetIdentity` hook). It should show `ClawPro.ai/` prefix + input for handle + input for real name + save button. Uses `useSaveCallerUserProfile` and `useCallerUserProfile` hooks.
-2. Completely redesign `MemberDashboard.tsx` into a wide two-column layout:
-   - Left sidebar: avatar, full name, @handle, tier badge, token balance, installed integrations list, settings toggles
-   - Right panel: tab navigation + tab content (reuse existing tab content panels)
-3. Update profile tab to separate handle vs real name fields clearly
-4. Update field semantics: `name` field = handle/username, `bio` field = real full name
+1. Update `main.mo`: add `userHandleMap` (Map<Text, Principal>), update `saveCallerUserProfile` to register handle, add `getPublicProfileByHandle(handle: Text): async ?{ handle: Text }` public query.
+2. Update `backend.d.ts` to include the new `getPublicProfileByHandle` function.
+3. Create `PublicProfilePage.tsx` component: reads handle from URL hash (`#/u/handle`), calls `getPublicProfileByHandle`, shows username, tier badge if available (from public lookup), and "Join ClawPro" CTA.
+4. Update `HeroSection.tsx`: add `ProfileDisplayCard` that shows the current user's handle, full name, and short Principal username — displayed as a stylish info card below the logo title, only when logged in and handle is set.
+5. Update `App.tsx`: add hash-based routing for `#/u/[handle]` to render `PublicProfilePage`.
