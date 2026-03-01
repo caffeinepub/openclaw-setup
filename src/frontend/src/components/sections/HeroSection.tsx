@@ -13,6 +13,7 @@ import {
   Fingerprint,
   Loader2,
   LogIn,
+  Search,
   User,
   Zap,
 } from "lucide-react";
@@ -583,6 +584,264 @@ function ProfileDisplayCard() {
   );
 }
 
+function BlueGlowCorner({
+  position,
+}: {
+  position: "tl" | "tr" | "bl" | "br";
+}) {
+  const posClass = {
+    tl: "top-0 left-0",
+    tr: "top-0 right-0 rotate-90",
+    bl: "bottom-0 left-0 -rotate-90",
+    br: "bottom-0 right-0 rotate-180",
+  }[position];
+
+  const gradId = `blueCornerGrad-${position}`;
+
+  return (
+    <span
+      className={`absolute ${posClass} w-7 h-7 pointer-events-none`}
+      style={{ zIndex: 2 }}
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 28 28"
+        fill="none"
+        aria-label="blue corner decoration"
+        role="img"
+      >
+        <title>blue corner decoration</title>
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#00c6ff" />
+            <stop offset="50%" stopColor="#0072ff" />
+            <stop offset="100%" stopColor="#00e5ff" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M2 26 L2 5 Q2 2 5 2 L26 2"
+          stroke={`url(#${gradId})`}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          style={{
+            filter:
+              "drop-shadow(0 0 6px #00c6ff) drop-shadow(0 0 14px #0072ff) drop-shadow(0 0 24px #00e5ff88)",
+          }}
+        />
+      </svg>
+    </span>
+  );
+}
+
+const ALL_PLATFORMS = [
+  "Facebook",
+  "Instagram",
+  "TikTok",
+  "YouTube",
+  "WhatsApp",
+  "Telegram",
+  "Discord",
+  "Slack",
+  "Signal",
+  "iMessage",
+  "Claude",
+  "GPT",
+  "Spotify",
+  "Hue",
+  "Obsidian",
+  "X",
+  "Browser",
+  "Google",
+  "Gmail",
+  "GitHub",
+];
+
+function IntegrationSearchBar() {
+  const [query, setQuery] = useState("");
+  const [focused, setFocused] = useState(false);
+
+  const filtered =
+    query.trim().length > 0
+      ? ALL_PLATFORMS.filter((p) =>
+          p.toLowerCase().includes(query.toLowerCase()),
+        )
+      : [];
+
+  const handleSelect = (platform: string) => {
+    setQuery(platform);
+    setFocused(false);
+    // Scroll to integrations section
+    const el = document.getElementById("integrations");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleSearch = () => {
+    const el = document.getElementById("integrations");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  return (
+    <div className="w-full max-w-lg">
+      {/* Outer border glow — animated blue gradient */}
+      <div className="relative rounded-2xl" style={{ padding: "1px" }}>
+        {/* Animated blue border */}
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(135deg, #00c6ff, #0072ff, #00e5ff, #0072ff, #00c6ff)",
+            backgroundSize: "300% 300%",
+            animation: "blueBorderGlow 3s ease infinite",
+            opacity: 0.9,
+            zIndex: 0,
+          }}
+        />
+
+        {/* Inner card */}
+        <div
+          className="relative rounded-2xl bg-black/90 backdrop-blur-md p-4 space-y-3"
+          style={{
+            zIndex: 1,
+            boxShadow:
+              "0 0 30px rgba(0,198,255,0.2), 0 0 60px rgba(0,114,255,0.12), 0 4px 20px rgba(0,0,0,0.5)",
+          }}
+        >
+          {/* Blue glow corners */}
+          <BlueGlowCorner position="tl" />
+          <BlueGlowCorner position="tr" />
+          <BlueGlowCorner position="bl" />
+          <BlueGlowCorner position="br" />
+
+          {/* Header */}
+          <div className="flex items-center gap-2 mb-1">
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center"
+              style={{
+                background: "rgba(0,198,255,0.12)",
+                border: "1px solid rgba(0,198,255,0.5)",
+                boxShadow: "0 0 10px rgba(0,198,255,0.5)",
+              }}
+            >
+              <Search className="w-3.5 h-3.5" style={{ color: "#00c6ff" }} />
+            </div>
+            <span
+              className="text-sm font-semibold"
+              style={{
+                color: "#e0f7ff",
+                textShadow: "0 0 10px rgba(0,198,255,0.6)",
+              }}
+            >
+              Search Works With Everything
+            </span>
+          </div>
+
+          {/* Search input */}
+          <div className="relative">
+            <div
+              className="relative rounded-xl p-[1px]"
+              style={{
+                background:
+                  "linear-gradient(90deg, #00c6ff, #0072ff, #00e5ff, #0072ff, #00c6ff)",
+                backgroundSize: "300% 100%",
+                animation: focused
+                  ? "blueBorderGlow 1.5s linear infinite"
+                  : "blueBorderGlow 3s linear infinite",
+              }}
+            >
+              <div className="flex items-center rounded-xl bg-black overflow-hidden">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => setFocused(true)}
+                  onBlur={() => setTimeout(() => setFocused(false), 180)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder="Search integrations... Facebook, Discord, GPT..."
+                  className="flex-1 bg-transparent px-4 py-2.5 text-sm outline-none"
+                  style={{ color: "#e0f7ff" }}
+                />
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  className="px-4 py-2.5 flex items-center gap-1.5 text-xs font-bold transition-all duration-200"
+                  style={{
+                    background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                    color: "#fff",
+                    borderLeft: "1px solid rgba(0,198,255,0.3)",
+                    textShadow: "0 0 8px rgba(0,198,255,0.8)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  Search
+                </button>
+              </div>
+            </div>
+
+            {/* Autocomplete dropdown */}
+            {focused && filtered.length > 0 && (
+              <div
+                className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden z-50"
+                style={{
+                  background: "rgba(0,8,20,0.97)",
+                  border: "1px solid rgba(0,198,255,0.35)",
+                  boxShadow:
+                    "0 8px 32px rgba(0,198,255,0.2), 0 4px 16px rgba(0,0,0,0.6)",
+                }}
+              >
+                {filtered.map((platform) => (
+                  <button
+                    key={platform}
+                    type="button"
+                    onMouseDown={() => handleSelect(platform)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors duration-150"
+                    style={{ color: "#b0e8ff" }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        "rgba(0,198,255,0.12)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        "transparent";
+                    }}
+                  >
+                    <Search
+                      className="w-3 h-3 opacity-50"
+                      style={{ color: "#00c6ff" }}
+                    />
+                    {platform}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Hint */}
+          <p
+            className="text-xs text-center"
+            style={{ color: "rgba(0,198,255,0.5)" }}
+          >
+            20+ integrations available — explore all platforms
+          </p>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes blueBorderGlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 export function HeroSection() {
   const { data: latestVersion } = useLatestVersion();
   const { data: totalDownloads } = useTotalDownloads();
@@ -747,8 +1006,9 @@ export function HeroSection() {
         </div>
 
         {/* Handle Claim — full-width row below main columns */}
-        <div className="flex justify-center mt-8">
+        <div className="flex flex-col items-center gap-5 mt-8">
           <HandleClaimCard />
+          <IntegrationSearchBar />
         </div>
       </div>
 
