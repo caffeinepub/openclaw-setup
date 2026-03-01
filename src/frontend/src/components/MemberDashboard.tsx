@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   AtSign,
   Bell,
+  Bell as BellIcon,
   Bot,
   CheckCircle2,
   ChevronRight,
@@ -28,6 +29,7 @@ import {
   Globe2,
   Loader2,
   Lock,
+  Medal,
   Plug,
   Plus,
   Receipt,
@@ -37,9 +39,11 @@ import {
   Sparkles,
   Terminal,
   Trash2,
+  Trophy,
   User,
   X,
   XCircle,
+  Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -153,6 +157,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
   const [handle, setHandle] = useState("");
   const [fullName, setFullName] = useState("");
   const [activeTab, setActiveTab] = useState("profile");
+  const [unreadCount, setUnreadCount] = useState(3); // mock unread notifications
 
   // Settings toggles (localStorage)
   const [notificationsOn, setNotificationsOn] = useState(
@@ -615,14 +620,31 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                       label: "Txns",
                       color: "oklch(0.75_0.18_60)",
                     },
+                    {
+                      value: "leaderboard",
+                      icon: <Trophy className="w-3.5 h-3.5" />,
+                      label: "Rank",
+                      color: "oklch(0.75_0.20_55)",
+                    },
+                    {
+                      value: "notifications",
+                      icon: <BellIcon className="w-3.5 h-3.5" />,
+                      label: "Alerts",
+                      color: "oklch(0.75_0.15_30)",
+                    },
                   ].map((tab) => (
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="flex-1 py-2 px-2 flex items-center justify-center gap-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all data-[state=active]:bg-[oklch(1_0_0_/_10%)] data-[state=active]:text-[oklch(0.90_0.04_210)] text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.03_210)]"
+                      className="relative flex-1 py-2 px-2 flex items-center justify-center gap-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all data-[state=active]:bg-[oklch(1_0_0_/_10%)] data-[state=active]:text-[oklch(0.90_0.04_210)] text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.03_210)]"
                     >
                       {tab.icon}
                       <span className="hidden sm:inline">{tab.label}</span>
+                      {tab.value === "notifications" && unreadCount > 0 && (
+                        <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 text-[8px] font-bold text-white flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -864,6 +886,25 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                   {/* ── Transactions Tab ── */}
                   <TabsContent value="transactions" className="px-5 pb-6 mt-0">
                     <TransactionsTab membership={membership ?? null} />
+                  </TabsContent>
+
+                  {/* ── Leaderboard Tab ── */}
+                  <TabsContent value="leaderboard" className="px-5 pb-6 mt-0">
+                    <LeaderboardTab
+                      membership={membership ?? null}
+                      currentHandle={handle}
+                      currentTokens={
+                        membership ? TIER_TOKENS[membership.tier] : 0
+                      }
+                    />
+                  </TabsContent>
+
+                  {/* ── Notifications Tab ── */}
+                  <TabsContent value="notifications" className="px-5 pb-6 mt-0">
+                    <NotificationsTab
+                      membership={membership ?? null}
+                      onRead={() => setUnreadCount(0)}
+                    />
                   </TabsContent>
                 </ScrollArea>
               </Tabs>
@@ -1697,6 +1738,604 @@ function AIAssistantTab({ membership, onGoToPricing }: AIAssistantTabProps) {
           <Trash2 className="w-3 h-3 mr-1.5" />
           Clear conversation
         </Button>
+      )}
+    </div>
+  );
+}
+
+// ── Leaderboard Sub-component ──
+
+interface LeaderboardTabProps {
+  membership: { tier: MembershipTier; purchasedAt: bigint } | null;
+  currentHandle: string;
+  currentTokens: number;
+}
+
+const MOCK_LEADERBOARD = [
+  {
+    rank: 1,
+    handle: "techmaster",
+    name: "Alex Rodriguez",
+    tier: MembershipTier.platinum,
+    tokens: 15897,
+  },
+  {
+    rank: 2,
+    handle: "robotbuilder",
+    name: "Priya Sharma",
+    tier: MembershipTier.platinum,
+    tokens: 14200,
+  },
+  {
+    rank: 3,
+    handle: "clawexpert",
+    name: "Marcus Chen",
+    tier: MembershipTier.gold,
+    tokens: 11650,
+  },
+  {
+    rank: 4,
+    handle: "devpro99",
+    name: "Fatima Al-Rashid",
+    tier: MembershipTier.platinum,
+    tokens: 9999,
+  },
+  {
+    rank: 5,
+    handle: "hardwareking",
+    name: "Aleksei Volkov",
+    tier: MembershipTier.gold,
+    tokens: 8450,
+  },
+  {
+    rank: 6,
+    handle: "clawmaster",
+    name: "Liu Wei",
+    tier: MembershipTier.gold,
+    tokens: 7320,
+  },
+  {
+    rank: 7,
+    handle: "probuilder",
+    name: "Yuki Tanaka",
+    tier: MembershipTier.silver,
+    tokens: 5990,
+  },
+  {
+    rank: 8,
+    handle: "techguru",
+    name: "Sven Larsson",
+    tier: MembershipTier.platinum,
+    tokens: 5200,
+  },
+  {
+    rank: 9,
+    handle: "robotfan",
+    name: "Amira Hassan",
+    tier: MembershipTier.gold,
+    tokens: 4100,
+  },
+  {
+    rank: 10,
+    handle: "clawuser",
+    name: "Pedro Silva",
+    tier: MembershipTier.silver,
+    tokens: 2999,
+  },
+];
+
+const MEDAL_STYLES: Record<
+  number,
+  { color: string; bg: string; icon: React.ReactNode }
+> = {
+  1: {
+    color: "text-amber-300",
+    bg: "bg-amber-500/15 border-amber-400/30",
+    icon: <Medal className="w-4 h-4 text-amber-300" />,
+  },
+  2: {
+    color: "text-slate-300",
+    bg: "bg-slate-500/15 border-slate-400/30",
+    icon: <Medal className="w-4 h-4 text-slate-300" />,
+  },
+  3: {
+    color: "text-orange-400",
+    bg: "bg-orange-500/15 border-orange-400/30",
+    icon: <Medal className="w-4 h-4 text-orange-400" />,
+  },
+};
+
+function LeaderboardTab({
+  membership,
+  currentHandle,
+  currentTokens,
+}: LeaderboardTabProps) {
+  const leaderboard = [...MOCK_LEADERBOARD];
+
+  // Check if current user is on leaderboard
+  const currentUserIdx = leaderboard.findIndex(
+    (e) => e.handle === currentHandle,
+  );
+  const isOnLeaderboard = currentUserIdx !== -1;
+
+  // If not on leaderboard and has handle/membership, add them
+  let currentUserEntry: (typeof leaderboard)[0] | null = null;
+  if (!isOnLeaderboard && currentHandle && membership) {
+    currentUserEntry = {
+      rank: leaderboard.length + 1,
+      handle: currentHandle,
+      name: "You",
+      tier: membership.tier,
+      tokens: currentTokens,
+    };
+  }
+
+  const userRank = isOnLeaderboard
+    ? leaderboard[currentUserIdx].rank
+    : (currentUserEntry?.rank ?? null);
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      {/* Header */}
+      <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+        <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0">
+          <Trophy className="w-5 h-5 text-amber-400" />
+        </div>
+        <div>
+          <h3 className="font-bold text-sm text-[oklch(0.88_0.04_210)]">
+            Token Leaderboard
+          </h3>
+          <p className="text-xs text-[oklch(0.50_0.02_210)]">
+            Top members ranked by token balance
+          </p>
+        </div>
+      </div>
+
+      {/* Your Rank Card */}
+      {userRank !== null && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative rounded-xl overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.20 0.06 55) 0%, oklch(0.16 0.04 50) 100%)",
+            boxShadow:
+              "0 4px 20px oklch(0.7 0.18 60 / 15%), inset 0 1px 0 oklch(1 0 0 / 12%)",
+          }}
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(0.8_0.20_60_/_8%),transparent_60%)]" />
+          <div className="relative flex items-center gap-4 px-5 py-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/20 border border-amber-400/30 flex-shrink-0">
+              <span className="font-black text-base text-amber-300">
+                #{userRank}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm text-amber-100">Your Rank</p>
+              <p className="text-[11px] text-amber-300/60">
+                @{currentHandle || "set-handle"}
+              </p>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <div className="flex items-center gap-1.5 justify-end">
+                <Coins className="w-4 h-4 text-amber-400" />
+                <span className="font-black text-xl text-amber-200">
+                  {currentTokens.toLocaleString()}
+                </span>
+              </div>
+              <p className="text-[10px] text-amber-300/50">tokens</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Leaderboard Table */}
+      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.10_0.012_240)] overflow-hidden">
+        <div className="px-4 py-3 border-b border-[oklch(1_0_0_/_6%)] flex items-center justify-between">
+          <h4 className="text-[11px] font-semibold text-[oklch(0.58_0.05_210)] uppercase tracking-wider">
+            Top Members
+          </h4>
+          <span className="text-[10px] text-[oklch(0.38_0.02_210)]">
+            {leaderboard.length} members
+          </span>
+        </div>
+
+        <div className="divide-y divide-[oklch(1_0_0_/_5%)]">
+          {leaderboard.map((entry, i) => {
+            const isCurrentUser = entry.handle === currentHandle;
+            const medal = MEDAL_STYLES[entry.rank];
+            const tierStyle = TIER_STYLES[entry.tier];
+            const initials = entry.name
+              .split(" ")
+              .map((w) => w[0])
+              .join("")
+              .toUpperCase()
+              .slice(0, 2);
+
+            return (
+              <motion.div
+                key={entry.handle}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                  isCurrentUser
+                    ? "bg-[oklch(0.65_0.15_210)]/8 border-l-2 border-[oklch(0.65_0.15_210)]/50"
+                    : "hover:bg-[oklch(1_0_0_/_2%)]"
+                }`}
+                style={
+                  entry.rank <= 3
+                    ? {
+                        background: isCurrentUser
+                          ? undefined
+                          : entry.rank === 1
+                            ? "linear-gradient(90deg, oklch(0.22 0.07 55 / 20%), transparent)"
+                            : entry.rank === 2
+                              ? "linear-gradient(90deg, oklch(0.20 0.03 220 / 15%), transparent)"
+                              : "linear-gradient(90deg, oklch(0.22 0.06 40 / 15%), transparent)",
+                      }
+                    : undefined
+                }
+              >
+                {/* Rank */}
+                <div
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                    medal
+                      ? medal.bg
+                      : "bg-[oklch(0.14_0.01_240)] border-[oklch(1_0_0_/_8%)]"
+                  }`}
+                >
+                  {medal ? (
+                    medal.icon
+                  ) : (
+                    <span className="text-[10px] font-bold text-[oklch(0.45_0.02_210)]">
+                      {entry.rank}
+                    </span>
+                  )}
+                </div>
+
+                {/* Avatar */}
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                  style={{
+                    background: `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`,
+                  }}
+                >
+                  {initials}
+                </div>
+
+                {/* Name & Handle */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-[oklch(0.85_0.05_210)] truncate">
+                      {isCurrentUser ? "You" : entry.name}
+                    </p>
+                    {isCurrentUser && (
+                      <Badge className="text-[9px] px-1 py-0 h-3.5 bg-[oklch(0.62_0.15_210)]/20 text-[oklch(0.72_0.15_210)] border-[oklch(0.62_0.15_210)]/30 border flex-shrink-0">
+                        You
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[oklch(0.42_0.03_210)] font-mono truncate">
+                    @{entry.handle}
+                  </p>
+                </div>
+
+                {/* Tier Badge */}
+                <Badge
+                  className={`border text-[9px] px-1.5 py-0 h-4 flex-shrink-0 ${tierStyle.badge}`}
+                >
+                  {tierStyle.icon} {tierStyle.label}
+                </Badge>
+
+                {/* Tokens */}
+                <div className="text-right flex-shrink-0">
+                  <div className="flex items-center gap-1 justify-end">
+                    <Coins className="w-3 h-3 text-amber-400/70" />
+                    <span
+                      className={`text-xs font-bold ${
+                        medal ? medal.color : "text-[oklch(0.75_0.05_210)]"
+                      }`}
+                    >
+                      {entry.tokens.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+
+          {/* Current user if not in top 10 */}
+          {currentUserEntry && (
+            <>
+              <div className="px-4 py-2 text-center">
+                <span className="text-[10px] text-[oklch(0.35_0.02_210)]">
+                  ···
+                </span>
+              </div>
+              <motion.div
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-3 px-4 py-3 bg-[oklch(0.65_0.15_210)]/8 border-l-2 border-[oklch(0.65_0.15_210)]/50"
+              >
+                <div className="w-7 h-7 rounded-full border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.14_0.01_240)] flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-[oklch(0.45_0.02_210)]">
+                    {currentUserEntry.rank}
+                  </span>
+                </div>
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                  style={{
+                    background: `radial-gradient(circle at 30% 30%, ${TIER_STYLES[currentUserEntry.tier].color}, oklch(0.15 0.05 240))`,
+                  }}
+                >
+                  {currentHandle.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-[oklch(0.85_0.05_210)]">
+                      You
+                    </p>
+                    <Badge className="text-[9px] px-1 py-0 h-3.5 bg-[oklch(0.62_0.15_210)]/20 text-[oklch(0.72_0.15_210)] border-[oklch(0.62_0.15_210)]/30 border flex-shrink-0">
+                      You
+                    </Badge>
+                  </div>
+                  <p className="text-[10px] text-[oklch(0.42_0.03_210)] font-mono">
+                    @{currentHandle}
+                  </p>
+                </div>
+                <Badge
+                  className={`border text-[9px] px-1.5 py-0 h-4 flex-shrink-0 ${TIER_STYLES[currentUserEntry.tier].badge}`}
+                >
+                  {TIER_STYLES[currentUserEntry.tier].icon}{" "}
+                  {TIER_STYLES[currentUserEntry.tier].label}
+                </Badge>
+                <div className="text-right flex-shrink-0">
+                  <div className="flex items-center gap-1 justify-end">
+                    <Coins className="w-3 h-3 text-amber-400/70" />
+                    <span className="text-xs font-bold text-[oklch(0.75_0.05_210)]">
+                      {currentTokens.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Info note */}
+      <div className="rounded-xl border border-[oklch(1_0_0_/_6%)] bg-[oklch(0.09_0.01_240)] p-3">
+        <p className="text-[10px] text-[oklch(0.42_0.03_210)] text-center">
+          <Trophy className="w-3 h-3 inline mr-1 text-amber-400/70" />
+          Rankings update based on token balance. Earn more tokens by upgrading
+          your membership tier.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Notifications Sub-component ──
+
+interface NotificationsTabProps {
+  membership: { tier: MembershipTier } | null;
+  onRead: () => void;
+}
+
+type NotificationType =
+  | "welcome"
+  | "token_earned"
+  | "tier_upgrade"
+  | "feature_update"
+  | "reminder";
+
+interface NotificationItem {
+  id: number;
+  type: NotificationType;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+const NOTIFICATION_STYLES: Record<
+  NotificationType,
+  { color: string; bg: string; border: string }
+> = {
+  welcome: {
+    color: "text-cyan-300",
+    bg: "bg-cyan-500/10",
+    border: "border-cyan-500/25",
+  },
+  token_earned: {
+    color: "text-amber-300",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/25",
+  },
+  tier_upgrade: {
+    color: "text-violet-300",
+    bg: "bg-violet-500/10",
+    border: "border-violet-500/25",
+  },
+  feature_update: {
+    color: "text-blue-300",
+    bg: "bg-blue-500/10",
+    border: "border-blue-500/25",
+  },
+  reminder: {
+    color: "text-slate-300",
+    bg: "bg-slate-500/10",
+    border: "border-slate-500/25",
+  },
+};
+
+const NOTIFICATION_ICONS: Record<NotificationType, React.ReactNode> = {
+  welcome: <Sparkles className="w-4 h-4" />,
+  token_earned: <Coins className="w-4 h-4" />,
+  tier_upgrade: <Crown className="w-4 h-4" />,
+  feature_update: <Zap className="w-4 h-4" />,
+  reminder: <Bell className="w-4 h-4" />,
+};
+
+const INITIAL_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 1,
+    type: "welcome",
+    title: "Welcome to ClawPro!",
+    message: "Your account is ready. Start exploring your member benefits.",
+    time: "2 days ago",
+    read: true,
+  },
+  {
+    id: 2,
+    type: "token_earned",
+    title: "Tokens Added!",
+    message: "You received 999 tokens from Silver membership purchase.",
+    time: "1 day ago",
+    read: false,
+  },
+  {
+    id: 3,
+    type: "feature_update",
+    title: "New: API Explorer",
+    message: "API Explorer is now available for Gold and Platinum members.",
+    time: "12 hours ago",
+    read: false,
+  },
+  {
+    id: 4,
+    type: "reminder",
+    title: "Complete Your Profile",
+    message: "Add your ClawPro handle to appear on the leaderboard.",
+    time: "6 hours ago",
+    read: false,
+  },
+  {
+    id: 5,
+    type: "tier_upgrade",
+    title: "Upgrade Available",
+    message: "Unlock 2,999 tokens by upgrading to Gold membership today.",
+    time: "1 hour ago",
+    read: true,
+  },
+];
+
+function NotificationsTab({
+  membership: _membership,
+  onRead,
+}: NotificationsTabProps) {
+  const [notifications, setNotifications] = useState<NotificationItem[]>(
+    INITIAL_NOTIFICATIONS,
+  );
+
+  const markAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    onRead();
+  };
+
+  const unread = notifications.filter((n) => !n.read).length;
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 py-1">
+          <div className="w-8 h-8 rounded-xl bg-[oklch(0.62_0.15_30)]/15 border border-[oklch(0.62_0.15_30)]/25 flex items-center justify-center">
+            <BellIcon className="w-4 h-4 text-[oklch(0.72_0.15_30)]" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-[oklch(0.88_0.04_210)]">
+              Notifications
+            </h3>
+            {unread > 0 && (
+              <p className="text-[11px] text-[oklch(0.55_0.03_210)]">
+                {unread} unread
+              </p>
+            )}
+          </div>
+        </div>
+        {unread > 0 && (
+          <button
+            type="button"
+            onClick={markAllRead}
+            className="text-[11px] text-[oklch(0.62_0.15_210)] hover:text-[oklch(0.75_0.15_210)] transition-colors font-medium"
+          >
+            Mark all as read
+          </button>
+        )}
+      </div>
+
+      {/* Notifications List */}
+      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.10_0.012_240)] overflow-hidden">
+        {notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+            <BellIcon className="w-10 h-10 text-[oklch(0.28_0.02_210)] mb-3" />
+            <p className="text-sm text-[oklch(0.45_0.02_210)]">
+              No notifications yet
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[oklch(1_0_0_/_5%)]">
+            {notifications.map((notif, i) => {
+              const style = NOTIFICATION_STYLES[notif.type];
+              const icon = NOTIFICATION_ICONS[notif.type];
+
+              return (
+                <motion.div
+                  key={notif.id}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className={`flex items-start gap-3 px-4 py-4 transition-colors ${
+                    !notif.read
+                      ? "bg-[oklch(0.65_0.15_210)]/5"
+                      : "hover:bg-[oklch(1_0_0_/_2%)]"
+                  }`}
+                >
+                  {/* Icon */}
+                  <div
+                    className={`w-8 h-8 rounded-xl border flex items-center justify-center flex-shrink-0 mt-0.5 ${style.bg} ${style.border} ${style.color}`}
+                  >
+                    {icon}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <p
+                        className={`text-xs font-semibold leading-tight ${
+                          !notif.read
+                            ? "text-[oklch(0.90_0.04_210)]"
+                            : "text-[oklch(0.72_0.03_210)]"
+                        }`}
+                      >
+                        {notif.title}
+                      </p>
+                      {!notif.read && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-[oklch(0.62_0.15_210)] flex-shrink-0 mt-1.5" />
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[oklch(0.52_0.02_210)] leading-relaxed mt-0.5">
+                      {notif.message}
+                    </p>
+                    <p className="text-[10px] text-[oklch(0.38_0.02_210)] mt-1">
+                      {notif.time}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* All read state */}
+      {unread === 0 && (
+        <p className="text-center text-[11px] text-[oklch(0.40_0.02_210)]">
+          All caught up! No unread notifications.
+        </p>
       )}
     </div>
   );

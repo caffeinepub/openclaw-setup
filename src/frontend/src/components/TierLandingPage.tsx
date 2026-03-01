@@ -51,10 +51,16 @@ interface Testimonial {
   tier: MembershipTier;
 }
 
+const TIER_TOKENS: Record<MembershipTier, number> = {
+  [MembershipTier.silver]: Math.round(9.99 * 100),
+  [MembershipTier.gold]: Math.round(29.99 * 100),
+  [MembershipTier.platinum]: Math.round(79.99 * 100),
+};
+
 const TIER_CONFIG = {
   [MembershipTier.silver]: {
     name: "Silver",
-    price: 5,
+    price: 9.99,
     tagline: "Perfect for hobbyists and enthusiasts getting started.",
     icon: <Shield className="w-8 h-8" />,
     accentClass: "text-slate-300",
@@ -71,7 +77,7 @@ const TIER_CONFIG = {
   },
   [MembershipTier.gold]: {
     name: "Gold",
-    price: 15,
+    price: 29.99,
     tagline: "Power tools for serious builders and professionals.",
     icon: <Star className="w-8 h-8" />,
     accentClass: "text-amber-400",
@@ -89,7 +95,7 @@ const TIER_CONFIG = {
   },
   [MembershipTier.platinum]: {
     name: "Platinum",
-    price: 35,
+    price: 79.99,
     tagline: "Elite access for those who demand the absolute best.",
     icon: <Crown className="w-8 h-8" />,
     accentClass: "text-violet-400",
@@ -481,16 +487,20 @@ export function TierLandingPage({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.45 }}
-              className="flex items-baseline justify-center gap-2 mb-10"
+              className="flex flex-col items-center gap-1 mb-10"
             >
-              <span
-                className={`font-display font-black text-8xl ${config.accentClass}`}
-              >
-                {config.price}
-              </span>
-              <div className="text-left">
-                <div className="text-2xl font-bold text-white">ICP</div>
-                <div className="text-sm text-white/40">/month</div>
+              <div className="flex items-baseline gap-2">
+                <span
+                  className={`font-display font-black text-8xl ${config.accentClass}`}
+                >
+                  {TIER_TOKENS[tier].toLocaleString()}
+                </span>
+                <div className="text-left">
+                  <div className="text-2xl font-bold text-white">tokens</div>
+                </div>
+              </div>
+              <div className="text-sm text-white/40">
+                ${config.price.toFixed(2)} / month &middot; $1 = 100 tokens
               </div>
             </motion.div>
 
@@ -518,7 +528,8 @@ export function TierLandingPage({
                   className={`px-10 h-14 text-base font-bold ${config.buttonClass}`}
                 >
                   <Zap className="w-5 h-5 mr-2" />
-                  Get {config.name} — {config.price} ICP
+                  Get {config.name} — {TIER_TOKENS[tier].toLocaleString()}{" "}
+                  Tokens
                 </Button>
               )}
               <Button
@@ -721,10 +732,11 @@ export function TierLandingPage({
           >
             <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-white/50 leading-relaxed">
-              Membership is billed in ICP tokens on the Internet Computer
-              blockchain. All transactions are on-chain and irreversible. You
-              can upgrade to a higher tier at any time. Downgrades take effect
-              at the end of the current period.
+              Membership pricing uses token conversion: $1 = 100 tokens. Silver
+              = 999 tokens, Gold = 2,999 tokens, Platinum = 7,999 tokens. All
+              transactions are processed securely. You can upgrade to a higher
+              tier at any time. Downgrades take effect at the end of the current
+              period.
             </p>
           </motion.div>
 
@@ -755,7 +767,8 @@ export function TierLandingPage({
                   className={`px-14 h-16 text-lg font-bold ${config.buttonClass}`}
                 >
                   <Zap className="w-5 h-5 mr-2" />
-                  Unlock {config.name} for {config.price} ICP
+                  Unlock {config.name} for {TIER_TOKENS[tier].toLocaleString()}{" "}
+                  Tokens
                 </Button>
                 <p className="text-sm text-white/35">
                   One-time charge · Cancel anytime · On-chain transaction
