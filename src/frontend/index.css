@@ -257,6 +257,24 @@
   .animate-float { animation: float 3s ease-in-out infinite; }
   .animate-border-glow { animation: border-glow 2s ease-in-out infinite; }
 
+  @keyframes goldGreenPulse {
+    0% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+  }
+  .animate-gold-green-pulse {
+    animation: goldGreenPulse 4s ease-in-out infinite alternate;
+  }
+
   /* Marquee / ticker animations */
   @keyframes marquee-left {
     0% { transform: translateX(0); }

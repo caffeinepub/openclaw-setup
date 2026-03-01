@@ -29,18 +29,18 @@ import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
 
 const ORBS = [
-  { color: "#00f5ff", r: 160 },
-  { color: "#ff3b5c", r: 140 },
-  { color: "#a855f7", r: 180 },
-  { color: "#3b82f6", r: 130 },
-  { color: "#10b981", r: 150 },
-  { color: "#f59e0b", r: 120 },
-  { color: "#ec4899", r: 170 },
-  { color: "#00f5ff", r: 110 },
-  { color: "#a855f7", r: 145 },
-  { color: "#ff3b5c", r: 135 },
+  { color: "#f59e0b", r: 190 },
+  { color: "#dc2626", r: 160 },
+  { color: "#10b981", r: 200 },
+  { color: "#ffd700", r: 140 },
+  { color: "#10b981", r: 175 },
+  { color: "#f59e0b", r: 165 },
+  { color: "#dc2626", r: 145 },
+  { color: "#ffd700", r: 130 },
+  { color: "#10b981", r: 155 },
+  { color: "#f59e0b", r: 185 },
+  { color: "#dc2626", r: 135 },
   { color: "#10b981", r: 125 },
-  { color: "#3b82f6", r: 155 },
 ];
 
 function ColorfulBackground() {
@@ -149,6 +149,8 @@ function GlowCorner({
     br: "bottom-0 right-0 rotate-180",
   }[position];
 
+  const gradId = `cornerGrad-${position}`;
+
   return (
     <span
       className={`absolute ${posClass} w-6 h-6 pointer-events-none`}
@@ -163,15 +165,21 @@ function GlowCorner({
         role="img"
       >
         <title>corner decoration</title>
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#dc2626" />
+            <stop offset="50%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#ffd700" />
+          </linearGradient>
+        </defs>
         <path
           d="M2 22 L2 4 Q2 2 4 2 L22 2"
-          stroke="currentColor"
+          stroke={`url(#${gradId})`}
           strokeWidth="2"
           strokeLinecap="round"
-          className="text-cyan"
           style={{
             filter:
-              "drop-shadow(0 0 6px oklch(0.85 0.22 210)) drop-shadow(0 0 12px oklch(0.75 0.22 210))",
+              "drop-shadow(0 0 6px #f59e0b) drop-shadow(0 0 12px #dc2626)",
           }}
         />
       </svg>
@@ -260,20 +268,20 @@ function HandleClaimCard() {
           className="absolute inset-0 rounded-2xl pointer-events-none"
           style={{
             background:
-              "linear-gradient(135deg, oklch(0.85 0.22 210), oklch(0.65 0.28 300), oklch(0.85 0.22 210))",
-            backgroundSize: "200% 200%",
+              "linear-gradient(135deg, #dc2626, #f59e0b, #ffd700, #dc2626)",
+            backgroundSize: "300% 300%",
             animation: "borderGlow 3s ease infinite",
-            opacity: 0.7,
+            opacity: 0.85,
             zIndex: 0,
           }}
         />
         {/* Inner card */}
         <div
-          className="relative rounded-2xl bg-background/80 backdrop-blur-md p-5 space-y-4"
+          className="relative rounded-2xl bg-black backdrop-blur-md p-5 space-y-4"
           style={{
             zIndex: 1,
             boxShadow:
-              "0 0 30px oklch(0.75 0.22 210 / 20%), 0 0 60px oklch(0.65 0.28 300 / 10%), 0 4px 20px rgba(0,0,0,0.4)",
+              "0 0 30px rgba(220,38,38,0.2), 0 0 60px rgba(245,158,11,0.1), 0 4px 20px rgba(0,0,0,0.4)",
           }}
         >
           {/* Glowing corners */}
@@ -285,17 +293,17 @@ function HandleClaimCard() {
           {/* Header */}
           <div className="flex items-center gap-2 mb-1">
             <div
-              className="w-7 h-7 rounded-full bg-cyan/15 border border-cyan/50 flex items-center justify-center"
+              className="w-7 h-7 rounded-full bg-amber-500/15 border border-amber-500/50 flex items-center justify-center"
               style={{
-                boxShadow: "0 0 10px oklch(0.85 0.22 210 / 50%)",
+                boxShadow: "0 0 10px rgba(245,158,11,0.5)",
               }}
             >
-              <AtSign className="w-3.5 h-3.5 text-cyan" />
+              <AtSign className="w-3.5 h-3.5 text-amber-400" />
             </div>
             <span
               className="text-sm font-semibold text-foreground/90"
               style={{
-                textShadow: "0 0 10px oklch(0.85 0.22 210 / 40%)",
+                textShadow: "0 0 10px rgba(245,158,11,0.4)",
               }}
             >
               Claim your ClawPro handle
@@ -307,7 +315,7 @@ function HandleClaimCard() {
               />
             )}
             {!identity && (
-              <span className="ml-auto text-xs text-cyan/60 flex items-center gap-1">
+              <span className="ml-auto text-xs text-amber-500/70 flex items-center gap-1">
                 <LogIn className="w-3 h-3" />
                 Login to save
               </span>
@@ -318,35 +326,32 @@ function HandleClaimCard() {
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Username</Label>
             <div
-              className="flex items-center rounded-lg border border-cyan/30 bg-background/80 overflow-hidden transition-all duration-300 focus-within:border-cyan/70"
+              className="relative rounded-lg p-[1px]"
               style={{
-                boxShadow: "0 0 0 0 transparent",
-              }}
-              onFocus={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 0 12px oklch(0.85 0.22 210 / 30%)";
-              }}
-              onBlur={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 0 0 0 transparent";
+                background:
+                  "linear-gradient(90deg, #dc2626, #f59e0b, #ffd700, #f59e0b, #dc2626)",
+                backgroundSize: "300% 100%",
+                animation: "fieldBorderGlow 2s linear infinite",
               }}
             >
-              <span
-                className="px-3 py-2 text-xs font-mono text-cyan bg-cyan/10 border-r border-cyan/20 whitespace-nowrap flex-shrink-0"
-                style={{ textShadow: "0 0 8px oklch(0.85 0.22 210 / 60%)" }}
-              >
-                ClawPro.ai/
-              </span>
-              <input
-                type="text"
-                value={handle}
-                onChange={(e) =>
-                  setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
-                }
-                placeholder="your-handle"
-                className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
-                autoComplete="username"
-              />
+              <div className="flex items-center rounded-lg bg-black overflow-hidden">
+                <span
+                  className="px-3 py-2 text-xs font-mono text-amber-400 bg-amber-500/10 border-r border-amber-500/20 whitespace-nowrap flex-shrink-0"
+                  style={{ textShadow: "0 0 8px rgba(245,158,11,0.6)" }}
+                >
+                  ClawPro.ai/
+                </span>
+                <input
+                  type="text"
+                  value={handle}
+                  onChange={(e) =>
+                    setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
+                  }
+                  placeholder="your-handle"
+                  className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
+                  autoComplete="username"
+                />
+              </div>
             </div>
           </div>
 
@@ -356,22 +361,24 @@ function HandleClaimCard() {
               <User className="w-3 h-3" />
               Full Name
             </Label>
-            <Input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your real name"
-              className="bg-background/80 border-cyan/20 focus:border-cyan/60 text-sm h-9 transition-all duration-300"
+            <div
+              className="relative rounded-lg p-[1px]"
               style={{
-                boxShadow: "none",
+                background:
+                  "linear-gradient(90deg, #dc2626, #f59e0b, #ffd700, #f59e0b, #dc2626)",
+                backgroundSize: "300% 100%",
+                animation: "fieldBorderGlow 2s linear infinite",
               }}
-              onFocus={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow =
-                  "0 0 10px oklch(0.85 0.22 210 / 20%)";
-              }}
-              onBlur={(e) => {
-                (e.currentTarget as HTMLElement).style.boxShadow = "none";
-              }}
-            />
+            >
+              <div className="rounded-lg bg-black overflow-hidden">
+                <Input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Your real name"
+                  className="bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm h-9"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Glowing Save Button */}
@@ -381,26 +388,25 @@ function HandleClaimCard() {
             size="sm"
             className="w-full font-semibold h-10 text-sm relative overflow-hidden transition-all duration-300"
             style={{
-              background:
-                "linear-gradient(135deg, oklch(0.85 0.22 210), oklch(0.7 0.25 250))",
-              color: "#000",
-              boxShadow: handle.trim()
-                ? "0 0 20px oklch(0.85 0.22 210 / 60%), 0 0 40px oklch(0.75 0.22 210 / 30%), 0 4px 15px rgba(0,0,0,0.3)"
-                : "none",
+              background: "linear-gradient(135deg, #dc2626, #f59e0b, #ffd700)",
+              color: "#fff",
+              border: "1px solid rgba(245,158,11,0.5)",
+              boxShadow:
+                "0 0 25px rgba(245,158,11,0.7), 0 0 50px rgba(220,38,38,0.4), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15)",
+              animation: "btnPulse 1.5s ease-in-out infinite",
               transform: "translateY(0)",
+              opacity: saveProfile.isPending || !handle.trim() ? 0.6 : 1,
             }}
             onMouseEnter={(e) => {
-              if (!handle.trim()) return;
               const el = e.currentTarget as HTMLElement;
               el.style.boxShadow =
-                "0 0 30px oklch(0.85 0.22 210 / 80%), 0 0 60px oklch(0.75 0.22 210 / 50%), 0 6px 20px rgba(0,0,0,0.4)";
-              el.style.transform = "translateY(-2px)";
+                "0 0 40px rgba(245,158,11,0.9), 0 0 80px rgba(220,38,38,0.6), 0 8px 25px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2)";
+              el.style.transform = "translateY(-3px)";
             }}
             onMouseLeave={(e) => {
-              if (!handle.trim()) return;
               const el = e.currentTarget as HTMLElement;
               el.style.boxShadow =
-                "0 0 20px oklch(0.85 0.22 210 / 60%), 0 0 40px oklch(0.75 0.22 210 / 30%), 0 4px 15px rgba(0,0,0,0.3)";
+                "0 0 25px rgba(245,158,11,0.7), 0 0 50px rgba(220,38,38,0.4), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15)";
               el.style.transform = "translateY(0)";
             }}
           >
@@ -411,9 +417,7 @@ function HandleClaimCard() {
                 background:
                   "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%)",
                 backgroundSize: "200% 100%",
-                animation: handle.trim()
-                  ? "btnShine 2.5s ease infinite"
-                  : "none",
+                animation: "btnShine 2.5s ease infinite",
               }}
             />
             {saveProfile.isPending ? (
@@ -449,6 +453,18 @@ function HandleClaimCard() {
           0% { background-position: -100% 0; }
           60% { background-position: 200% 0; }
           100% { background-position: 200% 0; }
+        }
+        @keyframes goldGreenPulse {
+          0% { opacity: 0.5; transform: scale(1); }
+          100% { opacity: 1; transform: scale(1.05); }
+        }
+        @keyframes fieldBorderGlow {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 300% 50%; }
+        }
+        @keyframes btnPulse {
+          0%, 100% { box-shadow: 0 0 25px rgba(245,158,11,0.7), 0 0 50px rgba(220,38,38,0.4), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
+          50% { box-shadow: 0 0 40px rgba(245,158,11,0.9), 0 0 80px rgba(220,38,38,0.6), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2); }
         }
       `}</style>
     </div>
@@ -590,6 +606,19 @@ export function HeroSection() {
       {/* Colorful animated background */}
       <ColorfulBackground />
 
+      {/* Gold-green pulsing ambient layer */}
+      <div
+        className="absolute inset-0 pointer-events-none z-[1]"
+        style={{
+          background: `
+            radial-gradient(ellipse at 20% 50%, rgba(245,158,11,0.08) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 50%, rgba(16,185,129,0.07) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 20%, rgba(220,38,38,0.05) 0%, transparent 40%)
+          `,
+          animation: "goldGreenPulse 4s ease-in-out infinite alternate",
+        }}
+      />
+
       {/* Moving dots overlay */}
       <DotsBackground />
 
@@ -622,10 +651,32 @@ export function HeroSection() {
             </div>
 
             {/* Main Title */}
-            <h1 className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl mb-4 leading-none tracking-tighter">
-              <span className="text-foreground">Claw</span>
-              <span className="text-cyan">Pro</span>
-            </h1>
+            <div className="mb-4">
+              <h1 className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-none tracking-tighter">
+                <span className="text-foreground">Claw</span>
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, #dc2626, #f59e0b)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  Pro
+                </span>
+              </h1>
+              <div
+                className="font-display font-black text-3xl sm:text-4xl tracking-widest leading-none"
+                style={{
+                  background: "linear-gradient(135deg, #f59e0b, #ffd700)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                .ai
+              </div>
+            </div>
 
             {/* Subtitle */}
             <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mb-8 leading-relaxed">
