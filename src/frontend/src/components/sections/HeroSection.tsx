@@ -174,7 +174,7 @@ function HandleClaimCard() {
   };
 
   return (
-    <div className="mt-8 w-full max-w-md">
+    <div className="w-full max-w-lg">
       <div
         className="rounded-2xl border border-cyan/20 bg-background/60 backdrop-blur-md p-5 space-y-4"
         style={{
@@ -471,9 +471,6 @@ export function HeroSection() {
 
             {/* Profile display card — shown when handle is saved */}
             <ProfileDisplayCard />
-
-            {/* Handle Claim — shown only when logged in */}
-            <HandleClaimCard />
           </div>
 
           {/* Right: Robot mascot (desktop) */}
@@ -490,6 +487,11 @@ export function HeroSection() {
               style={{ height: "240px", objectFit: "contain" }}
             />
           </div>
+        </div>
+
+        {/* Handle Claim — full-width row below main columns */}
+        <div className="flex justify-center mt-8">
+          <HandleClaimCard />
         </div>
       </div>
 
