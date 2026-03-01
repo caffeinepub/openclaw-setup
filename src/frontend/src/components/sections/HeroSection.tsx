@@ -652,9 +652,12 @@ export function HeroSection() {
 
             {/* Main Title */}
             <div className="mb-4">
-              <h1 className="font-display font-black text-6xl sm:text-7xl md:text-8xl lg:text-9xl leading-none tracking-tighter">
-                <span className="text-foreground">Claw</span>
+              <h1 className="font-display font-black leading-none tracking-tighter flex items-baseline gap-0">
+                <span className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-foreground">
+                  Claw
+                </span>
                 <span
+                  className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl"
                   style={{
                     background: "linear-gradient(135deg, #dc2626, #f59e0b)",
                     WebkitBackgroundClip: "text",
@@ -664,18 +667,19 @@ export function HeroSection() {
                 >
                   Pro
                 </span>
+                <span
+                  className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-widest"
+                  style={{
+                    background: "linear-gradient(135deg, #f59e0b, #ffd700)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    marginLeft: "0.1em",
+                  }}
+                >
+                  .ai
+                </span>
               </h1>
-              <div
-                className="font-display font-black text-3xl sm:text-4xl tracking-widest leading-none"
-                style={{
-                  background: "linear-gradient(135deg, #f59e0b, #ffd700)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                .ai
-              </div>
             </div>
 
             {/* Subtitle */}
