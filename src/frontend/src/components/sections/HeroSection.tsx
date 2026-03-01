@@ -1413,16 +1413,30 @@ function SearchIntegrationModal({
                   iconBg={platform.iconBg}
                   size={56}
                 />
-                <div>
+                <div className="flex-1 min-w-0">
                   <DialogTitle className="text-foreground font-bold text-2xl">
                     {platform.name}
                   </DialogTitle>
                   <p className="text-sm text-muted-foreground mt-0.5">
                     {platform.desc}
                   </p>
+                  {/* Category + Popular badges */}
+                  <div className="flex items-center gap-2 mt-2 flex-wrap">
+                    <span
+                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                      style={getCategoryStyle(platform.category)}
+                    >
+                      {platform.category}
+                    </span>
+                    {platform.popular && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/35">
+                        ★ Popular
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <Badge
-                  className="ml-auto shrink-0 text-xs bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  className="ml-auto shrink-0 self-start text-xs bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
                   variant="outline"
                 >
                   <CheckCircle2 className="w-3 h-3 mr-1" />
