@@ -7,6 +7,15 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export interface LeaderboardEntry {
+    principal: Principal;
+    displayName: string;
+    joinedAt: bigint;
+    rank: bigint;
+    tier: MembershipTier;
+    tokens: bigint;
+    handle: string;
+}
 export interface FAQ {
     id: bigint;
     question: string;
@@ -18,6 +27,14 @@ export interface MembershipRecord {
     owner: Principal;
     tier: MembershipTier;
     purchasedAt: bigint;
+}
+export interface TopReward {
+    title: string;
+    color: string;
+    rank: bigint;
+    description: string;
+    badge: string;
+    bonusTokens: bigint;
 }
 export interface ChatbotConfig {
     enabled: boolean;
@@ -81,9 +98,12 @@ export interface backendInterface {
     getChatbotConfig(): Promise<ChatbotConfig | null>;
     getDownloadsByOS(): Promise<DownloadStats>;
     getLatestVersion(): Promise<string>;
+    getLeaderboard(): Promise<Array<LeaderboardEntry>>;
     getMembershipStats(): Promise<MembershipStats>;
     getMyConfigs(): Promise<Array<SavedConfig>>;
+    getMyLeaderboardRank(): Promise<LeaderboardEntry | null>;
     getMyMembership(): Promise<MembershipRecord | null>;
+    getTopRewards(): Promise<Array<TopReward>>;
     getTotalConfigsCount(): Promise<bigint>;
     getTotalDownloads(): Promise<bigint>;
     getTotalMembersCount(): Promise<bigint>;

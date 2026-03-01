@@ -32,6 +32,15 @@ export interface FAQ {
   'answer' : string,
   'category' : string,
 }
+export interface LeaderboardEntry {
+  'principal' : Principal,
+  'displayName' : string,
+  'joinedAt' : bigint,
+  'rank' : bigint,
+  'tier' : MembershipTier,
+  'tokens' : bigint,
+  'handle' : string,
+}
 export interface MembershipRecord {
   'id' : bigint,
   'owner' : Principal,
@@ -54,6 +63,14 @@ export interface SavedConfig {
   'name' : string,
   'createdAt' : bigint,
   'configData' : string,
+}
+export interface TopReward {
+  'title' : string,
+  'color' : string,
+  'rank' : bigint,
+  'description' : string,
+  'badge' : string,
+  'bonusTokens' : bigint,
 }
 export interface UserProfile { 'bio' : [] | [string], 'name' : string }
 export type UserRole = { 'admin' : null } |
@@ -78,9 +95,12 @@ export interface _SERVICE {
   'getChatbotConfig' : ActorMethod<[], [] | [ChatbotConfig]>,
   'getDownloadsByOS' : ActorMethod<[], DownloadStats>,
   'getLatestVersion' : ActorMethod<[], string>,
+  'getLeaderboard' : ActorMethod<[], Array<LeaderboardEntry>>,
   'getMembershipStats' : ActorMethod<[], MembershipStats>,
   'getMyConfigs' : ActorMethod<[], Array<SavedConfig>>,
+  'getMyLeaderboardRank' : ActorMethod<[], [] | [LeaderboardEntry]>,
   'getMyMembership' : ActorMethod<[], [] | [MembershipRecord]>,
+  'getTopRewards' : ActorMethod<[], Array<TopReward>>,
   'getTotalConfigsCount' : ActorMethod<[], bigint>,
   'getTotalDownloads' : ActorMethod<[], bigint>,
   'getTotalMembersCount' : ActorMethod<[], bigint>,

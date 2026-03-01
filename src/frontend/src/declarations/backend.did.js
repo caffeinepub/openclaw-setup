@@ -42,6 +42,20 @@ export const DownloadStats = IDL.Record({
   'linuxDownloads' : IDL.Nat,
   'totalDownloads' : IDL.Nat,
 });
+export const MembershipTier = IDL.Variant({
+  'gold' : IDL.Null,
+  'platinum' : IDL.Null,
+  'silver' : IDL.Null,
+});
+export const LeaderboardEntry = IDL.Record({
+  'principal' : IDL.Principal,
+  'displayName' : IDL.Text,
+  'joinedAt' : IDL.Int,
+  'rank' : IDL.Nat,
+  'tier' : MembershipTier,
+  'tokens' : IDL.Nat,
+  'handle' : IDL.Text,
+});
 export const MembershipStats = IDL.Record({
   'totalGold' : IDL.Nat,
   'totalSilver' : IDL.Nat,
@@ -56,16 +70,19 @@ export const SavedConfig = IDL.Record({
   'createdAt' : IDL.Int,
   'configData' : IDL.Text,
 });
-export const MembershipTier = IDL.Variant({
-  'gold' : IDL.Null,
-  'platinum' : IDL.Null,
-  'silver' : IDL.Null,
-});
 export const MembershipRecord = IDL.Record({
   'id' : IDL.Nat,
   'owner' : IDL.Principal,
   'tier' : MembershipTier,
   'purchasedAt' : IDL.Int,
+});
+export const TopReward = IDL.Record({
+  'title' : IDL.Text,
+  'color' : IDL.Text,
+  'rank' : IDL.Nat,
+  'description' : IDL.Text,
+  'badge' : IDL.Text,
+  'bonusTokens' : IDL.Nat,
 });
 
 export const idlService = IDL.Service({
@@ -88,9 +105,12 @@ export const idlService = IDL.Service({
   'getChatbotConfig' : IDL.Func([], [IDL.Opt(ChatbotConfig)], ['query']),
   'getDownloadsByOS' : IDL.Func([], [DownloadStats], ['query']),
   'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
+  'getLeaderboard' : IDL.Func([], [IDL.Vec(LeaderboardEntry)], ['query']),
   'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
   'getMyConfigs' : IDL.Func([], [IDL.Vec(SavedConfig)], ['query']),
+  'getMyLeaderboardRank' : IDL.Func([], [IDL.Opt(LeaderboardEntry)], ['query']),
   'getMyMembership' : IDL.Func([], [IDL.Opt(MembershipRecord)], ['query']),
+  'getTopRewards' : IDL.Func([], [IDL.Vec(TopReward)], ['query']),
   'getTotalConfigsCount' : IDL.Func([], [IDL.Nat], ['query']),
   'getTotalDownloads' : IDL.Func([], [IDL.Nat], ['query']),
   'getTotalMembersCount' : IDL.Func([], [IDL.Nat], ['query']),
@@ -144,6 +164,20 @@ export const idlFactory = ({ IDL }) => {
     'linuxDownloads' : IDL.Nat,
     'totalDownloads' : IDL.Nat,
   });
+  const MembershipTier = IDL.Variant({
+    'gold' : IDL.Null,
+    'platinum' : IDL.Null,
+    'silver' : IDL.Null,
+  });
+  const LeaderboardEntry = IDL.Record({
+    'principal' : IDL.Principal,
+    'displayName' : IDL.Text,
+    'joinedAt' : IDL.Int,
+    'rank' : IDL.Nat,
+    'tier' : MembershipTier,
+    'tokens' : IDL.Nat,
+    'handle' : IDL.Text,
+  });
   const MembershipStats = IDL.Record({
     'totalGold' : IDL.Nat,
     'totalSilver' : IDL.Nat,
@@ -158,16 +192,19 @@ export const idlFactory = ({ IDL }) => {
     'createdAt' : IDL.Int,
     'configData' : IDL.Text,
   });
-  const MembershipTier = IDL.Variant({
-    'gold' : IDL.Null,
-    'platinum' : IDL.Null,
-    'silver' : IDL.Null,
-  });
   const MembershipRecord = IDL.Record({
     'id' : IDL.Nat,
     'owner' : IDL.Principal,
     'tier' : MembershipTier,
     'purchasedAt' : IDL.Int,
+  });
+  const TopReward = IDL.Record({
+    'title' : IDL.Text,
+    'color' : IDL.Text,
+    'rank' : IDL.Nat,
+    'description' : IDL.Text,
+    'badge' : IDL.Text,
+    'bonusTokens' : IDL.Nat,
   });
   
   return IDL.Service({
@@ -190,9 +227,16 @@ export const idlFactory = ({ IDL }) => {
     'getChatbotConfig' : IDL.Func([], [IDL.Opt(ChatbotConfig)], ['query']),
     'getDownloadsByOS' : IDL.Func([], [DownloadStats], ['query']),
     'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
+    'getLeaderboard' : IDL.Func([], [IDL.Vec(LeaderboardEntry)], ['query']),
     'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
     'getMyConfigs' : IDL.Func([], [IDL.Vec(SavedConfig)], ['query']),
+    'getMyLeaderboardRank' : IDL.Func(
+        [],
+        [IDL.Opt(LeaderboardEntry)],
+        ['query'],
+      ),
     'getMyMembership' : IDL.Func([], [IDL.Opt(MembershipRecord)], ['query']),
+    'getTopRewards' : IDL.Func([], [IDL.Vec(TopReward)], ['query']),
     'getTotalConfigsCount' : IDL.Func([], [IDL.Nat], ['query']),
     'getTotalDownloads' : IDL.Func([], [IDL.Nat], ['query']),
     'getTotalMembersCount' : IDL.Func([], [IDL.Nat], ['query']),

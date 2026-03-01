@@ -3,7 +3,9 @@ import type {
   Changelog,
   DownloadStats,
   FAQ,
+  LeaderboardEntry,
   SavedConfig,
+  TopReward,
   UserProfile,
 } from "../backend.d";
 import { useActor } from "./useActor";
@@ -251,6 +253,48 @@ export function useDeleteChangelog() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["changelog"] });
     },
+  });
+}
+
+// ---- Leaderboard Hooks ----
+
+export function useLeaderboard() {
+  const { actor, isFetching } = useActor();
+  return useQuery<LeaderboardEntry[]>({
+    queryKey: ["leaderboard"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getLeaderboard();
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 30_000,
+  });
+}
+
+export function useMyLeaderboardRank() {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+  return useQuery<LeaderboardEntry | null>({
+    queryKey: ["myLeaderboardRank"],
+    queryFn: async () => {
+      if (!actor) return null;
+      return actor.getMyLeaderboardRank();
+    },
+    enabled: !!actor && !isFetching && !!identity,
+    staleTime: 30_000,
+  });
+}
+
+export function useTopRewards() {
+  const { actor, isFetching } = useActor();
+  return useQuery<TopReward[]>({
+    queryKey: ["topRewards"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getTopRewards();
+    },
+    enabled: !!actor && !isFetching,
+    staleTime: 60_000,
   });
 }
 

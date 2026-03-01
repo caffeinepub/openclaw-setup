@@ -11,8 +11,6 @@ import Nat "mo:core/Nat";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
-
-
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -74,6 +72,25 @@ actor {
     enabled : Bool;
   };
 
+  public type LeaderboardEntry = {
+    rank : Nat;
+    principal : Principal;
+    handle : Text;
+    displayName : Text;
+    tier : MembershipTier;
+    tokens : Nat;
+    joinedAt : Int;
+  };
+
+  public type TopReward = {
+    rank : Nat;
+    badge : Text;
+    title : Text;
+    description : Text;
+    bonusTokens : Nat;
+    color : Text;
+  };
+
   // State
   let faqs = Map.empty<Nat, FAQ>();
   let changelogs = Map.empty<Nat, Changelog>();
@@ -96,6 +113,11 @@ actor {
   // Helper for sorting changelogs by release date
   func compareChangelogsByDate(a : Changelog, b : Changelog) : Order.Order {
     b.releaseDate.compare(a.releaseDate);
+  };
+
+  // Helper for sorting leaderboard entries by tokens (descending)
+  func compareLeaderboardEntries(a : LeaderboardEntry, b : LeaderboardEntry) : Order.Order {
+    Nat.compare(b.tokens, a.tokens);
   };
 
   // Seed data initialization in constructor
@@ -220,6 +242,144 @@ actor {
         changeType = "major";
       },
     );
+  };
+
+  // Helper function to get token count for a tier
+  func tierTokens(tier : MembershipTier) : Nat {
+    switch (tier) {
+      case (#silver) { 999 };
+      case (#gold) { 2_999 };
+      case (#platinum) { 7_999 };
+    };
+  };
+
+  // Calculate (or update) leaderboard
+  public query ({ caller }) func getLeaderboard() : async [LeaderboardEntry] {
+    let entries = List.empty<LeaderboardEntry>();
+
+    for ((principal, membership) in userMemberships.entries()) {
+      let handle = switch (userProfiles.get(principal)) {
+        case (null) { "Anonymous" };
+        case (?profile) { profile.name };
+      };
+
+      let displayName = switch (userProfiles.get(principal)) {
+        case (null) { "Anonymous" };
+        case (?profile) {
+          switch (profile.bio) {
+            case (null) { profile.name };
+            case (?bio) { bio };
+          };
+        };
+      };
+
+      let entry : LeaderboardEntry = {
+        rank = 0; // Will be assigned after sorting
+        principal;
+        handle;
+        displayName;
+        tier = membership.tier;
+        tokens = tierTokens(membership.tier);
+        joinedAt = membership.purchasedAt;
+      };
+      entries.add(entry);
+    };
+
+    let sortedArray = entries.toArray().sort(compareLeaderboardEntries);
+
+    // Assign ranks and return top 50
+    var currentRank = 1;
+    let rankedArray = sortedArray.map(
+      func(entry) {
+        let rankedEntry = { entry with rank = currentRank };
+        currentRank += 1;
+        rankedEntry;
+      }
+    );
+
+    rankedArray.sliceToArray(0, if (rankedArray.size() < 50) { rankedArray.size() } else { 50 });
+  };
+
+  // Get caller's leaderboard rank
+  public query ({ caller }) func getMyLeaderboardRank() : async ?LeaderboardEntry {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access leaderboard rank");
+    };
+
+    let entries = List.empty<LeaderboardEntry>();
+
+    for ((principal, membership) in userMemberships.entries()) {
+      let handle = switch (userProfiles.get(principal)) {
+        case (null) { "Anonymous" };
+        case (?profile) { profile.name };
+      };
+
+      let displayName = switch (userProfiles.get(principal)) {
+        case (null) { "Anonymous" };
+        case (?profile) {
+          switch (profile.bio) {
+            case (null) { profile.name };
+            case (?bio) { bio };
+          };
+        };
+      };
+
+      let entry : LeaderboardEntry = {
+        rank = 0; // Will be assigned after sorting
+        principal;
+        handle;
+        displayName;
+        tier = membership.tier;
+        tokens = tierTokens(membership.tier);
+        joinedAt = membership.purchasedAt;
+      };
+      entries.add(entry);
+    };
+
+    let sortedArray = entries.toArray().sort(compareLeaderboardEntries);
+
+    // Assign ranks
+    var currentRank = 1;
+    let rankedArray = sortedArray.map(
+      func(entry) {
+        let rankedEntry = { entry with rank = currentRank };
+        currentRank += 1;
+        rankedEntry;
+      }
+    );
+
+    // Find the entry matching caller's principal
+    rankedArray.find(func(entry) { entry.principal == caller });
+  };
+
+  // Get static top reward definitions
+  public query ({ caller }) func getTopRewards() : async [TopReward] {
+    [
+      {
+        rank = 1;
+        badge = "👑";
+        title = "ClawPro Champion";
+        description = "Exclusive Platinum Crown badge + 3,000 bonus tokens";
+        bonusTokens = 3_000;
+        color = "#F59E0B";
+      },
+      {
+        rank = 2;
+        badge = "🥈";
+        title = "Elite Builder";
+        description = "Silver Star badge + 1,500 bonus tokens";
+        bonusTokens = 1_500;
+        color = "#94A3B8";
+      },
+      {
+        rank = 3;
+        badge = "🥉";
+        title = "Rising Star";
+        description = "Bronze Claw badge + 750 bonus tokens";
+        bonusTokens = 750;
+        color = "#F97316";
+      },
+    ];
   };
 
   // User Profile Operations

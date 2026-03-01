@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,6 +34,7 @@ import {
   Plug,
   Plus,
   Receipt,
+  RefreshCw,
   Save,
   Send,
   Settings,
@@ -49,7 +51,11 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { SiWhatsapp } from "react-icons/si";
 import { toast } from "sonner";
-import { MembershipTier } from "../backend.d";
+import {
+  type LeaderboardEntry,
+  MembershipTier,
+  type TopReward,
+} from "../backend.d";
 import {
   useChatbotConfig,
   useDeleteChatbotConfig,
@@ -63,8 +69,11 @@ import {
 import {
   useCallerUserProfile,
   useDeleteConfig,
+  useLeaderboard,
   useMyConfigs,
+  useMyLeaderboardRank,
   useSaveCallerUserProfile,
+  useTopRewards,
 } from "../hooks/useQueries";
 import { useLanguage } from "../i18n/LanguageContext";
 
@@ -1751,79 +1760,6 @@ interface LeaderboardTabProps {
   currentTokens: number;
 }
 
-const MOCK_LEADERBOARD = [
-  {
-    rank: 1,
-    handle: "techmaster",
-    name: "Alex Rodriguez",
-    tier: MembershipTier.platinum,
-    tokens: 15897,
-  },
-  {
-    rank: 2,
-    handle: "robotbuilder",
-    name: "Priya Sharma",
-    tier: MembershipTier.platinum,
-    tokens: 14200,
-  },
-  {
-    rank: 3,
-    handle: "clawexpert",
-    name: "Marcus Chen",
-    tier: MembershipTier.gold,
-    tokens: 11650,
-  },
-  {
-    rank: 4,
-    handle: "devpro99",
-    name: "Fatima Al-Rashid",
-    tier: MembershipTier.platinum,
-    tokens: 9999,
-  },
-  {
-    rank: 5,
-    handle: "hardwareking",
-    name: "Aleksei Volkov",
-    tier: MembershipTier.gold,
-    tokens: 8450,
-  },
-  {
-    rank: 6,
-    handle: "clawmaster",
-    name: "Liu Wei",
-    tier: MembershipTier.gold,
-    tokens: 7320,
-  },
-  {
-    rank: 7,
-    handle: "probuilder",
-    name: "Yuki Tanaka",
-    tier: MembershipTier.silver,
-    tokens: 5990,
-  },
-  {
-    rank: 8,
-    handle: "techguru",
-    name: "Sven Larsson",
-    tier: MembershipTier.platinum,
-    tokens: 5200,
-  },
-  {
-    rank: 9,
-    handle: "robotfan",
-    name: "Amira Hassan",
-    tier: MembershipTier.gold,
-    tokens: 4100,
-  },
-  {
-    rank: 10,
-    handle: "clawuser",
-    name: "Pedro Silva",
-    tier: MembershipTier.silver,
-    tokens: 2999,
-  },
-];
-
 const MEDAL_STYLES: Record<
   number,
   { color: string; bg: string; icon: React.ReactNode }
@@ -1845,54 +1781,294 @@ const MEDAL_STYLES: Record<
   },
 };
 
+// Top 3 Reward colors mapped from reward.color field
+function getRewardGlow(color: string): string {
+  const colorMap: Record<string, string> = {
+    gold: "0 0 24px oklch(0.80 0.20 60 / 50%)",
+    silver: "0 0 24px oklch(0.75 0.05 220 / 40%)",
+    bronze: "0 0 24px oklch(0.70 0.12 40 / 45%)",
+    platinum: "0 0 24px oklch(0.80 0.18 290 / 45%)",
+  };
+  return colorMap[color.toLowerCase()] ?? "0 0 24px oklch(0.70 0.15 210 / 40%)";
+}
+
+function getRewardBorder(color: string): string {
+  const colorMap: Record<string, string> = {
+    gold: "oklch(0.80 0.20 60 / 45%)",
+    silver: "oklch(0.75 0.05 220 / 35%)",
+    bronze: "oklch(0.70 0.12 40 / 40%)",
+    platinum: "oklch(0.80 0.18 290 / 40%)",
+  };
+  return colorMap[color.toLowerCase()] ?? "oklch(0.65 0.12 210 / 35%)";
+}
+
+function getRewardBg(color: string): string {
+  const colorMap: Record<string, string> = {
+    gold: "linear-gradient(135deg, oklch(0.22 0.08 60 / 40%), oklch(0.15 0.04 55 / 30%))",
+    silver:
+      "linear-gradient(135deg, oklch(0.18 0.03 220 / 35%), oklch(0.14 0.02 210 / 25%))",
+    bronze:
+      "linear-gradient(135deg, oklch(0.20 0.06 40 / 35%), oklch(0.15 0.04 38 / 25%))",
+    platinum:
+      "linear-gradient(135deg, oklch(0.20 0.08 290 / 35%), oklch(0.15 0.04 285 / 25%))",
+  };
+  return (
+    colorMap[color.toLowerCase()] ??
+    "linear-gradient(135deg, oklch(0.18 0.04 210 / 30%), oklch(0.14 0.02 210 / 20%))"
+  );
+}
+
+function getEntryDisplayName(entry: LeaderboardEntry): string {
+  if (entry.displayName) return entry.displayName;
+  if (entry.handle) return entry.handle;
+  const principalStr = entry.principal.toString();
+  return `${principalStr.slice(0, 8)}...`;
+}
+
+function getEntryInitials(entry: LeaderboardEntry): string {
+  const name = entry.displayName || entry.handle;
+  if (!name) {
+    const principalStr = entry.principal.toString();
+    return principalStr.slice(0, 2).toUpperCase();
+  }
+  return name
+    .split(/[\s_-]+/)
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 function LeaderboardTab({
   membership,
   currentHandle,
   currentTokens,
 }: LeaderboardTabProps) {
-  const leaderboard = [...MOCK_LEADERBOARD];
+  const { identity } = useInternetIdentity();
+  const leaderboardQuery = useLeaderboard();
+  const topRewardsQuery = useTopRewards();
+  const myRankQuery = useMyLeaderboardRank();
+
+  const leaderboard = leaderboardQuery.data ?? [];
+  const topRewards = topRewardsQuery.data ?? [];
+  const myRank = myRankQuery.data;
+  const isLoading = leaderboardQuery.isLoading || leaderboardQuery.isFetching;
+  const isRefetching =
+    leaderboardQuery.isFetching && !leaderboardQuery.isLoading;
+
+  // Top 3 entries for the podium
+  const top3 = leaderboard.filter((e) => Number(e.rank) <= 3);
 
   // Check if current user is on leaderboard
-  const currentUserIdx = leaderboard.findIndex(
-    (e) => e.handle === currentHandle,
-  );
-  const isOnLeaderboard = currentUserIdx !== -1;
-
-  // If not on leaderboard and has handle/membership, add them
-  let currentUserEntry: (typeof leaderboard)[0] | null = null;
-  if (!isOnLeaderboard && currentHandle && membership) {
-    currentUserEntry = {
-      rank: leaderboard.length + 1,
-      handle: currentHandle,
-      name: "You",
-      tier: membership.tier,
-      tokens: currentTokens,
-    };
-  }
-
-  const userRank = isOnLeaderboard
-    ? leaderboard[currentUserIdx].rank
-    : (currentUserEntry?.rank ?? null);
+  const currentUserEntry = leaderboard.find((e) => e.handle === currentHandle);
+  const isOnLeaderboard = !!currentUserEntry;
 
   return (
-    <div className="space-y-4 max-w-2xl">
+    <div className="space-y-5 max-w-2xl">
       {/* Header */}
       <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
         <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center flex-shrink-0">
           <Trophy className="w-5 h-5 text-amber-400" />
         </div>
-        <div>
+        <div className="flex-1 min-w-0">
           <h3 className="font-bold text-sm text-[oklch(0.88_0.04_210)]">
             Token Leaderboard
           </h3>
           <p className="text-xs text-[oklch(0.50_0.02_210)]">
-            Top members ranked by token balance
+            Real-time rankings from blockchain · {leaderboard.length} members
           </p>
         </div>
       </div>
 
-      {/* Your Rank Card */}
-      {userRank !== null && (
+      {/* ── Top 3 Rewards Section ── */}
+      {(topRewardsQuery.isLoading || topRewards.length > 0) && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-400" />
+            <h4 className="text-sm font-bold text-[oklch(0.88_0.04_210)]">
+              Top 3 Rewards
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {topRewardsQuery.isLoading
+              ? [1, 2, 3].map((i) => (
+                  <Skeleton
+                    key={i}
+                    className="h-32 rounded-xl bg-[oklch(0.13_0.01_240)]"
+                  />
+                ))
+              : topRewards.map((reward: TopReward) => (
+                  <motion.div
+                    key={reward.rank.toString()}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Number(reward.rank) * 0.08 }}
+                    className="relative rounded-xl p-4 border text-center overflow-hidden"
+                    style={{
+                      background: getRewardBg(reward.color),
+                      borderColor: getRewardBorder(reward.color),
+                      boxShadow: getRewardGlow(reward.color),
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,oklch(1_0_0_/_4%),transparent_70%)]" />
+                    <div className="relative space-y-2">
+                      {/* Badge emoji */}
+                      <div className="text-3xl leading-none">
+                        {reward.badge}
+                      </div>
+                      {/* Rank */}
+                      <div
+                        className="text-[10px] font-bold uppercase tracking-widest"
+                        style={{ color: getRewardBorder(reward.color) }}
+                      >
+                        Rank #{reward.rank.toString()}
+                      </div>
+                      {/* Title */}
+                      <p className="text-xs font-bold text-[oklch(0.90_0.04_210)] leading-tight">
+                        {reward.title}
+                      </p>
+                      {/* Bonus tokens */}
+                      <div className="flex items-center justify-center gap-1">
+                        <Coins className="w-3 h-3 text-amber-400" />
+                        <span className="text-[11px] font-bold text-amber-300">
+                          +{Number(reward.bonusTokens).toLocaleString()} bonus
+                        </span>
+                      </div>
+                      {/* Description */}
+                      <p className="text-[10px] text-[oklch(0.52_0.02_210)] leading-relaxed">
+                        {reward.description}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Podium (top 3) ── */}
+      {!isLoading && top3.length >= 3 && (
+        <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.10_0.012_240)] p-5">
+          <h4 className="text-[11px] font-semibold text-[oklch(0.55_0.05_210)] uppercase tracking-wider mb-4 text-center">
+            🏆 Podium
+          </h4>
+          {/* Arrange: 2nd left, 1st center, 3rd right */}
+          <div className="flex items-end justify-center gap-3">
+            {/* 2nd place */}
+            {top3.find((e) => Number(e.rank) === 2) &&
+              (() => {
+                const e = top3.find((e) => Number(e.rank) === 2)!;
+                const tierStyle = TIER_STYLES[e.tier];
+                return (
+                  <div className="flex flex-col items-center gap-1.5 flex-1 max-w-[100px]">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white border-2 border-slate-400/40"
+                      style={{
+                        background: `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`,
+                      }}
+                    >
+                      {getEntryInitials(e)}
+                    </div>
+                    <p className="text-[10px] font-semibold text-[oklch(0.80_0.03_210)] truncate w-full text-center">
+                      {e.handle ? `@${e.handle}` : getEntryDisplayName(e)}
+                    </p>
+                    <div className="flex items-center gap-0.5">
+                      <Coins className="w-2.5 h-2.5 text-slate-400" />
+                      <span className="text-[9px] text-slate-300 font-bold">
+                        {Number(e.tokens).toLocaleString()}
+                      </span>
+                    </div>
+                    <div
+                      className="w-full rounded-t-lg flex items-center justify-center font-black text-slate-300 text-sm bg-slate-500/20 border border-slate-400/20"
+                      style={{ height: "4rem" }}
+                    >
+                      2
+                    </div>
+                  </div>
+                );
+              })()}
+
+            {/* 1st place (center, tallest) */}
+            {top3.find((e) => Number(e.rank) === 1) &&
+              (() => {
+                const e = top3.find((e) => Number(e.rank) === 1)!;
+                const tierStyle = TIER_STYLES[e.tier];
+                return (
+                  <div className="flex flex-col items-center gap-1.5 flex-1 max-w-[110px]">
+                    <div className="text-lg">👑</div>
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white border-2 border-amber-400/60"
+                      style={{
+                        background: `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`,
+                        boxShadow: "0 0 16px oklch(0.80 0.20 60 / 40%)",
+                      }}
+                    >
+                      {getEntryInitials(e)}
+                    </div>
+                    <p className="text-[10px] font-bold text-amber-200 truncate w-full text-center">
+                      {e.handle ? `@${e.handle}` : getEntryDisplayName(e)}
+                    </p>
+                    <div className="flex items-center gap-0.5">
+                      <Coins className="w-2.5 h-2.5 text-amber-400" />
+                      <span className="text-[9px] text-amber-300 font-bold">
+                        {Number(e.tokens).toLocaleString()}
+                      </span>
+                    </div>
+                    <div
+                      className="w-full rounded-t-lg flex items-center justify-center font-black text-amber-300 text-lg"
+                      style={{
+                        height: "5rem",
+                        background:
+                          "linear-gradient(180deg, oklch(0.24 0.08 60 / 40%), oklch(0.18 0.06 58 / 30%))",
+                        border: "1px solid oklch(0.80 0.20 60 / 30%)",
+                        boxShadow: "0 0 20px oklch(0.80 0.20 60 / 25%)",
+                      }}
+                    >
+                      1
+                    </div>
+                  </div>
+                );
+              })()}
+
+            {/* 3rd place */}
+            {top3.find((e) => Number(e.rank) === 3) &&
+              (() => {
+                const e = top3.find((e) => Number(e.rank) === 3)!;
+                const tierStyle = TIER_STYLES[e.tier];
+                return (
+                  <div className="flex flex-col items-center gap-1.5 flex-1 max-w-[100px]">
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white border-2 border-orange-400/40"
+                      style={{
+                        background: `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`,
+                      }}
+                    >
+                      {getEntryInitials(e)}
+                    </div>
+                    <p className="text-[10px] font-semibold text-[oklch(0.80_0.03_210)] truncate w-full text-center">
+                      {e.handle ? `@${e.handle}` : getEntryDisplayName(e)}
+                    </p>
+                    <div className="flex items-center gap-0.5">
+                      <Coins className="w-2.5 h-2.5 text-orange-400" />
+                      <span className="text-[9px] text-orange-300 font-bold">
+                        {Number(e.tokens).toLocaleString()}
+                      </span>
+                    </div>
+                    <div
+                      className="w-full rounded-t-lg flex items-center justify-center font-black text-orange-400 text-sm bg-orange-500/15 border border-orange-400/20"
+                      style={{ height: "3.5rem" }}
+                    >
+                      3
+                    </div>
+                  </div>
+                );
+              })()}
+          </div>
+        </div>
+      )}
+
+      {/* ── Your Rank Card (from blockchain) ── */}
+      {identity && membership && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1907,21 +2083,39 @@ function LeaderboardTab({
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,oklch(0.8_0.20_60_/_8%),transparent_60%)]" />
           <div className="relative flex items-center gap-4 px-5 py-4">
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-500/20 border border-amber-400/30 flex-shrink-0">
-              <span className="font-black text-base text-amber-300">
-                #{userRank}
-              </span>
+              {myRankQuery.isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+              ) : myRank ? (
+                <span className="font-black text-base text-amber-300">
+                  #{myRank.rank.toString()}
+                </span>
+              ) : (
+                <Trophy className="w-4 h-4 text-amber-400/50" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm text-amber-100">Your Rank</p>
-              <p className="text-[11px] text-amber-300/60">
-                @{currentHandle || "set-handle"}
-              </p>
+              {myRank ? (
+                <p className="text-[11px] text-amber-300/60">
+                  @{myRank.handle || currentHandle || "set-handle"}
+                </p>
+              ) : myRankQuery.isLoading ? (
+                <p className="text-[11px] text-amber-300/40">Loading...</p>
+              ) : (
+                <p className="text-[11px] text-amber-300/40">
+                  {isOnLeaderboard
+                    ? `Rank #${currentUserEntry?.rank.toString()}`
+                    : "Your rank is being calculated"}
+                </p>
+              )}
             </div>
             <div className="text-right flex-shrink-0">
               <div className="flex items-center gap-1.5 justify-end">
                 <Coins className="w-4 h-4 text-amber-400" />
                 <span className="font-black text-xl text-amber-200">
-                  {currentTokens.toLocaleString()}
+                  {myRank
+                    ? Number(myRank.tokens).toLocaleString()
+                    : currentTokens.toLocaleString()}
                 </span>
               </div>
               <p className="text-[10px] text-amber-300/50">tokens</p>
@@ -1930,187 +2124,167 @@ function LeaderboardTab({
         </motion.div>
       )}
 
-      {/* Leaderboard Table */}
+      {/* ── Full Leaderboard Table ── */}
       <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.10_0.012_240)] overflow-hidden">
         <div className="px-4 py-3 border-b border-[oklch(1_0_0_/_6%)] flex items-center justify-between">
           <h4 className="text-[11px] font-semibold text-[oklch(0.58_0.05_210)] uppercase tracking-wider">
-            Top Members
+            All Members
           </h4>
-          <span className="text-[10px] text-[oklch(0.38_0.02_210)]">
-            {leaderboard.length} members
-          </span>
+          <button
+            type="button"
+            onClick={() => leaderboardQuery.refetch()}
+            disabled={isRefetching}
+            className="flex items-center gap-1.5 text-[10px] text-[oklch(0.55_0.08_210)] hover:text-[oklch(0.72_0.12_210)] transition-colors px-2 py-1 rounded-lg hover:bg-[oklch(0.65_0.12_210)]/8 disabled:opacity-50"
+            title="Refresh leaderboard"
+          >
+            <RefreshCw
+              className={`w-3 h-3 ${isRefetching ? "animate-spin" : ""}`}
+            />
+            <span>Refresh</span>
+          </button>
         </div>
 
-        <div className="divide-y divide-[oklch(1_0_0_/_5%)]">
-          {leaderboard.map((entry, i) => {
-            const isCurrentUser = entry.handle === currentHandle;
-            const medal = MEDAL_STYLES[entry.rank];
-            const tierStyle = TIER_STYLES[entry.tier];
-            const initials = entry.name
-              .split(" ")
-              .map((w) => w[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2);
+        {isLoading ? (
+          <div className="divide-y divide-[oklch(1_0_0_/_5%)]">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-3">
+                <Skeleton className="w-7 h-7 rounded-full bg-[oklch(0.14_0.01_240)]" />
+                <Skeleton className="w-8 h-8 rounded-full bg-[oklch(0.14_0.01_240)]" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3 w-28 rounded bg-[oklch(0.14_0.01_240)]" />
+                  <Skeleton className="h-2.5 w-20 rounded bg-[oklch(0.13_0.01_240)]" />
+                </div>
+                <Skeleton className="h-4 w-14 rounded-full bg-[oklch(0.14_0.01_240)]" />
+                <Skeleton className="h-3 w-16 rounded bg-[oklch(0.13_0.01_240)]" />
+              </div>
+            ))}
+          </div>
+        ) : leaderboard.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-14 text-center px-6">
+            <Trophy className="w-10 h-10 text-[oklch(0.28_0.02_210)] mb-3" />
+            <p className="text-sm font-medium text-[oklch(0.50_0.02_210)]">
+              No members yet
+            </p>
+            <p className="text-xs text-[oklch(0.38_0.01_210)] mt-1">
+              Be the first to join the leaderboard!
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[oklch(1_0_0_/_5%)]">
+            {leaderboard.map((entry: LeaderboardEntry, i: number) => {
+              const rankNum = Number(entry.rank);
+              const isCurrentUser = entry.handle
+                ? entry.handle === currentHandle
+                : false;
+              const medal = MEDAL_STYLES[rankNum];
+              const tierStyle = TIER_STYLES[entry.tier];
+              const displayName = getEntryDisplayName(entry);
+              const initials = getEntryInitials(entry);
 
-            return (
-              <motion.div
-                key={entry.handle}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
-                  isCurrentUser
-                    ? "bg-[oklch(0.65_0.15_210)]/8 border-l-2 border-[oklch(0.65_0.15_210)]/50"
-                    : "hover:bg-[oklch(1_0_0_/_2%)]"
-                }`}
-                style={
-                  entry.rank <= 3
-                    ? {
-                        background: isCurrentUser
-                          ? undefined
-                          : entry.rank === 1
-                            ? "linear-gradient(90deg, oklch(0.22 0.07 55 / 20%), transparent)"
-                            : entry.rank === 2
-                              ? "linear-gradient(90deg, oklch(0.20 0.03 220 / 15%), transparent)"
-                              : "linear-gradient(90deg, oklch(0.22 0.06 40 / 15%), transparent)",
-                      }
-                    : undefined
-                }
-              >
-                {/* Rank */}
-                <div
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 ${
-                    medal
-                      ? medal.bg
-                      : "bg-[oklch(0.14_0.01_240)] border-[oklch(1_0_0_/_8%)]"
+              return (
+                <motion.div
+                  key={entry.principal.toString()}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.3) }}
+                  className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                    isCurrentUser
+                      ? "bg-[oklch(0.65_0.15_210)]/8 border-l-2 border-[oklch(0.65_0.15_210)]/50"
+                      : "hover:bg-[oklch(1_0_0_/_2%)]"
                   }`}
+                  style={
+                    rankNum <= 3
+                      ? {
+                          background: isCurrentUser
+                            ? undefined
+                            : rankNum === 1
+                              ? "linear-gradient(90deg, oklch(0.22 0.07 55 / 20%), transparent)"
+                              : rankNum === 2
+                                ? "linear-gradient(90deg, oklch(0.20 0.03 220 / 15%), transparent)"
+                                : "linear-gradient(90deg, oklch(0.22 0.06 40 / 15%), transparent)",
+                        }
+                      : undefined
+                  }
                 >
-                  {medal ? (
-                    medal.icon
-                  ) : (
-                    <span className="text-[10px] font-bold text-[oklch(0.45_0.02_210)]">
-                      {entry.rank}
-                    </span>
-                  )}
-                </div>
-
-                {/* Avatar */}
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                  style={{
-                    background: `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`,
-                  }}
-                >
-                  {initials}
-                </div>
-
-                {/* Name & Handle */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-[oklch(0.85_0.05_210)] truncate">
-                      {isCurrentUser ? "You" : entry.name}
-                    </p>
-                    {isCurrentUser && (
-                      <Badge className="text-[9px] px-1 py-0 h-3.5 bg-[oklch(0.62_0.15_210)]/20 text-[oklch(0.72_0.15_210)] border-[oklch(0.62_0.15_210)]/30 border flex-shrink-0">
-                        You
-                      </Badge>
+                  {/* Rank */}
+                  <div
+                    className={`w-7 h-7 rounded-full border flex items-center justify-center flex-shrink-0 ${
+                      medal
+                        ? medal.bg
+                        : "bg-[oklch(0.14_0.01_240)] border-[oklch(1_0_0_/_8%)]"
+                    }`}
+                  >
+                    {medal ? (
+                      medal.icon
+                    ) : (
+                      <span className="text-[10px] font-bold text-[oklch(0.45_0.02_210)]">
+                        {rankNum}
+                      </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-[oklch(0.42_0.03_210)] font-mono truncate">
-                    @{entry.handle}
-                  </p>
-                </div>
 
-                {/* Tier Badge */}
-                <Badge
-                  className={`border text-[9px] px-1.5 py-0 h-4 flex-shrink-0 ${tierStyle.badge}`}
-                >
-                  {tierStyle.icon} {tierStyle.label}
-                </Badge>
+                  {/* Avatar */}
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                    style={{
+                      background: `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`,
+                    }}
+                  >
+                    {initials}
+                  </div>
 
-                {/* Tokens */}
-                <div className="text-right flex-shrink-0">
-                  <div className="flex items-center gap-1 justify-end">
-                    <Coins className="w-3 h-3 text-amber-400/70" />
-                    <span
-                      className={`text-xs font-bold ${
-                        medal ? medal.color : "text-[oklch(0.75_0.05_210)]"
-                      }`}
-                    >
-                      {entry.tokens.toLocaleString()}
-                    </span>
+                  {/* Name & Handle */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold text-[oklch(0.85_0.05_210)] truncate">
+                        {isCurrentUser ? "You" : displayName}
+                      </p>
+                      {isCurrentUser && (
+                        <Badge className="text-[9px] px-1 py-0 h-3.5 bg-[oklch(0.62_0.15_210)]/20 text-[oklch(0.72_0.15_210)] border-[oklch(0.62_0.15_210)]/30 border flex-shrink-0">
+                          You
+                        </Badge>
+                      )}
+                    </div>
+                    {entry.handle && (
+                      <p className="text-[10px] text-[oklch(0.42_0.03_210)] font-mono truncate">
+                        @{entry.handle}
+                      </p>
+                    )}
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
 
-          {/* Current user if not in top 10 */}
-          {currentUserEntry && (
-            <>
-              <div className="px-4 py-2 text-center">
-                <span className="text-[10px] text-[oklch(0.35_0.02_210)]">
-                  ···
-                </span>
-              </div>
-              <motion.div
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-3 px-4 py-3 bg-[oklch(0.65_0.15_210)]/8 border-l-2 border-[oklch(0.65_0.15_210)]/50"
-              >
-                <div className="w-7 h-7 rounded-full border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.14_0.01_240)] flex items-center justify-center flex-shrink-0">
-                  <span className="text-[10px] font-bold text-[oklch(0.45_0.02_210)]">
-                    {currentUserEntry.rank}
-                  </span>
-                </div>
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-                  style={{
-                    background: `radial-gradient(circle at 30% 30%, ${TIER_STYLES[currentUserEntry.tier].color}, oklch(0.15 0.05 240))`,
-                  }}
-                >
-                  {currentHandle.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-[oklch(0.85_0.05_210)]">
-                      You
-                    </p>
-                    <Badge className="text-[9px] px-1 py-0 h-3.5 bg-[oklch(0.62_0.15_210)]/20 text-[oklch(0.72_0.15_210)] border-[oklch(0.62_0.15_210)]/30 border flex-shrink-0">
-                      You
-                    </Badge>
+                  {/* Tier Badge */}
+                  <Badge
+                    className={`border text-[9px] px-1.5 py-0 h-4 flex-shrink-0 ${tierStyle.badge}`}
+                  >
+                    {tierStyle.icon} {tierStyle.label}
+                  </Badge>
+
+                  {/* Tokens */}
+                  <div className="text-right flex-shrink-0">
+                    <div className="flex items-center gap-1 justify-end">
+                      <Coins className="w-3 h-3 text-amber-400/70" />
+                      <span
+                        className={`text-xs font-bold ${
+                          medal ? medal.color : "text-[oklch(0.75_0.05_210)]"
+                        }`}
+                      >
+                        {Number(entry.tokens).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-[oklch(0.42_0.03_210)] font-mono">
-                    @{currentHandle}
-                  </p>
-                </div>
-                <Badge
-                  className={`border text-[9px] px-1.5 py-0 h-4 flex-shrink-0 ${TIER_STYLES[currentUserEntry.tier].badge}`}
-                >
-                  {TIER_STYLES[currentUserEntry.tier].icon}{" "}
-                  {TIER_STYLES[currentUserEntry.tier].label}
-                </Badge>
-                <div className="text-right flex-shrink-0">
-                  <div className="flex items-center gap-1 justify-end">
-                    <Coins className="w-3 h-3 text-amber-400/70" />
-                    <span className="text-xs font-bold text-[oklch(0.75_0.05_210)]">
-                      {currentTokens.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Info note */}
       <div className="rounded-xl border border-[oklch(1_0_0_/_6%)] bg-[oklch(0.09_0.01_240)] p-3">
         <p className="text-[10px] text-[oklch(0.42_0.03_210)] text-center">
           <Trophy className="w-3 h-3 inline mr-1 text-amber-400/70" />
-          Rankings update based on token balance. Earn more tokens by upgrading
-          your membership tier.
+          Live data from blockchain · Rankings update based on token balance.
+          Top 3 earn special rewards!
         </p>
       </div>
     </div>

@@ -1,29 +1,35 @@
 # ClawPro
 
 ## Current State
-- Dashboard member memiliki tab: Profile, Configs, Bot, AI, API, Transactions
-- TierLandingPage menampilkan harga dalam ICP (e.g. "5 ICP", "15 ICP", "35 ICP") di bagian price dan tombol CTA
-- Explore Benefits button ada di PricingSection yang membuka TierLandingPage
+- App memiliki tab Leaderboard di MemberDashboard dengan data MOCK statis (hardcoded)
+- Token dihitung berdasarkan tier membership: Silver=999, Gold=2999, Platinum=7999
+- Backend menyimpan: userProfiles (name/bio), userMemberships, userChatbotConfigs
+- Tidak ada API backend untuk leaderboard atau reward
 
 ## Requested Changes (Diff)
 
 ### Add
-- Tab **Leaderboard** baru di MemberDashboard: menampilkan peringkat member berdasarkan token (data mock/lokal), tampilkan posisi user saat ini, top 10 member, badge medali (#1 emas, #2 perak, #3 bronze)
-- Tab **Notifications** baru di MemberDashboard: daftar notifikasi sistem untuk member (welcome, token earned, tier upgrade, dll) dengan badge unread count di tab
-- Sidebar kiri dashboard: tambahkan link/icon untuk Leaderboard dan Notifications
+- Backend: tipe `LeaderboardEntry` dengan field principal, handle, tier, tokens, joinedAt
+- Backend: fungsi `getLeaderboard()` -- publik, query, mengembalikan top 50 member diurutkan berdasarkan token descending (tokens dihitung dari tier: Silver=999, Gold=2999, Platinum=7999)
+- Backend: fungsi `getMyLeaderboardRank()` -- query, mengembalikan rank dan entry milik caller
+- Backend: reward khusus top 3: tipe `TopReward` dengan field rank, badge, title, bonusTokens
+- Backend: fungsi `getTopRewards()` -- publik, query, mengembalikan daftar reward top 3
+- Frontend: LeaderboardTab mengambil data dari backend via `getLeaderboard()` bukan MOCK
+- Frontend: Tampilkan reward khusus top 3 di header leaderboard (crown animasi, badge eksklusif, bonus token)
+- Frontend: Podium visual untuk rank 1, 2, 3 dengan efek glow sesuai tier medal
+- Frontend: Tombol refresh leaderboard
 
 ### Modify
-- TierLandingPage: ganti semua referensi "ICP" di bagian price display menjadi jumlah token (Silver = 999 token, Gold = 2,999 token, Platinum = 7,999 token) berdasarkan konversi $1 = 100 token
-- TierLandingPage: tombol CTA "Get Silver — X ICP" dan "Unlock Silver for X ICP" ganti ke token display
-- TierLandingPage: disclaimer/note tentang "billed in ICP tokens" perlu disesuaikan
-- TabsList di MemberDashboard: tambah tab Leaderboard dan Notifications
+- LeaderboardTab: ganti `MOCK_LEADERBOARD` dengan data real dari backend
+- LeaderboardTab: current user rank diambil dari `getMyLeaderboardRank()` bukan dihitung manual
+- Backend: `saveCallerUserProfile` tetap, tapi saat save profile juga sync ke leaderboard data
 
 ### Remove
-- Tidak ada yang dihapus
+- `MOCK_LEADERBOARD` constant dari MemberDashboard.tsx
 
 ## Implementation Plan
-1. Update TierLandingPage: ganti ICP display menjadi token display (hitung dari price * 100)
-2. Tambah komponen LeaderboardTab di MemberDashboard
-3. Tambah komponen NotificationsTab di MemberDashboard
-4. Update TabsList untuk include kedua tab baru
-5. Update sidebar kiri dengan integrasi link ke kedua tab baru
+1. Update `main.mo`: tambah fungsi `getLeaderboard()` yang join userMemberships + userProfiles, hitung token per tier, sort descending, return top 50
+2. Update `main.mo`: tambah fungsi `getMyLeaderboardRank()` yang return rank + entry milik caller
+3. Update `main.mo`: tambah fungsi `getTopRewards()` yang return reward metadata untuk top 3
+4. Regenerate backend.d.ts
+5. Update `LeaderboardTab` di MemberDashboard.tsx: fetch dari backend, tampilkan podium top 3 dengan reward badge, refresh button
