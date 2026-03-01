@@ -33,7 +33,7 @@ import {
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useInternetIdentity } from "../../hooks/useInternetIdentity";
 import {
@@ -1130,9 +1130,13 @@ function formatPurchaseDate(nanoseconds: bigint, locale: string): string {
 function PricingCard({
   config,
   onExploreTier,
+  autoOpen,
+  onAutoOpenConsumed,
 }: {
   config: TierConfig;
   onExploreTier?: (tier: MembershipTier) => void;
+  autoOpen?: boolean;
+  onAutoOpenConsumed?: () => void;
 }) {
   const { identity } = useInternetIdentity();
   const { data: myMembership, isLoading: membershipLoading } =
@@ -1141,6 +1145,14 @@ function PricingCard({
   const { t, language } = useLanguage();
 
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+
+  // Auto-open payment dialog when triggered externally
+  useEffect(() => {
+    if (autoOpen) {
+      setPaymentDialogOpen(true);
+      onAutoOpenConsumed?.();
+    }
+  }, [autoOpen, onAutoOpenConsumed]);
 
   const isActive = myMembership && myMembership.tier === config.tier;
   const currentTierRank = myMembership ? getTierRank(myMembership.tier) : -1;
@@ -1372,9 +1384,15 @@ function PricingCard({
 
 interface PricingSectionProps {
   onExploreTier?: (tier: MembershipTier) => void;
+  autoOpenTier?: MembershipTier | null;
+  onAutoOpenConsumed?: () => void;
 }
 
-export function PricingSection({ onExploreTier }: PricingSectionProps) {
+export function PricingSection({
+  onExploreTier,
+  autoOpenTier,
+  onAutoOpenConsumed,
+}: PricingSectionProps) {
   const { t } = useLanguage();
 
   const TIERS: TierConfig[] = [
@@ -1476,7 +1494,12 @@ export function PricingSection({ onExploreTier }: PricingSectionProps) {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className={config.popular ? "md:-mt-4 md:mb-4" : ""}
             >
-              <PricingCard config={config} onExploreTier={onExploreTier} />
+              <PricingCard
+                config={config}
+                onExploreTier={onExploreTier}
+                autoOpen={autoOpenTier === config.tier}
+                onAutoOpenConsumed={onAutoOpenConsumed}
+              />
             </motion.div>
           ))}
         </div>

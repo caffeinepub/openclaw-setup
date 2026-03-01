@@ -9,10 +9,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, ExternalLink, Lightbulb, Zap } from "lucide-react";
+import {
+  CheckCircle2,
+  Crown,
+  ExternalLink,
+  Lightbulb,
+  Shield,
+  Star,
+  Zap,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { MembershipTier } from "../../backend.d";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
 
@@ -847,14 +856,46 @@ function PlatformIcon({
 interface IntegrationDetailModalProps {
   platform: Platform | null;
   onClose: () => void;
+  onGetStarted?: (tier: MembershipTier) => void;
 }
 
 function IntegrationDetailModal({
   platform,
   onClose,
+  onGetStarted,
 }: IntegrationDetailModalProps) {
   const { t } = useLanguage();
   const details = platform ? PLATFORM_DETAILS[platform.id] : null;
+
+  const TIER_BUTTONS: {
+    tier: MembershipTier;
+    label: string;
+    price: string;
+    icon: React.ReactNode;
+    cls: string;
+  }[] = [
+    {
+      tier: MembershipTier.silver,
+      label: "Silver",
+      price: "$9.99",
+      icon: <Shield className="w-3.5 h-3.5" />,
+      cls: "bg-slate-600/80 hover:bg-slate-500 text-white border border-slate-500/50 hover:shadow-[0_0_12px_oklch(0.55_0.03_240/0.5)]",
+    },
+    {
+      tier: MembershipTier.gold,
+      label: "Gold",
+      price: "$29.99",
+      icon: <Star className="w-3.5 h-3.5" />,
+      cls: "bg-amber-500 hover:bg-amber-400 text-black font-bold shadow-[0_0_14px_oklch(0.78_0.18_85/0.4)] hover:shadow-[0_0_22px_oklch(0.78_0.18_85/0.6)]",
+    },
+    {
+      tier: MembershipTier.platinum,
+      label: "Platinum",
+      price: "$79.99",
+      icon: <Crown className="w-3.5 h-3.5" />,
+      cls: "bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_14px_oklch(0.6_0.22_290/0.4)] hover:shadow-[0_0_22px_oklch(0.6_0.22_290/0.6)]",
+    },
+  ];
 
   return (
     <Dialog open={!!platform} onOpenChange={(v) => !v && onClose()}>
@@ -931,26 +972,40 @@ function IntegrationDetailModal({
                   ))}
                 </ul>
               </div>
+
+              {/* Get Started — Tier Buttons */}
+              <div className="pt-1">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  {t.workWith.getStarted} —{" "}
+                  {t.pricing.choosePayment ?? "Choose Plan"}
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {TIER_BUTTONS.map((btn) => (
+                    <button
+                      key={btn.tier}
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onGetStarted?.(btn.tier);
+                      }}
+                      className={`flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl text-xs transition-all duration-200 cursor-pointer ${btn.cls}`}
+                    >
+                      {btn.icon}
+                      <span className="font-bold">{btn.label}</span>
+                      <span className="opacity-80">{btn.price}/mo</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="pt-2">
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 border-border"
+                className="w-full border-border"
               >
                 Close
-              </Button>
-              <Button
-                className="flex-1 bg-primary hover:bg-primary/90"
-                onClick={() => {
-                  onClose();
-                  document
-                    .getElementById("pricing")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                {t.workWith.getStarted}
               </Button>
             </div>
           </>
@@ -1113,7 +1168,13 @@ const cardVariants = {
   },
 };
 
-export function WorkWithEverythingSection() {
+interface WorkWithEverythingSectionProps {
+  onGetStarted?: (tier: MembershipTier) => void;
+}
+
+export function WorkWithEverythingSection({
+  onGetStarted,
+}: WorkWithEverythingSectionProps) {
   const { t } = useLanguage();
   const [selectedPlatform, setSelectedPlatform] = useState<Platform | null>(
     null,
@@ -1131,6 +1192,7 @@ export function WorkWithEverythingSection() {
       <IntegrationDetailModal
         platform={selectedPlatform}
         onClose={() => setSelectedPlatform(null)}
+        onGetStarted={onGetStarted}
       />
       <RequestIntegrationModal
         open={requestModalOpen}

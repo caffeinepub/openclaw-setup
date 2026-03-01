@@ -35,6 +35,8 @@ export default function App() {
   const [tierLandingTier, setTierLandingTier] = useState<MembershipTier>(
     MembershipTier.silver,
   );
+  const [autoOpenPaymentTier, setAutoOpenPaymentTier] =
+    useState<MembershipTier | null>(null);
   const [publicProfileHandle, setPublicProfileHandle] = useState<string | null>(
     () => extractPublicProfileHandle(window.location.hash),
   );
@@ -92,12 +94,21 @@ export default function App() {
         <HeroSection />
         <LogoMarqueeSection />
         <FeaturesSection />
-        <WorkWithEverythingSection />
+        <WorkWithEverythingSection
+          onGetStarted={(tier) => {
+            setAutoOpenPaymentTier(tier);
+            document
+              .getElementById("pricing")
+              ?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
         <PricingSection
           onExploreTier={(tier) => {
             setTierLandingTier(tier);
             setShowTierLanding(true);
           }}
+          autoOpenTier={autoOpenPaymentTier}
+          onAutoOpenConsumed={() => setAutoOpenPaymentTier(null)}
         />
         <SetupSection />
         <ConfigSection />
