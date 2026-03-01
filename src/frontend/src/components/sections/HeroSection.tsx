@@ -14,6 +14,7 @@ import {
   BookOpen,
   CheckCircle2,
   Copy,
+  Crown,
   Download,
   ExternalLink,
   Fingerprint,
@@ -21,6 +22,8 @@ import {
   Loader2,
   LogIn,
   Search,
+  Shield,
+  Star,
   User,
   Zap,
 } from "lucide-react";
@@ -1487,24 +1490,129 @@ function SearchIntegrationModal({
                 </ul>
               </div>
             </div>
-            <div className="flex gap-3 pt-2">
+            {/* Tier selection buttons */}
+            <div className="pt-2 space-y-3">
+              <p className="text-xs text-muted-foreground text-center font-medium uppercase tracking-wider">
+                Choose your plan to get started
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {/* Silver */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    setTimeout(() => {
+                      document
+                        .getElementById("pricing-silver")
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                    }, 150);
+                  }}
+                  className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(148,163,184,0.12), rgba(71,85,105,0.15))",
+                    border: "1px solid rgba(148,163,184,0.4)",
+                    boxShadow: "0 0 10px rgba(148,163,184,0.15)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 0 18px rgba(148,163,184,0.4)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 0 10px rgba(148,163,184,0.15)";
+                  }}
+                >
+                  <Shield className="w-4 h-4 text-slate-300" />
+                  <span className="text-xs font-bold text-slate-300 tracking-wide">
+                    Silver
+                  </span>
+                  <span className="text-[10px] text-slate-400">$9.99</span>
+                </button>
+
+                {/* Gold */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    setTimeout(() => {
+                      document.getElementById("pricing-gold")?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center",
+                      });
+                    }, 150);
+                  }}
+                  className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.18))",
+                    border: "1px solid rgba(245,158,11,0.5)",
+                    boxShadow: "0 0 10px rgba(245,158,11,0.2)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 0 20px rgba(245,158,11,0.5)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 0 10px rgba(245,158,11,0.2)";
+                  }}
+                >
+                  <Star className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-amber-400 tracking-wide">
+                    Gold
+                  </span>
+                  <span className="text-[10px] text-amber-500/70">$29.99</span>
+                </button>
+
+                {/* Platinum */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    setTimeout(() => {
+                      document
+                        .getElementById("pricing-platinum")
+                        ?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "center",
+                        });
+                    }, 150);
+                  }}
+                  className="flex flex-col items-center gap-1 py-2.5 px-2 rounded-xl border transition-all duration-200 hover:scale-105 active:scale-95"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, rgba(168,85,247,0.15), rgba(139,92,246,0.18))",
+                    border: "1px solid rgba(168,85,247,0.5)",
+                    boxShadow: "0 0 10px rgba(168,85,247,0.2)",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 0 20px rgba(168,85,247,0.5)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.boxShadow =
+                      "0 0 10px rgba(168,85,247,0.2)";
+                  }}
+                >
+                  <Crown className="w-4 h-4 text-purple-400" />
+                  <span className="text-xs font-bold text-purple-400 tracking-wide">
+                    Platinum
+                  </span>
+                  <span className="text-[10px] text-purple-500/70">$79.99</span>
+                </button>
+              </div>
+
+              {/* Close button */}
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="flex-1 border-border"
+                className="w-full border-border text-sm"
               >
                 Close
-              </Button>
-              <Button
-                className="flex-1 bg-primary hover:bg-primary/90"
-                onClick={() => {
-                  onClose();
-                  document
-                    .getElementById("pricing")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                Get Started
               </Button>
             </div>
           </>
