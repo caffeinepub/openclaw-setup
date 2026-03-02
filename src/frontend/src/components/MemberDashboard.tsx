@@ -172,6 +172,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
   const [fullName, setFullName] = useState("");
   const [activeTab, setActiveTab] = useState("profile");
   const [unreadCount, setUnreadCount] = useState(3); // mock unread notifications
+  const [userIsTop3, setUserIsTop3] = useState(false);
 
   // Settings toggles (localStorage)
   const [notificationsOn, setNotificationsOn] = useState(
@@ -910,6 +911,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                       currentTokens={
                         membership ? TIER_TOKENS[membership.tier] : 0
                       }
+                      onTop3Change={setUserIsTop3}
                     />
                   </TabsContent>
 
@@ -918,6 +920,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                     <NotificationsTab
                       membership={membership ?? null}
                       onRead={() => setUnreadCount(0)}
+                      isInTop3={userIsTop3}
                     />
                   </TabsContent>
                 </ScrollArea>
@@ -1763,6 +1766,7 @@ interface LeaderboardTabProps {
   membership: { tier: MembershipTier; purchasedAt: bigint } | null;
   currentHandle: string;
   currentTokens: number;
+  onTop3Change?: (isTop3: boolean) => void;
 }
 
 const MEDAL_STYLES: Record<
@@ -1848,6 +1852,7 @@ function LeaderboardTab({
   membership,
   currentHandle,
   currentTokens,
+  onTop3Change,
 }: LeaderboardTabProps) {
   const { identity } = useInternetIdentity();
   const leaderboardQuery = useLeaderboard();
@@ -1878,6 +1883,38 @@ function LeaderboardTab({
       ? Number(currentUserEntry.rank)
       : null;
   const isInTop3 = userRankNum !== null && userRankNum >= 1 && userRankNum <= 3;
+
+  // Browser push notification when user enters top 3
+  useEffect(() => {
+    onTop3Change?.(isInTop3);
+
+    if (!isInTop3 || !currentHandle) return;
+    const storageKey = `clawpro_top3_notified_${currentHandle}`;
+    if (localStorage.getItem(storageKey)) return;
+
+    const fireNotification = () => {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("🏆 ClawPro Top 3!", {
+          body: "Congratulations! You've entered the Top 3 leaderboard!",
+          icon: "/favicon.ico",
+        });
+        localStorage.setItem(storageKey, "true");
+        toast.success("🏆 You're in Top 3! Check your notifications.");
+      }
+    };
+
+    if (!("Notification" in window)) return;
+
+    if (Notification.permission === "granted") {
+      fireNotification();
+    } else if (Notification.permission === "default") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          fireNotification();
+        }
+      });
+    }
+  }, [isInTop3, currentHandle, onTop3Change]);
 
   const hasClaimedRank = (rank: number): boolean =>
     claimedRewards.some((r) => Number(r.rank) === rank);
@@ -2536,6 +2573,7 @@ function LeaderboardTab({
 interface NotificationsTabProps {
   membership: { tier: MembershipTier } | null;
   onRead: () => void;
+  isInTop3?: boolean;
 }
 
 type NotificationType =
@@ -2639,17 +2677,35 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
 function NotificationsTab({
   membership: _membership,
   onRead,
+  isInTop3 = false,
 }: NotificationsTabProps) {
+  const top3Notification: NotificationItem | null = isInTop3
+    ? {
+        id: 9999,
+        type: "token_earned" as NotificationType,
+        title: "🏆 Top 3 Achievement!",
+        message:
+          "You're currently in the Top 3 leaderboard! Your bonus tokens have been unlocked.",
+        time: "Just now",
+        read: false,
+      }
+    : null;
+
   const [notifications, setNotifications] = useState<NotificationItem[]>(
     INITIAL_NOTIFICATIONS,
   );
+
+  // Merge top3 notification at the top if applicable
+  const allNotifications = top3Notification
+    ? [top3Notification, ...notifications.filter((n) => n.id !== 9999)]
+    : notifications;
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     onRead();
   };
 
-  const unread = notifications.filter((n) => !n.read).length;
+  const unread = allNotifications.filter((n) => !n.read).length;
 
   return (
     <div className="space-y-4 max-w-2xl">
@@ -2683,7 +2739,7 @@ function NotificationsTab({
 
       {/* Notifications List */}
       <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.10_0.012_240)] overflow-hidden">
-        {notifications.length === 0 ? (
+        {allNotifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center px-6">
             <BellIcon className="w-10 h-10 text-[oklch(0.28_0.02_210)] mb-3" />
             <p className="text-sm text-[oklch(0.45_0.02_210)]">
@@ -2692,7 +2748,7 @@ function NotificationsTab({
           </div>
         ) : (
           <div className="divide-y divide-[oklch(1_0_0_/_5%)]">
-            {notifications.map((notif, i) => {
+            {allNotifications.map((notif, i) => {
               const style = NOTIFICATION_STYLES[notif.type];
               const icon = NOTIFICATION_ICONS[notif.type];
 

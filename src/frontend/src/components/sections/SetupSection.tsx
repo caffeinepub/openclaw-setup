@@ -3,11 +3,79 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Apple, Check, Copy, Download, Monitor, Terminal } from "lucide-react";
 import { motion } from "motion/react";
+import type React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useDownloadsByOS, useIncrementDownload } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
+
+// ── OS Corner Glow ──
+type OSCornerPos = "tl" | "tr" | "bl" | "br";
+type OSType = "windows" | "macos" | "linux";
+
+const OS_CORNER_COLORS: Record<OSType, { c1: string; c2: string }> = {
+  windows: { c1: "#0078FF", c2: "#00BFFF" },
+  macos: { c1: "#E8E8E8", c2: "#FFFFFF" },
+  linux: { c1: "#FF6A00", c2: "#FFD700" },
+};
+
+interface OSCornerGlowProps {
+  os: OSType;
+  position: OSCornerPos;
+  animDelay?: string;
+}
+
+function OSCornerGlow({ os, position, animDelay = "0s" }: OSCornerGlowProps) {
+  const { c1, c2 } = OS_CORNER_COLORS[os];
+  const animName = `osCorner_${os}`;
+  const gradId = `osg-${os}-${position}`;
+
+  const posStyles: Record<OSCornerPos, React.CSSProperties> = {
+    tl: { top: -1, left: -1 },
+    tr: { top: -1, right: -1, transform: "rotate(90deg)" },
+    br: { bottom: -1, right: -1, transform: "rotate(180deg)" },
+    bl: { bottom: -1, left: -1, transform: "rotate(270deg)" },
+  };
+
+  return (
+    <span
+      style={{
+        position: "absolute",
+        width: 28,
+        height: 28,
+        pointerEvents: "none",
+        zIndex: 10,
+        animation: `${animName} 2.5s ease-in-out infinite`,
+        animationDelay: animDelay,
+        ...posStyles[position],
+      }}
+    >
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 28 28"
+        fill="none"
+        overflow="visible"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor={c1} />
+            <stop offset="100%" stopColor={c2} />
+          </linearGradient>
+        </defs>
+        <path
+          d="M2 26 L2 5 Q2 2 5 2 L26 2"
+          stroke={`url(#${gradId})`}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+    </span>
+  );
+}
 
 interface StepProps {
   number: number;
@@ -132,6 +200,20 @@ export function SetupSection() {
 
   return (
     <section id="setup" className="py-24 relative overflow-hidden">
+      <style>{`
+        @keyframes osCorner_windows {
+          0%, 100% { filter: drop-shadow(0 0 5px #0078FF) drop-shadow(0 0 10px #00BFFF); opacity: 0.7; }
+          50% { filter: drop-shadow(0 0 10px #00BFFF) drop-shadow(0 0 20px #0078FF); opacity: 1; }
+        }
+        @keyframes osCorner_macos {
+          0%, 100% { filter: drop-shadow(0 0 5px #B0C0D0) drop-shadow(0 0 10px #FFFFFF); opacity: 0.65; }
+          50% { filter: drop-shadow(0 0 10px #FFFFFF) drop-shadow(0 0 20px #E8E8E8); opacity: 1; }
+        }
+        @keyframes osCorner_linux {
+          0%, 100% { filter: drop-shadow(0 0 5px #FF6A00) drop-shadow(0 0 10px #FFD700); opacity: 0.7; }
+          50% { filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 20px #FF6A00); opacity: 1; }
+        }
+      `}</style>
       <DotsBackground />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
 
@@ -188,56 +270,63 @@ export function SetupSection() {
               const cmdsData = STEP_COMMANDS[os];
               return (
                 <TabsContent key={os} value={os}>
-                  <div className="rounded-xl border border-border bg-card overflow-hidden">
-                    {/* OS Header */}
-                    <div className="flex items-center justify-between p-5 border-b border-border bg-accent/30">
-                      <div className="flex items-center gap-3">
-                        <Icon className="w-5 h-5 text-cyan" />
-                        <div>
-                          <h3 className="font-bold text-foreground">
-                            {OS_LABELS[os]} Installation
-                          </h3>
-                          <p className="text-xs text-muted-foreground">
-                            <span className="font-mono text-cyan">
-                              {getDownloadCount(os)}
-                            </span>{" "}
-                            {t.setup.downloads}
-                          </p>
+                  <div className="relative">
+                    {/* OS-specific spinning corner glows */}
+                    <OSCornerGlow os={os} position="tl" animDelay="0s" />
+                    <OSCornerGlow os={os} position="tr" animDelay="0.8s" />
+                    <OSCornerGlow os={os} position="br" animDelay="1.6s" />
+                    <OSCornerGlow os={os} position="bl" animDelay="2.4s" />
+                    <div className="rounded-xl border border-border bg-card overflow-hidden">
+                      {/* OS Header */}
+                      <div className="flex items-center justify-between p-5 border-b border-border bg-accent/30">
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-5 h-5 text-cyan" />
+                          <div>
+                            <h3 className="font-bold text-foreground">
+                              {OS_LABELS[os]} Installation
+                            </h3>
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-mono text-cyan">
+                                {getDownloadCount(os)}
+                              </span>{" "}
+                              {t.setup.downloads}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <Button
-                        onClick={() => handleDownload(os)}
-                        disabled={incrementDownload.isPending}
-                        className="bg-cyan text-background hover:bg-cyan-bright shadow-glow-sm font-semibold"
-                        size="sm"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        {t.setup.download}
-                        <Badge
-                          variant="secondary"
-                          className="ml-2 bg-background/30 text-background text-xs"
+                        <Button
+                          onClick={() => handleDownload(os)}
+                          disabled={incrementDownload.isPending}
+                          className="bg-cyan text-background hover:bg-cyan-bright shadow-glow-sm font-semibold"
+                          size="sm"
                         >
-                          {t.setup.free}
-                        </Badge>
-                      </Button>
-                    </div>
+                          <Download className="w-4 h-4 mr-2" />
+                          {t.setup.download}
+                          <Badge
+                            variant="secondary"
+                            className="ml-2 bg-background/30 text-background text-xs"
+                          >
+                            {t.setup.free}
+                          </Badge>
+                        </Button>
+                      </div>
 
-                    {/* Steps */}
-                    <div className="p-6">
-                      {stepsData.map((step, idx) => (
-                        <InstallStep
-                          key={step.title}
-                          number={idx + 1}
-                          title={step.title}
-                          commands={
-                            cmdsData[idx]?.commands?.length
-                              ? cmdsData[idx].commands
-                              : undefined
-                          }
-                          note={step.note}
-                          copiedLabel={t.setup.copiedToClipboard}
-                        />
-                      ))}
+                      {/* Steps */}
+                      <div className="p-6">
+                        {stepsData.map((step, idx) => (
+                          <InstallStep
+                            key={step.title}
+                            number={idx + 1}
+                            title={step.title}
+                            commands={
+                              cmdsData[idx]?.commands?.length
+                                ? cmdsData[idx].commands
+                                : undefined
+                            }
+                            note={step.note}
+                            copiedLabel={t.setup.copiedToClipboard}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </TabsContent>

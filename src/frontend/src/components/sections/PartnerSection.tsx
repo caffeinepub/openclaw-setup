@@ -3,6 +3,74 @@ import { useLanguage } from "@/i18n/LanguageContext";
 // Pre-footer section: ClawPro.ai brand + partner logos + app download badges
 import React from "react";
 
+// ── Spinning Corner Glow ──
+type CornerPos = "tl" | "tr" | "bl" | "br";
+
+interface CornerGlowProps {
+  position: CornerPos;
+  colors: [string, string];
+  animDelay?: string;
+  animName: string;
+}
+
+function CornerGlow({
+  position,
+  colors,
+  animDelay = "0s",
+  animName,
+}: CornerGlowProps) {
+  const posStyles: Record<CornerPos, React.CSSProperties> = {
+    tl: { top: -2, left: -2 },
+    tr: { top: -2, right: -2, transform: "rotate(90deg)" },
+    br: { bottom: -2, right: -2, transform: "rotate(180deg)" },
+    bl: { bottom: -2, left: -2, transform: "rotate(270deg)" },
+  };
+
+  return (
+    <span
+      style={{
+        position: "absolute",
+        width: 24,
+        height: 24,
+        pointerEvents: "none",
+        zIndex: 10,
+        animation: `${animName} 3s ease-in-out infinite`,
+        animationDelay: animDelay,
+        ...posStyles[position],
+      }}
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        overflow="visible"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient
+            id={`cg-${animName}-${position}`}
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor={colors[0]} />
+            <stop offset="100%" stopColor={colors[1]} />
+          </linearGradient>
+        </defs>
+        <path
+          d="M2 22 L2 4 Q2 2 4 2 L22 2"
+          stroke={`url(#cg-${animName}-${position})`}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+    </span>
+  );
+}
+
 function OpenClawLogo({ size = 32 }: { size?: number }) {
   return (
     <svg
@@ -323,30 +391,100 @@ function EmailSubscribeForm({
 
   return (
     <div>
+      <style>{`
+        @keyframes emailInputGlow {
+          0%, 100% { filter: drop-shadow(0 0 4px #00c6ff) drop-shadow(0 0 8px #0072ff); opacity: 0.75; }
+          33% { filter: drop-shadow(0 0 8px #0072ff) drop-shadow(0 0 16px #7c3aed); opacity: 1; }
+          66% { filter: drop-shadow(0 0 6px #7c3aed) drop-shadow(0 0 12px #00c6ff); opacity: 0.85; }
+        }
+        @keyframes subscribeBtnGlow {
+          0%, 100% { filter: drop-shadow(0 0 5px #f0abfc) drop-shadow(0 0 10px #22d3ee); opacity: 0.8; }
+          33% { filter: drop-shadow(0 0 9px #22d3ee) drop-shadow(0 0 18px #818cf8); opacity: 1; }
+          66% { filter: drop-shadow(0 0 7px #818cf8) drop-shadow(0 0 14px #f0abfc); opacity: 0.9; }
+        }
+      `}</style>
       <form
         onSubmit={handleSubmit}
         className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
       >
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setStatus("idle");
-          }}
-          placeholder={placeholder}
-          className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all duration-200"
-        />
-        <button
-          type="submit"
-          className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap"
-          style={{
-            background: "linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%)",
-            color: "#fff",
-          }}
-        >
-          {subscribeLabel}
-        </button>
+        {/* Email input with spinning corner glows */}
+        <div className="relative flex-1">
+          <CornerGlow
+            position="tl"
+            colors={["#00c6ff", "#0072ff"]}
+            animDelay="0s"
+            animName="emailInputGlow"
+          />
+          <CornerGlow
+            position="tr"
+            colors={["#0072ff", "#7c3aed"]}
+            animDelay="0.75s"
+            animName="emailInputGlow"
+          />
+          <CornerGlow
+            position="br"
+            colors={["#7c3aed", "#00c6ff"]}
+            animDelay="1.5s"
+            animName="emailInputGlow"
+          />
+          <CornerGlow
+            position="bl"
+            colors={["#00c6ff", "#7c3aed"]}
+            animDelay="2.25s"
+            animName="emailInputGlow"
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setStatus("idle");
+            }}
+            placeholder={placeholder}
+            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all duration-200"
+          />
+        </div>
+
+        {/* Subscribe button with spinning corner glows */}
+        <div className="relative flex-shrink-0">
+          <CornerGlow
+            position="tl"
+            colors={["#f0abfc", "#22d3ee"]}
+            animDelay="0s"
+            animName="subscribeBtnGlow"
+          />
+          <CornerGlow
+            position="tr"
+            colors={["#22d3ee", "#818cf8"]}
+            animDelay="0.75s"
+            animName="subscribeBtnGlow"
+          />
+          <CornerGlow
+            position="br"
+            colors={["#818cf8", "#f0abfc"]}
+            animDelay="1.5s"
+            animName="subscribeBtnGlow"
+          />
+          <CornerGlow
+            position="bl"
+            colors={["#f0abfc", "#818cf8"]}
+            animDelay="2.25s"
+            animName="subscribeBtnGlow"
+          />
+          <button
+            type="submit"
+            className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap hover:scale-[1.03] active:scale-[0.97]"
+            style={{
+              background:
+                "linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #f0abfc 100%)",
+              color: "#fff",
+              boxShadow:
+                "0 4px 20px rgba(34, 211, 238, 0.35), 0 2px 8px rgba(129, 140, 248, 0.3)",
+            }}
+          >
+            {subscribeLabel}
+          </button>
+        </div>
       </form>
       {status === "success" && (
         <p className="mt-3 text-sm text-cyan-400 text-center">✓ {successMsg}</p>

@@ -1,32 +1,35 @@
 # ClawPro
 
 ## Current State
-Full-stack ClawPro app with Motoko backend and React frontend. Features include: membership tiers (Silver/Gold/Platinum), leaderboard connected to blockchain data (`getLeaderboard`, `getMyLeaderboardRank`, `getTopRewards`), token system, dashboard member with tabs (Profile, Configs, Bot, AI, API, Transactions, Rank, Alerts), multi-language (EN/ID/AR/RU/ZH), public profile page via `/#/u/[handle]`.
-
-Backend already has `getLeaderboard`, `getMyLeaderboardRank`, `getTopRewards` functions. No claim reward function exists yet.
+- Website ClawPro dengan fitur lengkap: hero, setup section (Windows/macOS/Linux tabs), pricing, leaderboard, dashboard member, email subscribe di PartnerSection
+- SetupSection memiliki tab panel Windows, macOS, Linux dalam card dengan border biasa
+- PartnerSection punya EmailSubscribeForm dengan input email dan button Subscribe biasa
+- NotificationsTab di dashboard sudah ada dengan notifikasi mock
+- Leaderboard dengan podium top 3 dan claim reward
 
 ## Requested Changes (Diff)
 
 ### Add
-- Backend: `claimTopReward(rank: Nat)` function that validates the caller is currently in top 3, marks the reward as claimed (store claimed rewards per principal), returns bonus tokens
-- Backend: `hasClaimedReward(rank: Nat)` query to check if a user already claimed a reward
-- Backend: `getClaimedRewards()` query to get all claimed rewards for caller
-- Frontend: `PublicLeaderboardPage` component - standalone leaderboard page accessible via `/#/leaderboard` without login, showing top 50 members with podium top 3 display, tier badges, tokens, share button
-- Frontend: Auto-claim reward system in MemberDashboard `LeaderboardTab` - when user is top 3, show animated banner + "Claim Reward" button; after claiming, show success state with bonus tokens
-- Frontend: Hash routing in App.tsx for `/#/leaderboard`
-- Frontend: Link/button in navbar or leaderboard tab to share/open public leaderboard
+1. **Notifikasi push (browser) saat user masuk top 3** -- menggunakan Notification API browser. Ketika leaderboard dimuat dan user terdeteksi masuk top 3 untuk pertama kali (atau rank berubah masuk top 3), tampilkan browser push notification "🏆 You're in Top 3!" beserta toast success. Karena email disabled, gunakan browser notification saja. Simpan state di localStorage agar tidak spam.
+2. **Banner top 3 notifikasi di NotificationsTab** -- tambahkan notifikasi dinamis di tab Alerts: ketika user isInTop3, tambahkan item notifikasi khusus "🏆 Top 3 Achievement" ke list.
 
 ### Modify
-- MemberDashboard LeaderboardTab: add top-3 detected banner, claim button, claimed state display
-- App.tsx: add hash routing for `/#/leaderboard` → render PublicLeaderboardPage overlay
+3. **Subscribe button & email input di PartnerSection** -- setiap sudut pada input "Enter your email" dan button Subscribe diberi efek glow menyala berputar melingkari sudut. Rekomendasi warna terbaik: input menggunakan gradasi cyan-biru-violet (#00c6ff → #0072ff → #7c3aed) berputar, button Subscribe menggunakan gradasi magenta-cyan (#f0abfc → #22d3ee → #818cf8) berputar. Corner glow animasi rotate 360deg infinite.
+
+4. **Setup Section OS panel corners (Windows, macOS, Linux)** -- setiap card panel OS (`.rounded-xl border border-border bg-card`) di SetupSection diberi corner glow SVG berputar di 4 sudut, masing-masing OS warna berbeda:
+   - Windows: biru neon (#0078FF → #00BFFF) rotating corners
+   - macOS: silver-white (#E0E8F0 → #FFFFFF → #C0CCD8) rotating corners  
+   - Linux: oranye-kuning (#FF6A00 → #FFD700) rotating corners
+   Efek: animasi rotasi corner yang sama seperti existing GlowCorner/BlueGlowCorner tapi dengan warna per OS.
 
 ### Remove
-- Nothing removed
+- Tidak ada yang dihapus
 
 ## Implementation Plan
-1. Update `main.mo` to add `claimTopReward`, `hasClaimedReward`, `getClaimedRewards` functions
-2. Regenerate `backend.d.ts` types
-3. Create `PublicLeaderboardPage.tsx` - full leaderboard view without auth, podium for top 3, table for rest
-4. Update `MemberDashboard.tsx` LeaderboardTab: detect if user is top 3, show claim banner, handle claim action, show claimed badge
-5. Update `App.tsx`: add `/#/leaderboard` hash routing to show PublicLeaderboardPage
-6. Add "View Public Leaderboard" link button in LeaderboardTab
+1. **PartnerSection.tsx** -- Buat komponen `SpinningGlowCorner` dengan props `position` dan `colors[]`. Pasang di 4 sudut input email (wrapper relative) dan 4 sudut button Subscribe. Gunakan CSS `@keyframes cornerSpin` atau `animation: spin 3s linear infinite` pada gradient border. Rekomendasi: gunakan `conic-gradient` atau border gradient animasi yang berputar melingkari sudut.
+
+2. **SetupSection.tsx** -- Buat `OSGlowCorner` component dengan prop `os: 'windows'|'macos'|'linux'` dan `position`. Pasang di 4 sudut setiap TabsContent card panel. Gunakan warna Windows=biru, macOS=silver, Linux=oranye.
+
+3. **MemberDashboard.tsx (LeaderboardTab)** -- Di dalam `LeaderboardTab`, tambahkan `useEffect` yang mendeteksi `isInTop3` dan meminta permission browser Notification, lalu fire `new Notification(...)` hanya sekali per session (cek localStorage key `clawpro_top3_notified_${handle}`).
+
+4. **MemberDashboard.tsx (NotificationsTab)** -- Di `NotificationsTab`, terima prop `isInTop3` dan `handle`. Jika isInTop3, inject notifikasi dinamis "🏆 Top 3!" ke daftar notifikasi di atas.
