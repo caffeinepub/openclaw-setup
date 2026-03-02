@@ -1,16 +1,18 @@
 import Map "mo:core/Map";
 import Array "mo:core/Array";
-import Order "mo:core/Order";
-import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
-import Time "mo:core/Time";
-import Principal "mo:core/Principal";
 import List "mo:core/List";
-import Text "mo:core/Text";
+import Time "mo:core/Time";
 import Nat "mo:core/Nat";
+import Text "mo:core/Text";
+import Order "mo:core/Order";
+import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -30,7 +32,7 @@ actor {
     title : Text;
     description : Text;
     changesList : [Text];
-    changeType : Text; // "major", "minor", "patch"
+    changeType : Text;
   };
 
   type DownloadStats = {
@@ -91,6 +93,14 @@ actor {
     color : Text;
   };
 
+  public type ClaimedReward = {
+    rank : Nat;
+    claimedAt : Int;
+    bonusTokens : Nat;
+    badge : Text;
+    title : Text;
+  };
+
   // State
   let faqs = Map.empty<Nat, FAQ>();
   let changelogs = Map.empty<Nat, Changelog>();
@@ -104,6 +114,7 @@ actor {
   let userMemberships = Map.empty<Principal, MembershipRecord>();
   let userProfiles = Map.empty<Principal, UserProfile>();
   let userChatbotConfigs = Map.empty<Principal, ChatbotConfig>();
+  let claimedRewards = Map.empty<Principal, [ClaimedReward]>();
 
   var nextFAQId = 7;
   var nextChangelogId = 5;
@@ -120,131 +131,6 @@ actor {
     Nat.compare(b.tokens, a.tokens);
   };
 
-  // Seed data initialization in constructor
-  do {
-    // Seed FAQ data
-    faqs.add(
-      1,
-      {
-        id = 1;
-        question = "How do I install OpenClaw on Windows?";
-        answer = "Download the installer from our website and follow the step-by-step instructions.";
-        category = "Windows";
-      },
-    );
-    faqs.add(
-      2,
-      {
-        id = 2;
-        question = "Is OpenClaw compatible with macOS?";
-        answer = "Yes, OpenClaw supports macOS. Get the DMG file from our downloads page.";
-        category = "macOS";
-      },
-    );
-    faqs.add(
-      3,
-      {
-        id = 3;
-        question = "Are there any known Linux issues?";
-        answer = "Some Linux users may experience compatibility issues. Check our support forum for solutions.";
-        category = "Linux";
-      },
-    );
-    faqs.add(
-      4,
-      {
-        id = 4;
-        question = "What are the system requirements?";
-        answer = "OpenClaw requires at least 4GB RAM and 2GHz CPU on all platforms.";
-        category = "General";
-      },
-    );
-    faqs.add(
-      5,
-      {
-        id = 5;
-        question = "How can I upgrade to the latest version?";
-        answer = "Simply download the new version and run the installer. Your settings will be preserved.";
-        category = "General";
-      },
-    );
-    faqs.add(
-      6,
-      {
-        id = 6;
-        question = "Where can I find user guides?";
-        answer = "User guides and tutorials are available on our website under the Support section.";
-        category = "Support";
-      },
-    );
-
-    // Seed changelog data
-    changelogs.add(
-      1,
-      {
-        id = 1;
-        version = "2.5.0";
-        releaseDate = "2024-06-01";
-        title = "Major Feature Update";
-        description = "Introduces new features and improvements.";
-        changesList = [
-          "Added support for high-resolution textures.",
-          "Improved performance on older hardware.",
-          "Fixed crash bug on startup.",
-        ];
-        changeType = "major";
-      },
-    );
-    changelogs.add(
-      2,
-      {
-        id = 2;
-        version = "2.4.1";
-        releaseDate = "2024-04-15";
-        title = "Minor Patch";
-        description = "Bug fixes and minor improvements.";
-        changesList = [
-          "Fixed audio sync issue.",
-          "Improved keyboard mapping support.",
-        ];
-        changeType = "patch";
-      },
-    );
-    changelogs.add(
-      3,
-      {
-        id = 3;
-        version = "2.3.0";
-        releaseDate = "2024-03-10";
-        title = "Enhanced Compatibility";
-        description = "Focus on compatibility and stability.";
-        changesList = [
-          "Added support for macOS M1 chip.",
-          "Improved Linux compatibility.",
-          "Fixed crash on startup.",
-        ];
-        changeType = "minor";
-      },
-    );
-    changelogs.add(
-      4,
-      {
-        id = 4;
-        version = "2.2.0";
-        releaseDate = "2024-01-05";
-        title = "Initial Release";
-        description = "First public release of OpenClaw.";
-        changesList = [
-          "Basic features implemented.",
-          "Support for Windows, macOS, and Linux.",
-          "Initial user interface design.",
-        ];
-        changeType = "major";
-      },
-    );
-  };
-
-  // Helper function to get token count for a tier
   func tierTokens(tier : MembershipTier) : Nat {
     switch (tier) {
       case (#silver) { 999 };
@@ -274,7 +160,7 @@ actor {
       };
 
       let entry : LeaderboardEntry = {
-        rank = 0; // Will be assigned after sorting
+        rank = 0;
         principal;
         handle;
         displayName;
@@ -287,7 +173,6 @@ actor {
 
     let sortedArray = entries.toArray().sort(compareLeaderboardEntries);
 
-    // Assign ranks and return top 50
     var currentRank = 1;
     let rankedArray = sortedArray.map(
       func(entry) {
@@ -325,7 +210,7 @@ actor {
       };
 
       let entry : LeaderboardEntry = {
-        rank = 0; // Will be assigned after sorting
+        rank = 0;
         principal;
         handle;
         displayName;
@@ -338,7 +223,6 @@ actor {
 
     let sortedArray = entries.toArray().sort(compareLeaderboardEntries);
 
-    // Assign ranks
     var currentRank = 1;
     let rankedArray = sortedArray.map(
       func(entry) {
@@ -348,7 +232,6 @@ actor {
       }
     );
 
-    // Find the entry matching caller's principal
     rankedArray.find(func(entry) { entry.principal == caller });
   };
 
@@ -380,6 +263,93 @@ actor {
         color = "#F97316";
       },
     ];
+  };
+
+  // Claim Top Rewards
+  public shared ({ caller }) func claimTopReward(rank : Nat) : async ClaimedReward {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can claim rewards");
+    };
+
+    if (rank < 1 or rank > 3) {
+      Runtime.trap("Invalid rank - must be 1, 2, or 3");
+    };
+
+    let currentLeaderboard = await getLeaderboard();
+
+    let hasMatchingRank = currentLeaderboard.find(
+      func(entry) {
+        entry.rank == rank and entry.principal == caller;
+      }
+    );
+
+    if (hasMatchingRank == null) {
+      Runtime.trap("You must be in position " # debug_show (rank) # " on the leaderboard to claim this reward");
+    };
+
+    let existingClaims = claimedRewards.get(caller);
+    switch (existingClaims) {
+      case (?claims) {
+        let alreadyClaimed = claims.find(func(claim) { claim.rank == rank });
+        if (alreadyClaimed != null) {
+          Runtime.trap("Reward for rank " # debug_show (rank) # " already claimed");
+        };
+      };
+      case (null) {};
+    };
+
+    let (bonusTokens, badge, title) = switch (rank) {
+      case (1) { (3000, "👑", "ClawPro Champion") };
+      case (2) { (1500, "🥈", "Elite Builder") };
+      case (3) { (750, "🥉", "Rising Star") };
+      case (_) { (0, "", "") };
+    };
+
+    let newClaim : ClaimedReward = {
+      rank;
+      claimedAt = Time.now();
+      bonusTokens;
+      badge;
+      title;
+    };
+
+    let updatedClaims = switch (existingClaims) {
+      case (null) { [newClaim] };
+      case (?claims) { claims.concat([newClaim]) };
+    };
+
+    claimedRewards.add(caller, updatedClaims);
+
+    newClaim;
+  };
+
+  // Get claimed rewards for caller
+  public query ({ caller }) func getMyClaimedRewards() : async [ClaimedReward] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access claimed rewards");
+    };
+
+    switch (claimedRewards.get(caller)) {
+      case (null) { [] };
+      case (?rewards) { rewards };
+    };
+  };
+
+  // Check if reward for rank X has been claimed by caller
+  public query ({ caller }) func hasClaimedReward(rank : Nat) : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check rewards");
+    };
+
+    switch (claimedRewards.get(caller)) {
+      case (?rewards) {
+        switch (rewards.find(func(reward) { reward.rank == rank })) {
+          case (?_) { true };
+          case (null) { false };
+        };
+      };
+      case (null) { false };
+    };
   };
 
   // User Profile Operations
@@ -585,7 +555,6 @@ actor {
   };
 
   public shared ({ caller }) func incrementDownload(os : Text) : async () {
-    // Authorization: Require at least user role to prevent abuse of download statistics
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can increment downloads");
     };

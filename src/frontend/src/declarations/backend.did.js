@@ -13,6 +13,13 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
+export const ClaimedReward = IDL.Record({
+  'title' : IDL.Text,
+  'rank' : IDL.Nat,
+  'claimedAt' : IDL.Int,
+  'badge' : IDL.Text,
+  'bonusTokens' : IDL.Nat,
+});
 export const Changelog = IDL.Record({
   'id' : IDL.Nat,
   'title' : IDL.Text,
@@ -94,6 +101,7 @@ export const idlService = IDL.Service({
     ),
   'addFAQ' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'claimTopReward' : IDL.Func([IDL.Nat], [ClaimedReward], []),
   'deleteChangelog' : IDL.Func([IDL.Nat], [], []),
   'deleteChatbotConfig' : IDL.Func([], [], []),
   'deleteConfig' : IDL.Func([IDL.Nat], [], []),
@@ -107,6 +115,7 @@ export const idlService = IDL.Service({
   'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
   'getLeaderboard' : IDL.Func([], [IDL.Vec(LeaderboardEntry)], ['query']),
   'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
+  'getMyClaimedRewards' : IDL.Func([], [IDL.Vec(ClaimedReward)], ['query']),
   'getMyConfigs' : IDL.Func([], [IDL.Vec(SavedConfig)], ['query']),
   'getMyLeaderboardRank' : IDL.Func([], [IDL.Opt(LeaderboardEntry)], ['query']),
   'getMyMembership' : IDL.Func([], [IDL.Opt(MembershipRecord)], ['query']),
@@ -119,6 +128,7 @@ export const idlService = IDL.Service({
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
+  'hasClaimedReward' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
   'incrementDownload' : IDL.Func([IDL.Text], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'purchaseMembership' : IDL.Func([MembershipTier], [IDL.Nat], []),
@@ -134,6 +144,13 @@ export const idlFactory = ({ IDL }) => {
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
+  });
+  const ClaimedReward = IDL.Record({
+    'title' : IDL.Text,
+    'rank' : IDL.Nat,
+    'claimedAt' : IDL.Int,
+    'badge' : IDL.Text,
+    'bonusTokens' : IDL.Nat,
   });
   const Changelog = IDL.Record({
     'id' : IDL.Nat,
@@ -216,6 +233,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'addFAQ' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'claimTopReward' : IDL.Func([IDL.Nat], [ClaimedReward], []),
     'deleteChangelog' : IDL.Func([IDL.Nat], [], []),
     'deleteChatbotConfig' : IDL.Func([], [], []),
     'deleteConfig' : IDL.Func([IDL.Nat], [], []),
@@ -229,6 +247,7 @@ export const idlFactory = ({ IDL }) => {
     'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
     'getLeaderboard' : IDL.Func([], [IDL.Vec(LeaderboardEntry)], ['query']),
     'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
+    'getMyClaimedRewards' : IDL.Func([], [IDL.Vec(ClaimedReward)], ['query']),
     'getMyConfigs' : IDL.Func([], [IDL.Vec(SavedConfig)], ['query']),
     'getMyLeaderboardRank' : IDL.Func(
         [],
@@ -245,6 +264,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
+    'hasClaimedReward' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
     'incrementDownload' : IDL.Func([IDL.Text], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'purchaseMembership' : IDL.Func([MembershipTier], [IDL.Nat], []),

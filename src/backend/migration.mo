@@ -3,76 +3,29 @@ import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
 
 module {
-  // Old types
-  type OldFAQ = {
-    id : Nat;
-    question : Text;
-    answer : Text;
-    category : Text;
-  };
-
-  type OldChangelog = {
-    id : Nat;
-    version : Text;
-    releaseDate : Text;
-    title : Text;
-    description : Text;
-    changesList : [Text];
-    changeType : Text;
-  };
-
-  type OldDownloadStats = {
-    totalDownloads : Nat;
-    windowsDownloads : Nat;
-    macosDownloads : Nat;
-    linuxDownloads : Nat;
-  };
-
-  type OldSavedConfig = {
-    id : Nat;
-    owner : Principal;
-    name : Text;
-    os : Text;
-    configData : Text;
-    createdAt : Int;
-  };
-
-  type OldUserProfile = {
-    name : Text;
-  };
-
   type OldActor = {
-    faqs : Map.Map<Nat, OldFAQ>;
-    changelogs : Map.Map<Nat, OldChangelog>;
-    downloadStats : OldDownloadStats;
-    savedConfigs : Map.Map<Nat, OldSavedConfig>;
-    userProfiles : Map.Map<Principal, OldUserProfile>;
+    faqs : Map.Map<Nat, { id : Nat; question : Text; answer : Text; category : Text }>;
+    changelogs : Map.Map<Nat, { id : Nat; version : Text; releaseDate : Text; title : Text; description : Text; changesList : [Text]; changeType : Text }>;
+    downloadStats : { totalDownloads : Nat; windowsDownloads : Nat; macosDownloads : Nat; linuxDownloads : Nat };
+    savedConfigs : Map.Map<Nat, { id : Nat; owner : Principal; name : Text; os : Text; configData : Text; createdAt : Int }>;
+    userMemberships : Map.Map<Principal, { id : Nat; owner : Principal; tier : { #silver; #gold; #platinum }; purchasedAt : Int }>;
+    userProfiles : Map.Map<Principal, { name : Text; bio : ?Text }>;
+    userChatbotConfigs : Map.Map<Principal, { phoneNumber : Text; enabled : Bool }>;
     nextFAQId : Nat;
     nextChangelogId : Nat;
     nextConfigId : Nat;
-  };
-
-  // New types for actor after membership changes
-  type MembershipTier = {
-    #silver;
-    #gold;
-    #platinum;
-  };
-
-  type MembershipRecord = {
-    id : Nat;
-    owner : Principal;
-    tier : MembershipTier;
-    purchasedAt : Int;
+    nextMembershipId : Nat;
   };
 
   type NewActor = {
-    faqs : Map.Map<Nat, OldFAQ>;
-    changelogs : Map.Map<Nat, OldChangelog>;
-    downloadStats : OldDownloadStats;
-    savedConfigs : Map.Map<Nat, OldSavedConfig>;
-    userProfiles : Map.Map<Principal, OldUserProfile>;
-    userMemberships : Map.Map<Principal, MembershipRecord>;
+    faqs : Map.Map<Nat, { id : Nat; question : Text; answer : Text; category : Text }>;
+    changelogs : Map.Map<Nat, { id : Nat; version : Text; releaseDate : Text; title : Text; description : Text; changesList : [Text]; changeType : Text }>;
+    downloadStats : { totalDownloads : Nat; windowsDownloads : Nat; macosDownloads : Nat; linuxDownloads : Nat };
+    savedConfigs : Map.Map<Nat, { id : Nat; owner : Principal; name : Text; os : Text; configData : Text; createdAt : Int }>;
+    userMemberships : Map.Map<Principal, { id : Nat; owner : Principal; tier : { #silver; #gold; #platinum }; purchasedAt : Int }>;
+    userProfiles : Map.Map<Principal, { name : Text; bio : ?Text }>;
+    userChatbotConfigs : Map.Map<Principal, { phoneNumber : Text; enabled : Bool }>;
+    claimedRewards : Map.Map<Principal, [{ rank : Nat; claimedAt : Int; bonusTokens : Nat; badge : Text; title : Text }]>;
     nextFAQId : Nat;
     nextChangelogId : Nat;
     nextConfigId : Nat;
@@ -82,8 +35,7 @@ module {
   public func run(old : OldActor) : NewActor {
     {
       old with
-      userMemberships = Map.empty<Principal, MembershipRecord>();
-      nextMembershipId = 1;
+      claimedRewards = Map.empty<Principal, [{ rank : Nat; claimedAt : Int; bonusTokens : Nat; badge : Text; title : Text }]>()
     };
   };
-}
+};

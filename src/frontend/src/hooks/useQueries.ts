@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Changelog,
+  ClaimedReward,
   DownloadStats,
   FAQ,
   LeaderboardEntry,
@@ -326,6 +327,38 @@ export function useSaveCallerUserProfile() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["callerUserProfile"] });
+    },
+  });
+}
+
+// ---- Claimed Rewards Hooks ----
+
+export function useMyClaimedRewards() {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+  return useQuery<ClaimedReward[]>({
+    queryKey: ["myClaimedRewards"],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getMyClaimedRewards();
+    },
+    enabled: !!actor && !isFetching && !!identity,
+    staleTime: 30_000,
+  });
+}
+
+export function useClaimTopReward() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (rank: bigint) => {
+      if (!actor) throw new Error("Actor not available");
+      return actor.claimTopReward(rank);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["myClaimedRewards"] });
+      void queryClient.invalidateQueries({ queryKey: ["myLeaderboardRank"] });
+      void queryClient.invalidateQueries({ queryKey: ["leaderboard"] });
     },
   });
 }

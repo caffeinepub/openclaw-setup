@@ -25,8 +25,10 @@ import {
   Code2,
   Coins,
   Crown,
+  ExternalLink,
   Eye,
   EyeOff,
+  Gift,
   Globe2,
   Loader2,
   Lock,
@@ -52,6 +54,7 @@ import { useEffect, useRef, useState } from "react";
 import { SiWhatsapp } from "react-icons/si";
 import { toast } from "sonner";
 import {
+  type ClaimedReward,
   type LeaderboardEntry,
   MembershipTier,
   type TopReward,
@@ -68,8 +71,10 @@ import {
 } from "../hooks/useMembership";
 import {
   useCallerUserProfile,
+  useClaimTopReward,
   useDeleteConfig,
   useLeaderboard,
+  useMyClaimedRewards,
   useMyConfigs,
   useMyLeaderboardRank,
   useSaveCallerUserProfile,
@@ -1848,9 +1853,12 @@ function LeaderboardTab({
   const leaderboardQuery = useLeaderboard();
   const topRewardsQuery = useTopRewards();
   const myRankQuery = useMyLeaderboardRank();
+  const claimedRewardsQuery = useMyClaimedRewards();
+  const claimTopReward = useClaimTopReward();
 
   const leaderboard = leaderboardQuery.data ?? [];
   const topRewards = topRewardsQuery.data ?? [];
+  const claimedRewards: ClaimedReward[] = claimedRewardsQuery.data ?? [];
   const myRank = myRankQuery.data;
   const isLoading = leaderboardQuery.isLoading || leaderboardQuery.isFetching;
   const isRefetching =
@@ -1862,6 +1870,34 @@ function LeaderboardTab({
   // Check if current user is on leaderboard
   const currentUserEntry = leaderboard.find((e) => e.handle === currentHandle);
   const isOnLeaderboard = !!currentUserEntry;
+
+  // Determine if user is in top 3 (use myRank from blockchain if available)
+  const userRankNum = myRank
+    ? Number(myRank.rank)
+    : currentUserEntry
+      ? Number(currentUserEntry.rank)
+      : null;
+  const isInTop3 = userRankNum !== null && userRankNum >= 1 && userRankNum <= 3;
+
+  const hasClaimedRank = (rank: number): boolean =>
+    claimedRewards.some((r) => Number(r.rank) === rank);
+
+  const getTopRewardForRank = (rank: number) =>
+    topRewards.find((r) => Number(r.rank) === rank);
+
+  const handleClaim = async (rank: number) => {
+    try {
+      const result = await claimTopReward.mutateAsync(BigInt(rank));
+      toast.success(
+        `🎉 Claimed ${Number(result.bonusTokens).toLocaleString()} bonus tokens! ${result.badge}`,
+      );
+      void claimedRewardsQuery.refetch();
+    } catch {
+      toast.error("Failed to claim reward. Please try again.");
+    }
+  };
+
+  const rankEmoji: Record<number, string> = { 1: "👑", 2: "🥈", 3: "🥉" };
 
   return (
     <div className="space-y-5 max-w-2xl">
@@ -1879,6 +1915,196 @@ function LeaderboardTab({
           </p>
         </div>
       </div>
+
+      {/* ── Top 3 Reward Claim Banner ── */}
+      {identity && membership && isInTop3 && userRankNum !== null && (
+        <AnimatePresence>
+          {hasClaimedRank(userRankNum) ? (
+            /* Already claimed – subtle badge */
+            <motion.div
+              key="claimed"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border border-[oklch(0.62_0.18_150)]/30 bg-[oklch(0.62_0.18_150)]/5"
+            >
+              <CheckCircle2 className="w-5 h-5 text-[oklch(0.62_0.18_150)] flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-[oklch(0.75_0.12_150)]">
+                  ✓ Rank #{userRankNum} Reward Claimed
+                </p>
+                {(() => {
+                  const claimed = claimedRewards.find(
+                    (r) => Number(r.rank) === userRankNum,
+                  );
+                  return claimed ? (
+                    <p className="text-[11px] text-[oklch(0.50_0.04_150)]">
+                      {claimed.badge} {claimed.title} ·{" "}
+                      <span className="font-bold text-amber-300">
+                        +{Number(claimed.bonusTokens).toLocaleString()} tokens
+                      </span>
+                    </p>
+                  ) : null;
+                })()}
+              </div>
+            </motion.div>
+          ) : (
+            /* Not yet claimed – animated claim banner */
+            <motion.div
+              key="unclaimed"
+              initial={{ opacity: 0, y: -8, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="relative overflow-hidden rounded-xl border"
+              style={{
+                background:
+                  userRankNum === 1
+                    ? "linear-gradient(135deg, oklch(0.22 0.08 60 / 50%), oklch(0.18 0.06 58 / 35%))"
+                    : userRankNum === 2
+                      ? "linear-gradient(135deg, oklch(0.18 0.03 220 / 45%), oklch(0.14 0.02 215 / 30%))"
+                      : "linear-gradient(135deg, oklch(0.20 0.06 40 / 45%), oklch(0.16 0.04 38 / 30%))",
+                borderColor:
+                  userRankNum === 1
+                    ? "oklch(0.80 0.20 60 / 40%)"
+                    : userRankNum === 2
+                      ? "oklch(0.75 0.05 220 / 35%)"
+                      : "oklch(0.70 0.12 40 / 35%)",
+                boxShadow:
+                  userRankNum === 1
+                    ? "0 0 30px oklch(0.80 0.20 60 / 20%)"
+                    : userRankNum === 2
+                      ? "0 0 24px oklch(0.75 0.05 220 / 15%)"
+                      : "0 0 22px oklch(0.70 0.12 40 / 15%)",
+              }}
+            >
+              {/* Pulse ring */}
+              <motion.div
+                className="absolute inset-0 rounded-xl pointer-events-none"
+                animate={{ opacity: [0, 0.3, 0] }}
+                transition={{
+                  duration: 2.5,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                }}
+                style={{
+                  boxShadow:
+                    userRankNum === 1
+                      ? "inset 0 0 30px oklch(0.80 0.20 60 / 25%)"
+                      : "inset 0 0 24px oklch(0.75 0.08 50 / 20%)",
+                }}
+              />
+
+              <div className="relative flex items-center gap-4 px-4 py-4">
+                {/* Rank emoji */}
+                <div className="text-4xl leading-none flex-shrink-0">
+                  {rankEmoji[userRankNum] ?? "🏅"}
+                </div>
+
+                {/* Text */}
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm font-black leading-tight ${
+                      userRankNum === 1
+                        ? "text-amber-200"
+                        : userRankNum === 2
+                          ? "text-slate-200"
+                          : "text-orange-200"
+                    }`}
+                  >
+                    You&apos;re #{userRankNum} on the Leaderboard!
+                  </p>
+                  {getTopRewardForRank(userRankNum) && (
+                    <p className="text-[11px] mt-0.5 text-[oklch(0.65_0.04_210)]">
+                      Claim your reward:{" "}
+                      <span className="font-bold text-amber-300">
+                        +
+                        {Number(
+                          getTopRewardForRank(userRankNum)?.bonusTokens ?? 0,
+                        ).toLocaleString()}{" "}
+                        bonus tokens
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Claim button */}
+                <Button
+                  onClick={() => handleClaim(userRankNum)}
+                  disabled={claimTopReward.isPending}
+                  size="sm"
+                  className="flex-shrink-0 font-bold text-xs h-9 px-4 shadow-lg"
+                  style={{
+                    background:
+                      userRankNum === 1
+                        ? "linear-gradient(135deg, oklch(0.75 0.18 55), oklch(0.65 0.20 48))"
+                        : "linear-gradient(135deg, oklch(0.62 0.12 210), oklch(0.50 0.16 230))",
+                    color: "white",
+                    boxShadow:
+                      userRankNum === 1
+                        ? "0 4px 16px oklch(0.75 0.18 55 / 40%)"
+                        : "0 4px 16px oklch(0.62 0.12 210 / 35%)",
+                  }}
+                >
+                  {claimTopReward.isPending ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      Claiming…
+                    </>
+                  ) : (
+                    <>
+                      <Gift className="w-3.5 h-3.5 mr-1.5" />
+                      Claim{" "}
+                      {Number(
+                        getTopRewardForRank(userRankNum)?.bonusTokens ?? 0,
+                      ).toLocaleString()}{" "}
+                      Tokens
+                    </>
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* ── Claimed Rewards Display ── */}
+      {identity && claimedRewards.length > 0 && (
+        <div className="rounded-xl border border-[oklch(1_0_0_/_7%)] bg-[oklch(0.10_0.012_240)] p-4 space-y-2.5">
+          <div className="flex items-center gap-2">
+            <Gift className="w-3.5 h-3.5 text-amber-400" />
+            <h4 className="text-[11px] font-bold text-[oklch(0.58_0.05_210)] uppercase tracking-wider">
+              My Claimed Rewards
+            </h4>
+          </div>
+          <div className="space-y-2">
+            {claimedRewards.map((reward) => (
+              <div
+                key={reward.rank.toString()}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg bg-[oklch(0.12_0.01_240)] border border-[oklch(1_0_0_/_7%)]"
+              >
+                <span className="text-lg leading-none flex-shrink-0">
+                  {reward.badge}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-semibold text-[oklch(0.82_0.04_210)] truncate">
+                    {reward.title}
+                  </p>
+                  <p className="text-[10px] text-[oklch(0.45_0.02_210)]">
+                    Rank #{reward.rank.toString()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Coins className="w-3 h-3 text-amber-400" />
+                  <span className="text-[11px] font-bold text-amber-300">
+                    +{Number(reward.bonusTokens).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Top 3 Rewards Section ── */}
       {(topRewardsQuery.isLoading || topRewards.length > 0) && (
@@ -2287,6 +2513,20 @@ function LeaderboardTab({
           Top 3 earn special rewards!
         </p>
       </div>
+
+      {/* ── View Public Leaderboard ── */}
+      <a
+        href="/#/leaderboard"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border border-[oklch(0.62_0.15_210)]/30 text-[oklch(0.68_0.15_210)] hover:text-[oklch(0.82_0.15_210)] hover:bg-[oklch(0.62_0.15_210)]/8 hover:border-[oklch(0.62_0.15_210)]/50 transition-all text-sm font-semibold group"
+      >
+        <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        View Public Leaderboard
+        <span className="text-[10px] text-[oklch(0.45_0.03_210)] font-normal">
+          (no login required)
+        </span>
+      </a>
     </div>
   );
 }

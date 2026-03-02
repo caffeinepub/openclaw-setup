@@ -118,6 +118,13 @@ export interface TopReward {
     badge: string;
     bonusTokens: bigint;
 }
+export interface ClaimedReward {
+    title: string;
+    rank: bigint;
+    claimedAt: bigint;
+    badge: string;
+    bonusTokens: bigint;
+}
 export interface ChatbotConfig {
     enabled: boolean;
     phoneNumber: string;
@@ -170,6 +177,7 @@ export interface backendInterface {
     addChangelog(version: string, releaseDate: string, title: string, description: string, changesList: Array<string>, changeType: string): Promise<void>;
     addFAQ(question: string, answer: string, category: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    claimTopReward(rank: bigint): Promise<ClaimedReward>;
     deleteChangelog(id: bigint): Promise<void>;
     deleteChatbotConfig(): Promise<void>;
     deleteConfig(id: bigint): Promise<void>;
@@ -183,6 +191,7 @@ export interface backendInterface {
     getLatestVersion(): Promise<string>;
     getLeaderboard(): Promise<Array<LeaderboardEntry>>;
     getMembershipStats(): Promise<MembershipStats>;
+    getMyClaimedRewards(): Promise<Array<ClaimedReward>>;
     getMyConfigs(): Promise<Array<SavedConfig>>;
     getMyLeaderboardRank(): Promise<LeaderboardEntry | null>;
     getMyMembership(): Promise<MembershipRecord | null>;
@@ -191,6 +200,7 @@ export interface backendInterface {
     getTotalDownloads(): Promise<bigint>;
     getTotalMembersCount(): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    hasClaimedReward(rank: bigint): Promise<boolean>;
     incrementDownload(os: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
     purchaseMembership(tier: MembershipTier): Promise<bigint>;
@@ -254,6 +264,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async claimTopReward(arg0: bigint): Promise<ClaimedReward> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.claimTopReward(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.claimTopReward(arg0);
             return result;
         }
     }
@@ -439,6 +463,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getMyClaimedRewards(): Promise<Array<ClaimedReward>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyClaimedRewards();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyClaimedRewards();
+            return result;
+        }
+    }
     async getMyConfigs(): Promise<Array<SavedConfig>> {
         if (this.processError) {
             try {
@@ -549,6 +587,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getUserProfile(arg0);
             return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async hasClaimedReward(arg0: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.hasClaimedReward(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.hasClaimedReward(arg0);
+            return result;
         }
     }
     async incrementDownload(arg0: string): Promise<void> {

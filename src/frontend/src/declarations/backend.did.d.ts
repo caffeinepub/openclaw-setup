@@ -20,6 +20,13 @@ export interface Changelog {
   'changesList' : Array<string>,
 }
 export interface ChatbotConfig { 'enabled' : boolean, 'phoneNumber' : string }
+export interface ClaimedReward {
+  'title' : string,
+  'rank' : bigint,
+  'claimedAt' : bigint,
+  'badge' : string,
+  'bonusTokens' : bigint,
+}
 export interface DownloadStats {
   'windowsDownloads' : bigint,
   'macosDownloads' : bigint,
@@ -84,6 +91,7 @@ export interface _SERVICE {
   >,
   'addFAQ' : ActorMethod<[string, string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'claimTopReward' : ActorMethod<[bigint], ClaimedReward>,
   'deleteChangelog' : ActorMethod<[bigint], undefined>,
   'deleteChatbotConfig' : ActorMethod<[], undefined>,
   'deleteConfig' : ActorMethod<[bigint], undefined>,
@@ -97,6 +105,7 @@ export interface _SERVICE {
   'getLatestVersion' : ActorMethod<[], string>,
   'getLeaderboard' : ActorMethod<[], Array<LeaderboardEntry>>,
   'getMembershipStats' : ActorMethod<[], MembershipStats>,
+  'getMyClaimedRewards' : ActorMethod<[], Array<ClaimedReward>>,
   'getMyConfigs' : ActorMethod<[], Array<SavedConfig>>,
   'getMyLeaderboardRank' : ActorMethod<[], [] | [LeaderboardEntry]>,
   'getMyMembership' : ActorMethod<[], [] | [MembershipRecord]>,
@@ -105,6 +114,7 @@ export interface _SERVICE {
   'getTotalDownloads' : ActorMethod<[], bigint>,
   'getTotalMembersCount' : ActorMethod<[], bigint>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'hasClaimedReward' : ActorMethod<[bigint], boolean>,
   'incrementDownload' : ActorMethod<[string], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'purchaseMembership' : ActorMethod<[MembershipTier], bigint>,

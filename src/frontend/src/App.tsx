@@ -4,6 +4,7 @@ import { MembershipTier } from "./backend.d";
 import { Footer } from "./components/Footer";
 import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
+import { PublicLeaderboardPage } from "./components/PublicLeaderboardPage";
 import { PublicProfilePage } from "./components/PublicProfilePage";
 import { TierLandingPage } from "./components/TierLandingPage";
 import { AdminPanel } from "./components/sections/AdminPanel";
@@ -27,6 +28,10 @@ function extractPublicProfileHandle(hash: string): string | null {
   return handle.length > 0 ? handle : null;
 }
 
+function isLeaderboardHash(hash: string): boolean {
+  return hash === "#/leaderboard";
+}
+
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
@@ -40,13 +45,18 @@ export default function App() {
   const [publicProfileHandle, setPublicProfileHandle] = useState<string | null>(
     () => extractPublicProfileHandle(window.location.hash),
   );
+  const [showPublicLeaderboard, setShowPublicLeaderboard] = useState<boolean>(
+    () => isLeaderboardHash(window.location.hash),
+  );
   const { data: isAdmin } = useIsAdmin();
   const { identity } = useInternetIdentity();
 
-  // Hash-based routing for public profiles
+  // Hash-based routing for public profiles and leaderboard
   const handleHashChange = useCallback(() => {
-    const handle = extractPublicProfileHandle(window.location.hash);
+    const hash = window.location.hash;
+    const handle = extractPublicProfileHandle(hash);
     setPublicProfileHandle(handle);
+    setShowPublicLeaderboard(isLeaderboardHash(hash));
   }, []);
 
   useEffect(() => {
@@ -57,6 +67,11 @@ export default function App() {
   const closePublicProfile = useCallback(() => {
     window.location.hash = "";
     setPublicProfileHandle(null);
+  }, []);
+
+  const closePublicLeaderboard = useCallback(() => {
+    window.location.hash = "";
+    setShowPublicLeaderboard(false);
   }, []);
 
   // Apply dark mode class to html element
@@ -155,6 +170,11 @@ export default function App() {
           handle={publicProfileHandle}
           onClose={closePublicProfile}
         />
+      )}
+
+      {/* Public Leaderboard Page (hash-based overlay, no login needed) */}
+      {showPublicLeaderboard && (
+        <PublicLeaderboardPage onClose={closePublicLeaderboard} />
       )}
 
       {/* Toast notifications */}

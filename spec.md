@@ -1,35 +1,32 @@
 # ClawPro
 
 ## Current State
-- App memiliki tab Leaderboard di MemberDashboard dengan data MOCK statis (hardcoded)
-- Token dihitung berdasarkan tier membership: Silver=999, Gold=2999, Platinum=7999
-- Backend menyimpan: userProfiles (name/bio), userMemberships, userChatbotConfigs
-- Tidak ada API backend untuk leaderboard atau reward
+Full-stack ClawPro app with Motoko backend and React frontend. Features include: membership tiers (Silver/Gold/Platinum), leaderboard connected to blockchain data (`getLeaderboard`, `getMyLeaderboardRank`, `getTopRewards`), token system, dashboard member with tabs (Profile, Configs, Bot, AI, API, Transactions, Rank, Alerts), multi-language (EN/ID/AR/RU/ZH), public profile page via `/#/u/[handle]`.
+
+Backend already has `getLeaderboard`, `getMyLeaderboardRank`, `getTopRewards` functions. No claim reward function exists yet.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Backend: tipe `LeaderboardEntry` dengan field principal, handle, tier, tokens, joinedAt
-- Backend: fungsi `getLeaderboard()` -- publik, query, mengembalikan top 50 member diurutkan berdasarkan token descending (tokens dihitung dari tier: Silver=999, Gold=2999, Platinum=7999)
-- Backend: fungsi `getMyLeaderboardRank()` -- query, mengembalikan rank dan entry milik caller
-- Backend: reward khusus top 3: tipe `TopReward` dengan field rank, badge, title, bonusTokens
-- Backend: fungsi `getTopRewards()` -- publik, query, mengembalikan daftar reward top 3
-- Frontend: LeaderboardTab mengambil data dari backend via `getLeaderboard()` bukan MOCK
-- Frontend: Tampilkan reward khusus top 3 di header leaderboard (crown animasi, badge eksklusif, bonus token)
-- Frontend: Podium visual untuk rank 1, 2, 3 dengan efek glow sesuai tier medal
-- Frontend: Tombol refresh leaderboard
+- Backend: `claimTopReward(rank: Nat)` function that validates the caller is currently in top 3, marks the reward as claimed (store claimed rewards per principal), returns bonus tokens
+- Backend: `hasClaimedReward(rank: Nat)` query to check if a user already claimed a reward
+- Backend: `getClaimedRewards()` query to get all claimed rewards for caller
+- Frontend: `PublicLeaderboardPage` component - standalone leaderboard page accessible via `/#/leaderboard` without login, showing top 50 members with podium top 3 display, tier badges, tokens, share button
+- Frontend: Auto-claim reward system in MemberDashboard `LeaderboardTab` - when user is top 3, show animated banner + "Claim Reward" button; after claiming, show success state with bonus tokens
+- Frontend: Hash routing in App.tsx for `/#/leaderboard`
+- Frontend: Link/button in navbar or leaderboard tab to share/open public leaderboard
 
 ### Modify
-- LeaderboardTab: ganti `MOCK_LEADERBOARD` dengan data real dari backend
-- LeaderboardTab: current user rank diambil dari `getMyLeaderboardRank()` bukan dihitung manual
-- Backend: `saveCallerUserProfile` tetap, tapi saat save profile juga sync ke leaderboard data
+- MemberDashboard LeaderboardTab: add top-3 detected banner, claim button, claimed state display
+- App.tsx: add hash routing for `/#/leaderboard` → render PublicLeaderboardPage overlay
 
 ### Remove
-- `MOCK_LEADERBOARD` constant dari MemberDashboard.tsx
+- Nothing removed
 
 ## Implementation Plan
-1. Update `main.mo`: tambah fungsi `getLeaderboard()` yang join userMemberships + userProfiles, hitung token per tier, sort descending, return top 50
-2. Update `main.mo`: tambah fungsi `getMyLeaderboardRank()` yang return rank + entry milik caller
-3. Update `main.mo`: tambah fungsi `getTopRewards()` yang return reward metadata untuk top 3
-4. Regenerate backend.d.ts
-5. Update `LeaderboardTab` di MemberDashboard.tsx: fetch dari backend, tampilkan podium top 3 dengan reward badge, refresh button
+1. Update `main.mo` to add `claimTopReward`, `hasClaimedReward`, `getClaimedRewards` functions
+2. Regenerate `backend.d.ts` types
+3. Create `PublicLeaderboardPage.tsx` - full leaderboard view without auth, podium for top 3, table for rest
+4. Update `MemberDashboard.tsx` LeaderboardTab: detect if user is top 3, show claim banner, handle claim action, show claimed badge
+5. Update `App.tsx`: add `/#/leaderboard` hash routing to show PublicLeaderboardPage
+6. Add "View Public Leaderboard" link button in LeaderboardTab
