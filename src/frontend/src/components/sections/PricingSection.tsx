@@ -44,6 +44,89 @@ import {
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
 
+// ─── Spinning Glow Keyframes ─────────────────────────────────────────────────
+const PRICING_GLOW_STYLES = `
+  @keyframes spinGlowSilver {
+    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 8px #94a3b8) drop-shadow(0 0 20px #64748b60); }
+    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 16px #cbd5e1) drop-shadow(0 0 32px #94a3b880); }
+    100% { transform: rotate(360deg); filter: drop-shadow(0 0 8px #94a3b8) drop-shadow(0 0 20px #64748b60); }
+  }
+  @keyframes spinGlowGold {
+    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 24px #d97706a0); }
+    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 20px #fbbf24) drop-shadow(0 0 40px #f59e0bc0); }
+    100% { transform: rotate(360deg); filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 24px #d97706a0); }
+  }
+  @keyframes spinGlowPlatinum {
+    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 10px #8b5cf6) drop-shadow(0 0 24px #7c3aed90); }
+    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 20px #a78bfa) drop-shadow(0 0 40px #8b5cf6c0); }
+    100% { transform: rotate(360deg); filter: drop-shadow(0 0 10px #8b5cf6) drop-shadow(0 0 24px #7c3aed90); }
+  }
+  @keyframes rotateRing {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+`;
+
+// ─── Pricing Card Spinning Glow Ring ─────────────────────────────────────────
+interface PricingGlowRingProps {
+  tier: "silver" | "gold" | "platinum";
+}
+
+function PricingGlowRing({ tier }: PricingGlowRingProps) {
+  const configs = {
+    silver: {
+      colors: ["#94a3b8", "#cbd5e1", "#64748b", "#94a3b8"],
+      anim: "spinGlowSilver",
+      duration: "6s",
+    },
+    gold: {
+      colors: ["#f59e0b", "#fbbf24", "#d97706", "#f59e0b"],
+      anim: "spinGlowGold",
+      duration: "5s",
+    },
+    platinum: {
+      colors: ["#8b5cf6", "#a78bfa", "#7c3aed", "#8b5cf6"],
+      anim: "spinGlowPlatinum",
+      duration: "4.5s",
+    },
+  };
+  const cfg = configs[tier];
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: -2,
+        borderRadius: "inherit",
+        overflow: "hidden",
+        pointerEvents: "none",
+        zIndex: 0,
+      }}
+      aria-hidden="true"
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: -40,
+          animation: `rotateRing ${cfg.duration} linear infinite`,
+          background: `conic-gradient(from 0deg, transparent 0%, ${cfg.colors[0]} 20%, ${cfg.colors[1]} 40%, ${cfg.colors[2]} 60%, ${cfg.colors[3]} 80%, transparent 100%)`,
+          opacity: 0.7,
+        }}
+      />
+      {/* Inner mask to show only the ring edge */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 4,
+          borderRadius: "inherit",
+          background: "oklch(0.09 0.012 240)",
+          zIndex: 1,
+        }}
+      />
+    </div>
+  );
+}
+
 // ─── Payment method icons (inline SVG, no external dependencies) ───────────
 
 function MastercardIcon({ size = 28 }: { size?: number }) {
@@ -160,6 +243,74 @@ function BitcoinIcon({ size = 28 }: { size?: number }) {
         letterSpacing="0.5"
       >
         BTC
+      </text>
+    </svg>
+  );
+}
+
+// ─── USDT Icon ─────────────────────────────────────────────────────────────
+
+function USDTIcon({ size = 28 }: { size?: number }) {
+  return (
+    <svg
+      role="img"
+      aria-label="USDT"
+      width={size}
+      height={size * 0.63}
+      viewBox="0 0 38 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="38" height="24" rx="4" fill="#26A17B" />
+      <text
+        x="7"
+        y="17"
+        fontFamily="Arial"
+        fontWeight="bold"
+        fontSize="13"
+        fill="white"
+      >
+        ₮
+      </text>
+      <text
+        x="18"
+        y="17"
+        fontFamily="Arial"
+        fontWeight="bold"
+        fontSize="8"
+        fill="white"
+        letterSpacing="0.5"
+      >
+        USDT
+      </text>
+    </svg>
+  );
+}
+
+// ─── Stripe Icon ──────────────────────────────────────────────────────────────
+
+function StripeIcon({ size = 28 }: { size?: number }) {
+  return (
+    <svg
+      role="img"
+      aria-label="Stripe"
+      width={size}
+      height={size * 0.63}
+      viewBox="0 0 38 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="38" height="24" rx="4" fill="#635BFF" />
+      <text
+        x="5"
+        y="16"
+        fontFamily="Arial"
+        fontWeight="bold"
+        fontSize="8.5"
+        fill="white"
+        letterSpacing="0.5"
+      >
+        stripe
       </text>
     </svg>
   );
@@ -333,6 +484,70 @@ function BitcoinLargeIcon() {
   );
 }
 
+function USDTLargeIcon() {
+  return (
+    <svg
+      role="img"
+      aria-label="USDT"
+      width="52"
+      height="34"
+      viewBox="0 0 52 34"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="52" height="34" rx="6" fill="#26A17B" />
+      <text
+        x="8"
+        y="24"
+        fontFamily="Arial"
+        fontWeight="bold"
+        fontSize="18"
+        fill="white"
+      >
+        ₮
+      </text>
+      <text
+        x="26"
+        y="24"
+        fontFamily="Arial"
+        fontWeight="bold"
+        fontSize="11"
+        fill="white"
+        letterSpacing="0.5"
+      >
+        USDT
+      </text>
+    </svg>
+  );
+}
+
+function StripeLargeIcon() {
+  return (
+    <svg
+      role="img"
+      aria-label="Stripe"
+      width="52"
+      height="34"
+      viewBox="0 0 52 34"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="52" height="34" rx="6" fill="#635BFF" />
+      <text
+        x="6"
+        y="22"
+        fontFamily="Arial"
+        fontWeight="bold"
+        fontSize="12"
+        fill="white"
+        letterSpacing="0.5"
+      >
+        stripe
+      </text>
+    </svg>
+  );
+}
+
 function QrisLargeIcon() {
   return (
     <svg
@@ -384,16 +599,18 @@ function QrisLargeIcon() {
 
 function PaymentMethodsStrip({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-2 mt-3 mb-1">
+    <div className="flex items-center gap-2 mt-3 mb-1 flex-wrap">
       <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap">
         {label}:
       </span>
-      <div className="flex items-center gap-1.5">
-        <MastercardIcon size={24} />
-        <VisaIcon size={24} />
-        <PayPalIcon size={24} />
-        <BitcoinIcon size={24} />
-        <QrisIcon size={24} />
+      <div className="flex items-center gap-1 flex-wrap">
+        <PayPalIcon size={22} />
+        <QrisIcon size={22} />
+        <USDTIcon size={22} />
+        <BitcoinIcon size={22} />
+        <StripeIcon size={22} />
+        <MastercardIcon size={22} />
+        <VisaIcon size={22} />
       </div>
     </div>
   );
@@ -778,18 +995,27 @@ function QrisPaymentForm({ tierPrice }: { tierPrice: number }) {
 
 // ─── Payment Method Dialog ────────────────────────────────────────────────
 
-type PaymentMethod = "mastercard" | "visa" | "paypal" | "bitcoin" | "qris";
+type PaymentMethod =
+  | "mastercard"
+  | "visa"
+  | "paypal"
+  | "bitcoin"
+  | "qris"
+  | "usdt"
+  | "stripe";
 
 const PAYMENT_METHODS: {
   id: PaymentMethod;
   label: string;
   icon: React.ReactNode;
 }[] = [
+  { id: "paypal", label: "PayPal", icon: <PayPalLargeIcon /> },
+  { id: "qris", label: "QRIS / Bank IDR", icon: <QrisLargeIcon /> },
+  { id: "usdt", label: "USDT", icon: <USDTLargeIcon /> },
+  { id: "bitcoin", label: "Bitcoin", icon: <BitcoinLargeIcon /> },
+  { id: "stripe", label: "Stripe", icon: <StripeLargeIcon /> },
   { id: "mastercard", label: "Mastercard", icon: <MastercardLargeIcon /> },
   { id: "visa", label: "Visa", icon: <VisaLargeIcon /> },
-  { id: "paypal", label: "PayPal", icon: <PayPalLargeIcon /> },
-  { id: "bitcoin", label: "Bitcoin", icon: <BitcoinLargeIcon /> },
-  { id: "qris", label: "QRIS / Bank IDR", icon: <QrisLargeIcon /> },
 ];
 
 interface PaymentMethodDialogProps {
@@ -824,9 +1050,12 @@ function PaymentMethodDialog({
     cvv: "",
   });
 
-  // PayPal / Bitcoin single field
+  // PayPal / Bitcoin / USDT single field
   const [paypalUsername, setPaypalUsername] = useState("");
   const [bitcoinWallet, setBitcoinWallet] = useState("");
+  const [usdtWallet, setUsdtWallet] = useState("");
+
+  // Stripe uses same card form state as mastercard/visa
 
   const handleClose = () => {
     if (isProcessing) return;
@@ -842,6 +1071,7 @@ function PaymentMethodDialog({
     });
     setPaypalUsername("");
     setBitcoinWallet("");
+    setUsdtWallet("");
     onClose();
   };
 
@@ -857,7 +1087,11 @@ function PaymentMethodDialog({
   };
 
   const validateAndConfirm = async () => {
-    if (selectedMethod === "mastercard" || selectedMethod === "visa") {
+    if (
+      selectedMethod === "mastercard" ||
+      selectedMethod === "visa" ||
+      selectedMethod === "stripe"
+    ) {
       const digitsOnly = cardData.cardNumber.replace(/\s/g, "");
       if (
         digitsOnly.length !== 16 ||
@@ -876,6 +1110,11 @@ function PaymentMethodDialog({
       }
     } else if (selectedMethod === "bitcoin") {
       if (!bitcoinWallet.trim()) {
+        setCardError(t.pricing.cardError);
+        return;
+      }
+    } else if (selectedMethod === "usdt") {
+      if (!usdtWallet.trim()) {
         setCardError(t.pricing.cardError);
         return;
       }
@@ -961,7 +1200,8 @@ function PaymentMethodDialog({
               className="py-2"
             >
               {(selectedMethod === "mastercard" ||
-                selectedMethod === "visa") && (
+                selectedMethod === "visa" ||
+                selectedMethod === "stripe") && (
                 <CardPaymentForm
                   data={cardData}
                   onChange={setCardData}
@@ -1028,6 +1268,35 @@ function PaymentMethodDialog({
                 </div>
               )}
 
+              {selectedMethod === "usdt" && (
+                <div className="space-y-4">
+                  {cardError && (
+                    <div className="text-xs text-destructive bg-destructive/10 border border-destructive/30 rounded-lg px-3 py-2">
+                      {cardError}
+                    </div>
+                  )}
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="usdt-wallet"
+                      className="text-sm text-foreground"
+                    >
+                      USDT Wallet Address (TRC20 / ERC20)
+                    </Label>
+                    <Input
+                      id="usdt-wallet"
+                      value={usdtWallet}
+                      onChange={(e) => setUsdtWallet(e.target.value)}
+                      placeholder="TXxxxxxx... or 0x..."
+                      className="bg-background border-[#26A17B]/40 font-mono text-xs focus:border-[#26A17B]"
+                    />
+                  </div>
+                  <div className="text-xs text-muted-foreground bg-[#26A17B]/10 border border-[#26A17B]/20 rounded-lg px-3 py-2 leading-relaxed">
+                    ₮ Send USDT to the address provided after confirmation.
+                    Compatible with Trust Wallet and MetaMask.
+                  </div>
+                </div>
+              )}
+
               {selectedMethod === "qris" && (
                 <QrisPaymentForm tierPrice={tierPrice} />
               )}
@@ -1074,7 +1343,7 @@ function PaymentMethodDialog({
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {t.pricing.paymentProcessing}
                   </>
-                ) : selectedMethod === "qris" ? (
+                ) : selectedMethod === "qris" || selectedMethod === "usdt" ? (
                   t.pricing.iHaveTransferred
                 ) : (
                   t.pricing.confirmPayment
@@ -1198,8 +1467,11 @@ function PricingCard({
 
   const buttonLabel = getButtonLabel();
 
+  const glowTier = config.name.toLowerCase() as "silver" | "gold" | "platinum";
+
   return (
     <>
+      <style>{PRICING_GLOW_STYLES}</style>
       <PaymentMethodDialog
         open={paymentDialogOpen}
         tierName={config.name}
@@ -1220,7 +1492,10 @@ function PricingCard({
             ? `${config.borderColor} ${config.glowColor}`
             : `border-border hover:${config.borderColor}`
         }`}
+        style={{ isolation: "isolate" }}
       >
+        {/* Spinning glow ring */}
+        <PricingGlowRing tier={glowTier} />
         {/* Popular badge */}
         {config.popular && (
           <div className="absolute top-0 left-0 right-0 flex justify-center">

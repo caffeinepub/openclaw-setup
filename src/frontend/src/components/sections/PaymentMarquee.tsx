@@ -1,3 +1,5 @@
+import type React from "react";
+
 // Payment logos SVG components
 function MastercardLogo({ size = 48 }: { size?: number }) {
   return (
@@ -47,40 +49,6 @@ function VisaLogo({ size = 48 }: { size?: number }) {
   );
 }
 
-function CryptoLogo({ size = 48 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      role="img"
-      aria-label="Cryptocurrency"
-    >
-      <title>Cryptocurrency</title>
-      <circle cx="24" cy="24" r="22" fill="#627EEA" />
-      <path d="M24 8 L24 19.5 L32 23.5 L24 8Z" fill="white" fillOpacity="0.6" />
-      <path d="M24 8 L16 23.5 L24 19.5 L24 8Z" fill="white" />
-      <path
-        d="M24 27.5 L24 40 L32 25.5 L24 27.5Z"
-        fill="white"
-        fillOpacity="0.6"
-      />
-      <path d="M24 40 L24 27.5 L16 25.5 L24 40Z" fill="white" />
-      <path
-        d="M24 19.5 L16 23.5 L24 26 L32 23.5 L24 19.5Z"
-        fill="white"
-        fillOpacity="0.2"
-      />
-      <path
-        d="M16 23.5 L24 26 L32 23.5 L24 19.5 Z"
-        fill="white"
-        fillOpacity="0.6"
-      />
-    </svg>
-  );
-}
-
 function BitcoinLogo({ size = 48 }: { size?: number }) {
   return (
     <svg
@@ -124,6 +92,77 @@ function PaypalLogo({ size = 48 }: { size?: number }) {
         fontFamily="Arial, sans-serif"
       >
         PayPal
+      </text>
+    </svg>
+  );
+}
+
+function USDTLogo({ size = 48 }: { size?: number }) {
+  return (
+    <svg
+      width={size * 1.3}
+      height={size * 0.6}
+      viewBox="0 0 64 30"
+      fill="none"
+      role="img"
+      aria-label="USDT Tether"
+    >
+      <title>USDT Tether</title>
+      <rect width="64" height="30" rx="4" fill="#26A17B" />
+      <circle cx="15" cy="15" r="10" fill="#1a7a5e" />
+      <text
+        x="15"
+        y="20"
+        dominantBaseline="auto"
+        textAnchor="middle"
+        fill="white"
+        fontSize="16"
+        fontWeight="bold"
+        fontFamily="Arial, sans-serif"
+      >
+        ₮
+      </text>
+      <text
+        x="42"
+        y="50%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        fill="white"
+        fontSize="11"
+        fontWeight="bold"
+        fontFamily="Arial, sans-serif"
+        letterSpacing="0.5"
+      >
+        USDT
+      </text>
+    </svg>
+  );
+}
+
+function StripeLogo({ size = 48 }: { size?: number }) {
+  return (
+    <svg
+      width={size * 1.4}
+      height={size * 0.6}
+      viewBox="0 0 68 30"
+      fill="none"
+      role="img"
+      aria-label="Stripe"
+    >
+      <title>Stripe</title>
+      <rect width="68" height="30" rx="4" fill="#635BFF" />
+      <text
+        x="50%"
+        y="50%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        fill="white"
+        fontSize="13"
+        fontWeight="bold"
+        fontFamily="Arial, sans-serif"
+        letterSpacing="0.8"
+      >
+        stripe
       </text>
     </svg>
   );
@@ -212,20 +251,17 @@ function QRISLogo({ size = 48 }: { size?: number }) {
 }
 
 const PAYMENT_ITEMS = [
+  { id: "paypal", component: <PaypalLogo size={48} />, label: "PayPal" },
+  { id: "qris", component: <QRISLogo size={48} />, label: "QRIS IDR" },
+  { id: "usdt", component: <USDTLogo size={48} />, label: "USDT" },
+  { id: "bitcoin", component: <BitcoinLogo size={48} />, label: "Bitcoin" },
+  { id: "stripe", component: <StripeLogo size={48} />, label: "Stripe" },
   {
     id: "mastercard",
     component: <MastercardLogo size={48} />,
     label: "Mastercard",
   },
   { id: "visa", component: <VisaLogo size={48} />, label: "Visa" },
-  {
-    id: "crypto",
-    component: <CryptoLogo size={48} />,
-    label: "Cryptocurrency",
-  },
-  { id: "bitcoin", component: <BitcoinLogo size={48} />, label: "Bitcoin" },
-  { id: "paypal", component: <PaypalLogo size={48} />, label: "PayPal" },
-  { id: "qris", component: <QRISLogo size={48} />, label: "QRIS" },
 ];
 
 const PAYMENT_LOOP = [...PAYMENT_ITEMS, ...PAYMENT_ITEMS, ...PAYMENT_ITEMS];
@@ -236,7 +272,7 @@ function MarqueeTrack({
 }: {
   items: { id: string; component: React.ReactNode; label: string }[];
   speed?: number;
-}) {
+}): React.JSX.Element {
   const duration = `${items.length * speed}s`;
   return (
     <div className="overflow-hidden">

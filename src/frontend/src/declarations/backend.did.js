@@ -8,6 +8,16 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const BlogPost = IDL.Record({
+  'id' : IDL.Nat,
+  'coverImageUrl' : IDL.Text,
+  'title' : IDL.Text,
+  'body' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'tags' : IDL.Vec(IDL.Text),
+  'authorName' : IDL.Text,
+  'category' : IDL.Text,
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -19,6 +29,24 @@ export const ClaimedReward = IDL.Record({
   'claimedAt' : IDL.Int,
   'badge' : IDL.Text,
   'bonusTokens' : IDL.Nat,
+});
+export const ForumPost = IDL.Record({
+  'id' : IDL.Nat,
+  'body' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'threadId' : IDL.Nat,
+  'authorHandle' : IDL.Text,
+  'authorPrincipal' : IDL.Principal,
+});
+export const ForumThread = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'replyCount' : IDL.Nat,
+  'lastActivityAt' : IDL.Int,
+  'authorHandle' : IDL.Text,
+  'authorPrincipal' : IDL.Principal,
+  'topicId' : IDL.Nat,
 });
 export const Changelog = IDL.Record({
   'id' : IDL.Nat,
@@ -49,6 +77,13 @@ export const DownloadStats = IDL.Record({
   'linuxDownloads' : IDL.Nat,
   'totalDownloads' : IDL.Nat,
 });
+export const ForumTopic = IDL.Record({
+  'id' : IDL.Nat,
+  'title' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'description' : IDL.Text,
+  'category' : IDL.Text,
+});
 export const MembershipTier = IDL.Variant({
   'gold' : IDL.Null,
   'platinum' : IDL.Null,
@@ -77,11 +112,26 @@ export const SavedConfig = IDL.Record({
   'createdAt' : IDL.Int,
   'configData' : IDL.Text,
 });
+export const ForumNotification = IDL.Record({
+  'id' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'read' : IDL.Bool,
+  'threadTitle' : IDL.Text,
+  'threadId' : IDL.Nat,
+  'recipientPrincipal' : IDL.Principal,
+  'fromHandle' : IDL.Text,
+});
 export const MembershipRecord = IDL.Record({
   'id' : IDL.Nat,
   'owner' : IDL.Principal,
   'tier' : MembershipTier,
   'purchasedAt' : IDL.Int,
+});
+export const UserAccount = IDL.Record({
+  'fullName' : IDL.Text,
+  'email' : IDL.Text,
+  'handle' : IDL.Text,
+  'phone' : IDL.Text,
 });
 export const TopReward = IDL.Record({
   'title' : IDL.Text,
@@ -94,6 +144,11 @@ export const TopReward = IDL.Record({
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addBlogPost' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
+      [BlogPost],
+      [],
+    ),
   'addChangelog' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
       [],
@@ -102,27 +157,56 @@ export const idlService = IDL.Service({
   'addFAQ' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'claimTopReward' : IDL.Func([IDL.Nat], [ClaimedReward], []),
+  'createForumPost' : IDL.Func([IDL.Nat, IDL.Text], [ForumPost], []),
+  'createForumThread' : IDL.Func(
+      [IDL.Nat, IDL.Text, IDL.Text],
+      [ForumThread],
+      [],
+    ),
   'deleteChangelog' : IDL.Func([IDL.Nat], [], []),
   'deleteChatbotConfig' : IDL.Func([], [], []),
   'deleteConfig' : IDL.Func([IDL.Nat], [], []),
   'deleteFAQ' : IDL.Func([IDL.Nat], [], []),
   'getAllChangelog' : IDL.Func([], [IDL.Vec(Changelog)], ['query']),
   'getAllFAQs' : IDL.Func([], [IDL.Vec(FAQ)], ['query']),
+  'getBlogPosts' : IDL.Func([], [IDL.Vec(BlogPost)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getChatbotConfig' : IDL.Func([], [IDL.Opt(ChatbotConfig)], ['query']),
   'getDownloadsByOS' : IDL.Func([], [DownloadStats], ['query']),
+  'getForumPostsByThread' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(ForumPost)],
+      ['query'],
+    ),
+  'getForumThreadsByTopic' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(ForumThread)],
+      ['query'],
+    ),
+  'getForumTopics' : IDL.Func([], [IDL.Vec(ForumTopic)], ['query']),
   'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
   'getLeaderboard' : IDL.Func([], [IDL.Vec(LeaderboardEntry)], ['query']),
   'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
   'getMyClaimedRewards' : IDL.Func([], [IDL.Vec(ClaimedReward)], ['query']),
   'getMyConfigs' : IDL.Func([], [IDL.Vec(SavedConfig)], ['query']),
+  'getMyForumNotifications' : IDL.Func(
+      [],
+      [IDL.Vec(ForumNotification)],
+      ['query'],
+    ),
   'getMyLeaderboardRank' : IDL.Func([], [IDL.Opt(LeaderboardEntry)], ['query']),
   'getMyMembership' : IDL.Func([], [IDL.Opt(MembershipRecord)], ['query']),
+  'getMyUserAccount' : IDL.Func([], [IDL.Opt(UserAccount)], ['query']),
   'getTopRewards' : IDL.Func([], [IDL.Vec(TopReward)], ['query']),
   'getTotalConfigsCount' : IDL.Func([], [IDL.Nat], ['query']),
   'getTotalDownloads' : IDL.Func([], [IDL.Nat], ['query']),
   'getTotalMembersCount' : IDL.Func([], [IDL.Nat], ['query']),
+  'getUserAccountByHandle' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(UserAccount)],
+      ['query'],
+    ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -131,15 +215,31 @@ export const idlService = IDL.Service({
   'hasClaimedReward' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
   'incrementDownload' : IDL.Func([IDL.Text], [], []),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'markForumNotificationRead' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   'purchaseMembership' : IDL.Func([MembershipTier], [IDL.Nat], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'saveChatbotConfig' : IDL.Func([IDL.Text, IDL.Bool], [], []),
   'saveConfig' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
+  'saveUserAccount' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const BlogPost = IDL.Record({
+    'id' : IDL.Nat,
+    'coverImageUrl' : IDL.Text,
+    'title' : IDL.Text,
+    'body' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'tags' : IDL.Vec(IDL.Text),
+    'authorName' : IDL.Text,
+    'category' : IDL.Text,
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -151,6 +251,24 @@ export const idlFactory = ({ IDL }) => {
     'claimedAt' : IDL.Int,
     'badge' : IDL.Text,
     'bonusTokens' : IDL.Nat,
+  });
+  const ForumPost = IDL.Record({
+    'id' : IDL.Nat,
+    'body' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'threadId' : IDL.Nat,
+    'authorHandle' : IDL.Text,
+    'authorPrincipal' : IDL.Principal,
+  });
+  const ForumThread = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'replyCount' : IDL.Nat,
+    'lastActivityAt' : IDL.Int,
+    'authorHandle' : IDL.Text,
+    'authorPrincipal' : IDL.Principal,
+    'topicId' : IDL.Nat,
   });
   const Changelog = IDL.Record({
     'id' : IDL.Nat,
@@ -181,6 +299,13 @@ export const idlFactory = ({ IDL }) => {
     'linuxDownloads' : IDL.Nat,
     'totalDownloads' : IDL.Nat,
   });
+  const ForumTopic = IDL.Record({
+    'id' : IDL.Nat,
+    'title' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'description' : IDL.Text,
+    'category' : IDL.Text,
+  });
   const MembershipTier = IDL.Variant({
     'gold' : IDL.Null,
     'platinum' : IDL.Null,
@@ -209,11 +334,26 @@ export const idlFactory = ({ IDL }) => {
     'createdAt' : IDL.Int,
     'configData' : IDL.Text,
   });
+  const ForumNotification = IDL.Record({
+    'id' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'read' : IDL.Bool,
+    'threadTitle' : IDL.Text,
+    'threadId' : IDL.Nat,
+    'recipientPrincipal' : IDL.Principal,
+    'fromHandle' : IDL.Text,
+  });
   const MembershipRecord = IDL.Record({
     'id' : IDL.Nat,
     'owner' : IDL.Principal,
     'tier' : MembershipTier,
     'purchasedAt' : IDL.Int,
+  });
+  const UserAccount = IDL.Record({
+    'fullName' : IDL.Text,
+    'email' : IDL.Text,
+    'handle' : IDL.Text,
+    'phone' : IDL.Text,
   });
   const TopReward = IDL.Record({
     'title' : IDL.Text,
@@ -226,6 +366,11 @@ export const idlFactory = ({ IDL }) => {
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addBlogPost' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
+        [BlogPost],
+        [],
+      ),
     'addChangelog' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text],
         [],
@@ -234,31 +379,60 @@ export const idlFactory = ({ IDL }) => {
     'addFAQ' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'claimTopReward' : IDL.Func([IDL.Nat], [ClaimedReward], []),
+    'createForumPost' : IDL.Func([IDL.Nat, IDL.Text], [ForumPost], []),
+    'createForumThread' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text],
+        [ForumThread],
+        [],
+      ),
     'deleteChangelog' : IDL.Func([IDL.Nat], [], []),
     'deleteChatbotConfig' : IDL.Func([], [], []),
     'deleteConfig' : IDL.Func([IDL.Nat], [], []),
     'deleteFAQ' : IDL.Func([IDL.Nat], [], []),
     'getAllChangelog' : IDL.Func([], [IDL.Vec(Changelog)], ['query']),
     'getAllFAQs' : IDL.Func([], [IDL.Vec(FAQ)], ['query']),
+    'getBlogPosts' : IDL.Func([], [IDL.Vec(BlogPost)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getChatbotConfig' : IDL.Func([], [IDL.Opt(ChatbotConfig)], ['query']),
     'getDownloadsByOS' : IDL.Func([], [DownloadStats], ['query']),
+    'getForumPostsByThread' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(ForumPost)],
+        ['query'],
+      ),
+    'getForumThreadsByTopic' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(ForumThread)],
+        ['query'],
+      ),
+    'getForumTopics' : IDL.Func([], [IDL.Vec(ForumTopic)], ['query']),
     'getLatestVersion' : IDL.Func([], [IDL.Text], ['query']),
     'getLeaderboard' : IDL.Func([], [IDL.Vec(LeaderboardEntry)], ['query']),
     'getMembershipStats' : IDL.Func([], [MembershipStats], ['query']),
     'getMyClaimedRewards' : IDL.Func([], [IDL.Vec(ClaimedReward)], ['query']),
     'getMyConfigs' : IDL.Func([], [IDL.Vec(SavedConfig)], ['query']),
+    'getMyForumNotifications' : IDL.Func(
+        [],
+        [IDL.Vec(ForumNotification)],
+        ['query'],
+      ),
     'getMyLeaderboardRank' : IDL.Func(
         [],
         [IDL.Opt(LeaderboardEntry)],
         ['query'],
       ),
     'getMyMembership' : IDL.Func([], [IDL.Opt(MembershipRecord)], ['query']),
+    'getMyUserAccount' : IDL.Func([], [IDL.Opt(UserAccount)], ['query']),
     'getTopRewards' : IDL.Func([], [IDL.Vec(TopReward)], ['query']),
     'getTotalConfigsCount' : IDL.Func([], [IDL.Nat], ['query']),
     'getTotalDownloads' : IDL.Func([], [IDL.Nat], ['query']),
     'getTotalMembersCount' : IDL.Func([], [IDL.Nat], ['query']),
+    'getUserAccountByHandle' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(UserAccount)],
+        ['query'],
+      ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -267,10 +441,16 @@ export const idlFactory = ({ IDL }) => {
     'hasClaimedReward' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
     'incrementDownload' : IDL.Func([IDL.Text], [], []),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'markForumNotificationRead' : IDL.Func([IDL.Nat], [IDL.Bool], []),
     'purchaseMembership' : IDL.Func([MembershipTier], [IDL.Nat], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'saveChatbotConfig' : IDL.Func([IDL.Text, IDL.Bool], [], []),
     'saveConfig' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Nat], []),
+    'saveUserAccount' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [],
+        [],
+      ),
   });
 };
 

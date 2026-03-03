@@ -138,12 +138,96 @@ function ColorfulBackground() {
 function RobotMascot() {
   return (
     <div className="relative flex items-center justify-center">
-      <img
-        src="/assets/generated/clawpro-robot-mascot-transparent.dim_600x700.png"
-        alt="ClawPro Robot Mascot"
-        className="relative z-10 w-auto animate-float"
-        style={{ height: "420px", maxHeight: "420px", objectFit: "contain" }}
+      {/* Outer radial glow halo */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(0,198,255,0.18) 0%, rgba(220,38,38,0.12) 40%, transparent 70%)",
+          animation: "mascotHalo 4s ease-in-out infinite alternate",
+          borderRadius: "50%",
+          zIndex: 5,
+        }}
       />
+      {/* Pulsing ring effects */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "300px",
+          height: "300px",
+          borderRadius: "50%",
+          border: "2px solid rgba(0,198,255,0.2)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "mascotRing1 3s ease-in-out infinite",
+          zIndex: 4,
+        }}
+      />
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "380px",
+          height: "380px",
+          borderRadius: "50%",
+          border: "1px solid rgba(220,38,38,0.15)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "mascotRing2 3s ease-in-out infinite 1s",
+          zIndex: 4,
+        }}
+      />
+      {/* Ground shadow */}
+      <div
+        className="absolute bottom-4 pointer-events-none"
+        style={{
+          width: "220px",
+          height: "30px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse, rgba(0,198,255,0.25) 0%, transparent 70%)",
+          animation: "mascotShadow 2.5s ease-in-out infinite alternate",
+          zIndex: 4,
+        }}
+      />
+      {/* Mascot image */}
+      <img
+        src="/assets/generated/clawpro-mascot-glowing-transparent.dim_600x700.png"
+        alt="ClawPro Robot Mascot"
+        className="relative z-10 w-auto"
+        style={{
+          height: "420px",
+          maxHeight: "420px",
+          objectFit: "contain",
+          animation: "mascotFloat 3s ease-in-out infinite",
+          filter:
+            "drop-shadow(0 0 20px rgba(0,198,255,0.6)) drop-shadow(0 0 40px rgba(220,38,38,0.4)) drop-shadow(0 0 60px rgba(0,114,255,0.3))",
+        }}
+      />
+      <style>{`
+        @keyframes mascotFloat {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-12px) rotate(0.5deg); }
+          66% { transform: translateY(-6px) rotate(-0.5deg); }
+        }
+        @keyframes mascotHalo {
+          0% { opacity: 0.6; transform: scale(1); }
+          100% { opacity: 1; transform: scale(1.08); }
+        }
+        @keyframes mascotRing1 {
+          0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.08); }
+        }
+        @keyframes mascotRing2 {
+          0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.06); }
+        }
+        @keyframes mascotShadow {
+          0% { opacity: 0.5; transform: scaleX(0.8); }
+          100% { opacity: 0.9; transform: scaleX(1.1); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -198,7 +282,11 @@ function GlowCorner({
   );
 }
 
-function HandleClaimCard() {
+interface HandleClaimCardProps {
+  onOpenCreateAccount?: (handle: string, fullName: string) => void;
+}
+
+function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
   const { identity, login } = useInternetIdentity();
   const { data: profile } = useCallerUserProfile();
   const saveProfile = useSaveCallerUserProfile();
@@ -244,10 +332,15 @@ function HandleClaimCard() {
     }
 
     if (!identity) {
-      // Not logged in: store intent and trigger login
-      setPendingSave(true);
-      toast.info("Please login to save your handle.");
-      login();
+      // Not logged in: open Create Account modal with prefilled data
+      if (onOpenCreateAccount) {
+        onOpenCreateAccount(trimmedHandle, fullName.trim());
+      } else {
+        // Fallback: store intent and trigger ICP login directly
+        setPendingSave(true);
+        toast.info("Please login to save your handle.");
+        login();
+      }
       return;
     }
 
@@ -1888,7 +1981,11 @@ function IntegrationSearchBar() {
   );
 }
 
-export function HeroSection() {
+interface HeroSectionProps {
+  onOpenCreateAccount?: (handle: string, fullName: string) => void;
+}
+
+export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
   const { data: latestVersion } = useLatestVersion();
   const { data: totalDownloads } = useTotalDownloads();
   const { t } = useLanguage();
@@ -2053,7 +2150,7 @@ export function HeroSection() {
 
         {/* Handle Claim — full-width row below main columns */}
         <div className="flex flex-col items-center gap-5 mt-8">
-          <HandleClaimCard />
+          <HandleClaimCard onOpenCreateAccount={onOpenCreateAccount} />
           <IntegrationSearchBar />
         </div>
       </div>

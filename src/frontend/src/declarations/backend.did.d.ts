@@ -10,6 +10,16 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface BlogPost {
+  'id' : bigint,
+  'coverImageUrl' : string,
+  'title' : string,
+  'body' : string,
+  'createdAt' : bigint,
+  'tags' : Array<string>,
+  'authorName' : string,
+  'category' : string,
+}
 export interface Changelog {
   'id' : bigint,
   'title' : string,
@@ -37,6 +47,40 @@ export interface FAQ {
   'id' : bigint,
   'question' : string,
   'answer' : string,
+  'category' : string,
+}
+export interface ForumNotification {
+  'id' : bigint,
+  'createdAt' : bigint,
+  'read' : boolean,
+  'threadTitle' : string,
+  'threadId' : bigint,
+  'recipientPrincipal' : Principal,
+  'fromHandle' : string,
+}
+export interface ForumPost {
+  'id' : bigint,
+  'body' : string,
+  'createdAt' : bigint,
+  'threadId' : bigint,
+  'authorHandle' : string,
+  'authorPrincipal' : Principal,
+}
+export interface ForumThread {
+  'id' : bigint,
+  'title' : string,
+  'createdAt' : bigint,
+  'replyCount' : bigint,
+  'lastActivityAt' : bigint,
+  'authorHandle' : string,
+  'authorPrincipal' : Principal,
+  'topicId' : bigint,
+}
+export interface ForumTopic {
+  'id' : bigint,
+  'title' : string,
+  'createdAt' : bigint,
+  'description' : string,
   'category' : string,
 }
 export interface LeaderboardEntry {
@@ -79,12 +123,22 @@ export interface TopReward {
   'badge' : string,
   'bonusTokens' : bigint,
 }
+export interface UserAccount {
+  'fullName' : string,
+  'email' : string,
+  'handle' : string,
+  'phone' : string,
+}
 export interface UserProfile { 'bio' : [] | [string], 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addBlogPost' : ActorMethod<
+    [string, string, string, string, Array<string>, string],
+    BlogPost
+  >,
   'addChangelog' : ActorMethod<
     [string, string, string, string, Array<string>, string],
     undefined
@@ -92,35 +146,46 @@ export interface _SERVICE {
   'addFAQ' : ActorMethod<[string, string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'claimTopReward' : ActorMethod<[bigint], ClaimedReward>,
+  'createForumPost' : ActorMethod<[bigint, string], ForumPost>,
+  'createForumThread' : ActorMethod<[bigint, string, string], ForumThread>,
   'deleteChangelog' : ActorMethod<[bigint], undefined>,
   'deleteChatbotConfig' : ActorMethod<[], undefined>,
   'deleteConfig' : ActorMethod<[bigint], undefined>,
   'deleteFAQ' : ActorMethod<[bigint], undefined>,
   'getAllChangelog' : ActorMethod<[], Array<Changelog>>,
   'getAllFAQs' : ActorMethod<[], Array<FAQ>>,
+  'getBlogPosts' : ActorMethod<[], Array<BlogPost>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getChatbotConfig' : ActorMethod<[], [] | [ChatbotConfig]>,
   'getDownloadsByOS' : ActorMethod<[], DownloadStats>,
+  'getForumPostsByThread' : ActorMethod<[bigint], Array<ForumPost>>,
+  'getForumThreadsByTopic' : ActorMethod<[bigint], Array<ForumThread>>,
+  'getForumTopics' : ActorMethod<[], Array<ForumTopic>>,
   'getLatestVersion' : ActorMethod<[], string>,
   'getLeaderboard' : ActorMethod<[], Array<LeaderboardEntry>>,
   'getMembershipStats' : ActorMethod<[], MembershipStats>,
   'getMyClaimedRewards' : ActorMethod<[], Array<ClaimedReward>>,
   'getMyConfigs' : ActorMethod<[], Array<SavedConfig>>,
+  'getMyForumNotifications' : ActorMethod<[], Array<ForumNotification>>,
   'getMyLeaderboardRank' : ActorMethod<[], [] | [LeaderboardEntry]>,
   'getMyMembership' : ActorMethod<[], [] | [MembershipRecord]>,
+  'getMyUserAccount' : ActorMethod<[], [] | [UserAccount]>,
   'getTopRewards' : ActorMethod<[], Array<TopReward>>,
   'getTotalConfigsCount' : ActorMethod<[], bigint>,
   'getTotalDownloads' : ActorMethod<[], bigint>,
   'getTotalMembersCount' : ActorMethod<[], bigint>,
+  'getUserAccountByHandle' : ActorMethod<[string], [] | [UserAccount]>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'hasClaimedReward' : ActorMethod<[bigint], boolean>,
   'incrementDownload' : ActorMethod<[string], undefined>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'markForumNotificationRead' : ActorMethod<[bigint], boolean>,
   'purchaseMembership' : ActorMethod<[MembershipTier], bigint>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'saveChatbotConfig' : ActorMethod<[string, boolean], undefined>,
   'saveConfig' : ActorMethod<[string, string, string], bigint>,
+  'saveUserAccount' : ActorMethod<[string, string, string, string], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

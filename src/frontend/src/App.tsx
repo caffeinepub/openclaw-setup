@@ -1,7 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useCallback, useEffect, useState } from "react";
 import { MembershipTier } from "./backend.d";
+import { BlogPage } from "./components/BlogPage";
+import { CreateAccountModal } from "./components/CreateAccountModal";
 import { Footer } from "./components/Footer";
+import { ForumPage } from "./components/ForumPage";
 import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
 import { PublicLeaderboardPage } from "./components/PublicLeaderboardPage";
@@ -48,6 +51,13 @@ export default function App() {
   const [showPublicLeaderboard, setShowPublicLeaderboard] = useState<boolean>(
     () => isLeaderboardHash(window.location.hash),
   );
+  // New feature states
+  const [showBlog, setShowBlog] = useState(false);
+  const [showForum, setShowForum] = useState(false);
+  const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [prefillHandle, setPrefillHandle] = useState("");
+  const [prefillFullName, setPrefillFullName] = useState("");
+
   const { data: isAdmin } = useIsAdmin();
   const { identity } = useInternetIdentity();
 
@@ -102,11 +112,20 @@ export default function App() {
         toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
         onDashboardClick={() => setShowDashboard(true)}
+        onBlogClick={() => setShowBlog(true)}
+        onForumClick={() => setShowForum(true)}
+        onCreateAccountClick={() => setShowCreateAccount(true)}
       />
 
       {/* Main Content */}
       <main>
-        <HeroSection />
+        <HeroSection
+          onOpenCreateAccount={(h, n) => {
+            setPrefillHandle(h);
+            setPrefillFullName(n);
+            setShowCreateAccount(true);
+          }}
+        />
         <LogoMarqueeSection />
         <FeaturesSection />
         <WorkWithEverythingSection
@@ -176,6 +195,25 @@ export default function App() {
       {showPublicLeaderboard && (
         <PublicLeaderboardPage onClose={closePublicLeaderboard} />
       )}
+
+      {/* Blog Page */}
+      {showBlog && <BlogPage onClose={() => setShowBlog(false)} />}
+
+      {/* Forum Page */}
+      {showForum && (
+        <ForumPage
+          onClose={() => setShowForum(false)}
+          identity={identity ?? null}
+        />
+      )}
+
+      {/* Create Account Modal */}
+      <CreateAccountModal
+        open={showCreateAccount}
+        onClose={() => setShowCreateAccount(false)}
+        prefillHandle={prefillHandle}
+        prefillFullName={prefillFullName}
+      />
 
       {/* Toast notifications */}
       <Toaster

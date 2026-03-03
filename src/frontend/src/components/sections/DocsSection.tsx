@@ -204,28 +204,39 @@ export function DocsSection() {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <Tabs defaultValue="quickstart">
-            <TabsList className="flex flex-wrap gap-1 h-auto p-1 mb-8 bg-card border border-border w-full">
+            <style>{`
+              @keyframes docsTabRaise { 0%,100%{transform:scale(1) translateY(0)} 50%{transform:scale(1.04) translateY(-2px)} }
+              .docs-tab-quickstart[data-state=active] { background:rgba(34,211,238,0.15); color:#22d3ee; box-shadow:0 0 16px rgba(34,211,238,0.5),0 0 32px rgba(34,211,238,0.2),inset 0 1px 0 rgba(34,211,238,0.3); transform:scale(1.04) translateY(-2px); }
+              .docs-tab-reference[data-state=active] { background:rgba(124,58,237,0.15); color:#a78bfa; box-shadow:0 0 16px rgba(124,58,237,0.5),0 0 32px rgba(124,58,237,0.2),inset 0 1px 0 rgba(167,139,250,0.3); transform:scale(1.04) translateY(-2px); }
+              .docs-tab-advanced[data-state=active] { background:rgba(249,115,22,0.15); color:#fb923c; box-shadow:0 0 16px rgba(249,115,22,0.5),0 0 32px rgba(249,115,22,0.2),inset 0 1px 0 rgba(251,146,60,0.3); transform:scale(1.04) translateY(-2px); }
+              .docs-tab-faq[data-state=active] { background:rgba(22,163,74,0.15); color:#4ade80; box-shadow:0 0 16px rgba(22,163,74,0.5),0 0 32px rgba(22,163,74,0.2),inset 0 1px 0 rgba(74,222,128,0.3); transform:scale(1.04) translateY(-2px); }
+            `}</style>
+            <TabsList className="flex flex-wrap gap-2 h-auto p-1.5 mb-8 bg-card border border-border w-full rounded-xl">
               <TabsTrigger
                 value="quickstart"
-                className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
+                className="docs-tab-quickstart flex-1 min-w-[100px] transition-all duration-200 text-cyan/50 font-semibold rounded-lg"
+                data-ocid="docs.quickstart.tab"
               >
                 {t.docs.tabQuickStart}
               </TabsTrigger>
               <TabsTrigger
                 value="reference"
-                className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
+                className="docs-tab-reference flex-1 min-w-[100px] transition-all duration-200 text-violet-400/50 font-semibold rounded-lg"
+                data-ocid="docs.reference.tab"
               >
                 {t.docs.tabConfigRef}
               </TabsTrigger>
               <TabsTrigger
                 value="advanced"
-                className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
+                className="docs-tab-advanced flex-1 min-w-[100px] transition-all duration-200 text-orange-400/50 font-semibold rounded-lg"
+                data-ocid="docs.advanced.tab"
               >
                 {t.docs.tabAdvanced}
               </TabsTrigger>
               <TabsTrigger
                 value="faq"
-                className="flex-1 min-w-[100px] data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
+                className="docs-tab-faq flex-1 min-w-[100px] transition-all duration-200 text-green-400/50 font-semibold rounded-lg"
+                data-ocid="docs.faq.tab"
               >
                 {t.docs.tabFAQ}
               </TabsTrigger>

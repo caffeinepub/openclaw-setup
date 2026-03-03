@@ -55,6 +55,9 @@ export type TranslationKey = {
     admin: string;
     lightMode: string;
     darkMode: string;
+    blog: string;
+    forum: string;
+    createAccount: string;
   };
   // Hero
   hero: {
@@ -310,6 +313,9 @@ const en: TranslationKey = {
     admin: "Admin",
     lightMode: "Light Mode",
     darkMode: "Dark Mode",
+    blog: "Blog",
+    forum: "Forum",
+    createAccount: "Create Account",
   },
   hero: {
     badge: "Latest Release",
@@ -665,6 +671,9 @@ const id: TranslationKey = {
     admin: "Admin",
     lightMode: "Mode Terang",
     darkMode: "Mode Gelap",
+    blog: "Blog",
+    forum: "Forum",
+    createAccount: "Buat Akun",
   },
   hero: {
     badge: "Rilis Terbaru",
@@ -1023,6 +1032,9 @@ const ar: TranslationKey = {
     admin: "المشرف",
     lightMode: "الوضع الفاتح",
     darkMode: "الوضع الداكن",
+    blog: "المدونة",
+    forum: "المنتدى",
+    createAccount: "إنشاء حساب",
   },
   hero: {
     badge: "أحدث إصدار",
@@ -1374,6 +1386,9 @@ const ru: TranslationKey = {
     admin: "Админ",
     lightMode: "Светлый режим",
     darkMode: "Тёмный режим",
+    blog: "Блог",
+    forum: "Форум",
+    createAccount: "Создать аккаунт",
   },
   hero: {
     badge: "Последний выпуск",
@@ -1730,6 +1745,9 @@ const zh: TranslationKey = {
     admin: "管理员",
     lightMode: "浅色模式",
     darkMode: "深色模式",
+    blog: "博客",
+    forum: "论坛",
+    createAccount: "创建账户",
   },
   hero: {
     badge: "最新版本",

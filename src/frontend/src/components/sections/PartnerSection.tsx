@@ -1,7 +1,7 @@
 import { DotsBackground } from "@/components/DotsBackground";
 import { useLanguage } from "@/i18n/LanguageContext";
 // Pre-footer section: ClawPro.ai brand + partner logos + app download badges
-import React from "react";
+import React, { useState } from "react";
 
 // ── Spinning Corner Glow ──
 type CornerPos = "tl" | "tr" | "bl" | "br";
@@ -285,53 +285,96 @@ function GithubLogo({ size = 32 }: { size?: number }) {
 }
 
 function PlayStoreBadge() {
+  const [isGlowing, setIsGlowing] = useState(false);
+
+  const handleClick = () => {
+    setIsGlowing(true);
+    setTimeout(() => setIsGlowing(false), 800);
+  };
+
   return (
-    <a
-      href="https://play.google.com/store"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Get it on Google Play"
-      className="inline-flex items-center gap-3 px-5 py-3 min-w-[160px] rounded-xl border border-white/20 bg-black hover:scale-105 transition-all duration-200 hover:border-white/30 hover:brightness-110"
-    >
-      {/* Official Google Play icon - 4 colored triangles */}
-      <svg
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
-        fill="none"
-        role="img"
-        aria-label="Google Play"
+    <>
+      <style>{`
+        @keyframes playStorePulse { 0%{transform:scale(1)} 30%{transform:scale(1.08)} 60%{transform:scale(1.04)} 100%{transform:scale(1)} }
+        @keyframes appStorePulse  { 0%{transform:scale(1)} 30%{transform:scale(1.08)} 60%{transform:scale(1.04)} 100%{transform:scale(1)} }
+      `}</style>
+      <a
+        href="https://play.google.com/store"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Get it on Google Play"
+        data-ocid="partner.playstore.button"
+        onClick={handleClick}
+        className="inline-flex items-center gap-3 px-5 py-3 min-w-[160px] rounded-xl border border-white/20 bg-black transition-all duration-200 hover:border-white/30"
+        style={{
+          animation: isGlowing
+            ? "playStorePulse 0.8s ease-out forwards"
+            : undefined,
+          boxShadow: isGlowing
+            ? "0 0 0 4px rgba(74,222,128,0.4), 0 0 30px rgba(74,222,128,0.3), 0 0 60px rgba(74,222,128,0.15)"
+            : "none",
+        }}
       >
-        <title>Google Play</title>
-        {/* top-left cyan */}
-        <path d="M3 1.5L13.5 12L3 22.5V1.5z" fill="#00d4aa" />
-        {/* bottom-left green */}
-        <path d="M3 22.5L16.5 15.5L13.5 12L3 22.5z" fill="#5ef86b" />
-        {/* top-right yellow */}
-        <path d="M3 1.5L13.5 12L16.5 8.5L3 1.5z" fill="#ffca28" />
-        {/* center-right red */}
-        <path d="M13.5 12L16.5 8.5L21 10.8L16.5 15.5L13.5 12z" fill="#f04747" />
-      </svg>
-      <div className="text-left">
-        <div className="text-[9px] text-white/70 leading-none mb-0.5 tracking-wide uppercase">
-          GET IT ON
+        {/* Official Google Play icon - 4 colored triangles */}
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          role="img"
+          aria-label="Google Play"
+        >
+          <title>Google Play</title>
+          {/* top-left cyan */}
+          <path d="M3 1.5L13.5 12L3 22.5V1.5z" fill="#00d4aa" />
+          {/* bottom-left green */}
+          <path d="M3 22.5L16.5 15.5L13.5 12L3 22.5z" fill="#5ef86b" />
+          {/* top-right yellow */}
+          <path d="M3 1.5L13.5 12L16.5 8.5L3 1.5z" fill="#ffca28" />
+          {/* center-right red */}
+          <path
+            d="M13.5 12L16.5 8.5L21 10.8L16.5 15.5L13.5 12z"
+            fill="#f04747"
+          />
+        </svg>
+        <div className="text-left">
+          <div className="text-[9px] text-white/70 leading-none mb-0.5 tracking-wide uppercase">
+            GET IT ON
+          </div>
+          <div className="text-sm font-bold leading-none text-white">
+            Google Play
+          </div>
         </div>
-        <div className="text-sm font-bold leading-none text-white">
-          Google Play
-        </div>
-      </div>
-    </a>
+      </a>
+    </>
   );
 }
 
 function AppStoreBadge() {
+  const [isGlowing, setIsGlowing] = useState(false);
+
+  const handleClick = () => {
+    setIsGlowing(true);
+    setTimeout(() => setIsGlowing(false), 800);
+  };
+
   return (
     <a
       href="https://apps.apple.com"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Download on the App Store"
-      className="inline-flex items-center gap-3 px-5 py-3 min-w-[160px] rounded-xl border border-white/20 bg-black hover:scale-105 transition-all duration-200 hover:border-white/30 hover:brightness-110"
+      data-ocid="partner.appstore.button"
+      onClick={handleClick}
+      className="inline-flex items-center gap-3 px-5 py-3 min-w-[160px] rounded-xl border border-white/20 bg-black transition-all duration-200 hover:border-white/30"
+      style={{
+        animation: isGlowing
+          ? "appStorePulse 0.8s ease-out forwards"
+          : undefined,
+        boxShadow: isGlowing
+          ? "0 0 0 4px rgba(255,255,255,0.3), 0 0 30px rgba(200,200,255,0.3), 0 0 60px rgba(200,200,255,0.15)"
+          : "none",
+      }}
     >
       {/* Official Apple logo */}
       <svg
@@ -402,96 +445,113 @@ function EmailSubscribeForm({
           33% { filter: drop-shadow(0 0 9px #22d3ee) drop-shadow(0 0 18px #818cf8); opacity: 1; }
           66% { filter: drop-shadow(0 0 7px #818cf8) drop-shadow(0 0 14px #f0abfc); opacity: 0.9; }
         }
+        @keyframes outerSubscribeGlow {
+          0%, 100% { box-shadow: 0 0 20px rgba(34,211,238,0.2), 0 0 40px rgba(34,211,238,0.1), 0 0 0 1px rgba(34,211,238,0.15); }
+          33%       { box-shadow: 0 0 30px rgba(129,140,248,0.25), 0 0 50px rgba(129,140,248,0.12), 0 0 0 1px rgba(129,140,248,0.20); }
+          66%       { box-shadow: 0 0 25px rgba(240,171,252,0.22), 0 0 45px rgba(240,171,252,0.11), 0 0 0 1px rgba(240,171,252,0.18); }
+        }
       `}</style>
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+      {/* Outer glowing wrapper surrounding both input and button */}
+      <div
+        className="relative rounded-2xl p-3 max-w-md mx-auto"
+        style={{
+          background: "rgba(255,255,255,0.02)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          animation: "outerSubscribeGlow 4s ease-in-out infinite",
+        }}
       >
-        {/* Email input with spinning corner glows */}
-        <div className="relative flex-1">
-          <CornerGlow
-            position="tl"
-            colors={["#00c6ff", "#0072ff"]}
-            animDelay="0s"
-            animName="emailInputGlow"
-          />
-          <CornerGlow
-            position="tr"
-            colors={["#0072ff", "#7c3aed"]}
-            animDelay="0.75s"
-            animName="emailInputGlow"
-          />
-          <CornerGlow
-            position="br"
-            colors={["#7c3aed", "#00c6ff"]}
-            animDelay="1.5s"
-            animName="emailInputGlow"
-          />
-          <CornerGlow
-            position="bl"
-            colors={["#00c6ff", "#7c3aed"]}
-            animDelay="2.25s"
-            animName="emailInputGlow"
-          />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setStatus("idle");
-            }}
-            placeholder={placeholder}
-            className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all duration-200"
-          />
-        </div>
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col sm:flex-row gap-3"
+        >
+          {/* Email input with spinning corner glows */}
+          <div className="relative flex-1">
+            <CornerGlow
+              position="tl"
+              colors={["#00c6ff", "#0072ff"]}
+              animDelay="0s"
+              animName="emailInputGlow"
+            />
+            <CornerGlow
+              position="tr"
+              colors={["#0072ff", "#7c3aed"]}
+              animDelay="0.75s"
+              animName="emailInputGlow"
+            />
+            <CornerGlow
+              position="br"
+              colors={["#7c3aed", "#00c6ff"]}
+              animDelay="1.5s"
+              animName="emailInputGlow"
+            />
+            <CornerGlow
+              position="bl"
+              colors={["#00c6ff", "#7c3aed"]}
+              animDelay="2.25s"
+              animName="emailInputGlow"
+            />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setStatus("idle");
+              }}
+              placeholder={placeholder}
+              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 text-sm focus:outline-none focus:border-white/30 focus:bg-white/8 transition-all duration-200"
+            />
+          </div>
 
-        {/* Subscribe button with spinning corner glows */}
-        <div className="relative flex-shrink-0">
-          <CornerGlow
-            position="tl"
-            colors={["#f0abfc", "#22d3ee"]}
-            animDelay="0s"
-            animName="subscribeBtnGlow"
-          />
-          <CornerGlow
-            position="tr"
-            colors={["#22d3ee", "#818cf8"]}
-            animDelay="0.75s"
-            animName="subscribeBtnGlow"
-          />
-          <CornerGlow
-            position="br"
-            colors={["#818cf8", "#f0abfc"]}
-            animDelay="1.5s"
-            animName="subscribeBtnGlow"
-          />
-          <CornerGlow
-            position="bl"
-            colors={["#f0abfc", "#818cf8"]}
-            animDelay="2.25s"
-            animName="subscribeBtnGlow"
-          />
-          <button
-            type="submit"
-            className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap hover:scale-[1.03] active:scale-[0.97]"
-            style={{
-              background:
-                "linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #f0abfc 100%)",
-              color: "#fff",
-              boxShadow:
-                "0 4px 20px rgba(34, 211, 238, 0.35), 0 2px 8px rgba(129, 140, 248, 0.3)",
-            }}
-          >
-            {subscribeLabel}
-          </button>
-        </div>
-      </form>
-      {status === "success" && (
-        <p className="mt-3 text-sm text-cyan-400 text-center">✓ {successMsg}</p>
-      )}
-      {status === "error" && (
-        <p className="mt-3 text-sm text-red-400 text-center">{errorMsg}</p>
-      )}
+          {/* Subscribe button with spinning corner glows */}
+          <div className="relative flex-shrink-0">
+            <CornerGlow
+              position="tl"
+              colors={["#f0abfc", "#22d3ee"]}
+              animDelay="0s"
+              animName="subscribeBtnGlow"
+            />
+            <CornerGlow
+              position="tr"
+              colors={["#22d3ee", "#818cf8"]}
+              animDelay="0.75s"
+              animName="subscribeBtnGlow"
+            />
+            <CornerGlow
+              position="br"
+              colors={["#818cf8", "#f0abfc"]}
+              animDelay="1.5s"
+              animName="subscribeBtnGlow"
+            />
+            <CornerGlow
+              position="bl"
+              colors={["#f0abfc", "#818cf8"]}
+              animDelay="2.25s"
+              animName="subscribeBtnGlow"
+            />
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap hover:scale-[1.03] active:scale-[0.97]"
+              style={{
+                background:
+                  "linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #f0abfc 100%)",
+                color: "#fff",
+                boxShadow:
+                  "0 4px 20px rgba(34, 211, 238, 0.35), 0 2px 8px rgba(129, 140, 248, 0.3)",
+              }}
+            >
+              {subscribeLabel}
+            </button>
+          </div>
+        </form>
+        {status === "success" && (
+          <p className="mt-2 text-sm text-cyan-400 text-center">
+            ✓ {successMsg}
+          </p>
+        )}
+        {status === "error" && (
+          <p className="mt-2 text-sm text-red-400 text-center">{errorMsg}</p>
+        )}
+      </div>
     </div>
   );
 }

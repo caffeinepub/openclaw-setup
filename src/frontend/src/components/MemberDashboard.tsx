@@ -64,6 +64,12 @@ import {
   useDeleteChatbotConfig,
   useSaveChatbotConfig,
 } from "../hooks/useChatbot";
+import {
+  useForumNotifications,
+  useMarkForumNotificationRead,
+  useMyUserAccount,
+  useSaveUserAccount,
+} from "../hooks/useForumQueries";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
   MembershipTier as MembershipTierEnum,
@@ -164,15 +170,27 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
   const { data: profile } = useCallerUserProfile();
   const { data: chatbotConfig } = useChatbotConfig();
   const { data: configs } = useMyConfigs();
+  const { data: forumNotifications } = useForumNotifications();
+  const markForumNotifRead = useMarkForumNotificationRead();
   const saveProfile = useSaveCallerUserProfile();
   const deleteConfig = useDeleteConfig();
+  const { data: userAccount } = useMyUserAccount();
+  const saveUserAccount = useSaveUserAccount();
 
   // Profile form state
   const [handle, setHandle] = useState("");
   const [fullName, setFullName] = useState("");
   const [activeTab, setActiveTab] = useState("profile");
-  const [unreadCount, setUnreadCount] = useState(3); // mock unread notifications
   const [userIsTop3, setUserIsTop3] = useState(false);
+
+  // Unread count from forum notifications
+  const unreadCount = forumNotifications?.filter((n) => !n.read).length ?? 0;
+
+  // Avatar upload state
+  type AvatarPhase = "idle" | "hover" | "dragging" | "uploading" | "success";
+  const [avatarPhase, setAvatarPhase] = useState<AvatarPhase>("idle");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Settings toggles (localStorage)
   const [notificationsOn, setNotificationsOn] = useState(
@@ -182,13 +200,44 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
     () => localStorage.getItem("clawpro_autosave") !== "false",
   );
 
-  // Sync profile data when loaded
+  // Sync profile data — userAccount is the primary source, profile is fallback
   useEffect(() => {
-    if (profile) {
+    if (userAccount) {
+      setHandle(userAccount.handle ?? "");
+      setFullName(userAccount.fullName ?? "");
+    } else if (profile) {
       setHandle(profile.name ?? "");
       setFullName(profile.bio ?? "");
     }
-  }, [profile]);
+  }, [userAccount, profile]);
+
+  // Auto-save pending account after login
+  const PENDING_ACCOUNT_KEY = "clawpro_pending_account";
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally only runs on identity change; saveUserAccount ref is stable
+  useEffect(() => {
+    if (!identity) return;
+    const pending = localStorage.getItem(PENDING_ACCOUNT_KEY);
+    if (!pending) return;
+    try {
+      const data = JSON.parse(pending) as {
+        email: string;
+        phone: string;
+        fullName: string;
+        handle: string;
+      };
+      localStorage.removeItem(PENDING_ACCOUNT_KEY);
+      saveUserAccount
+        .mutateAsync(data)
+        .then(() =>
+          toast.success("Account created successfully! Welcome to ClawPro."),
+        )
+        .catch(() =>
+          toast.error("Failed to save account. Please update from Dashboard."),
+        );
+    } catch {
+      localStorage.removeItem(PENDING_ACCOUNT_KEY);
+    }
+  }, [identity]);
 
   const handleSaveProfile = async () => {
     const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
@@ -197,10 +246,20 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
       return;
     }
     try {
+      // Save UserProfile (handle = name, fullName = bio)
       await saveProfile.mutateAsync({
         name: trimmedHandle,
         bio: fullName.trim() || undefined,
       });
+      // Also save UserAccount to keep them in sync
+      if (userAccount?.email) {
+        await saveUserAccount.mutateAsync({
+          email: userAccount.email,
+          phone: userAccount.phone ?? "",
+          fullName: fullName.trim(),
+          handle: trimmedHandle,
+        });
+      }
       toast.success(t.dashboard.profileSaved);
     } catch {
       toast.error(t.dashboard.profileError);
@@ -278,7 +337,11 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.94, opacity: 0, y: 20 }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-[oklch(0.09_0.012_240)] border border-[oklch(1_0_0_/_8%)] rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-hidden flex flex-col shadow-[0_40px_100px_rgba(0,0,0,0.7)]"
+          className="bg-[oklch(0.09_0.012_240)] border border-[oklch(0.65_0.15_210)/20%] rounded-2xl w-full max-w-6xl max-h-[92vh] overflow-hidden flex flex-col"
+          style={{
+            boxShadow:
+              "0 40px 100px rgba(0,0,0,0.7), 0 0 60px oklch(0.65 0.15 210 / 8%)",
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Two-column layout */}
@@ -289,21 +352,249 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                 <div className="p-5 space-y-5">
                   {/* User Identity Card */}
                   <div className="space-y-3">
-                    {/* Avatar */}
+                    {/* Avatar Upload Area */}
                     <div className="flex flex-col items-center text-center pt-2">
-                      <div
-                        className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-white mb-3 relative"
-                        style={{
-                          background: tierStyle
-                            ? `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`
-                            : "linear-gradient(135deg, oklch(0.65 0.15 210), oklch(0.45 0.12 240))",
-                          boxShadow: tierStyle
-                            ? `0 0 0 2px oklch(0.15 0.02 240), 0 0 20px ${tierStyle.color}60`
-                            : "0 0 0 2px oklch(0.15 0.02 240)",
+                      {/* Hidden file input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setAvatarPhase("uploading");
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            setTimeout(() => {
+                              setAvatarUrl(ev.target?.result as string);
+                              setAvatarPhase("success");
+                              toast.success("Profile photo updated!");
+                              setTimeout(() => setAvatarPhase("idle"), 2000);
+                            }, 800);
+                          };
+                          reader.readAsDataURL(file);
                         }}
+                      />
+
+                      {/* Avatar circle with animations */}
+                      <motion.div
+                        className="relative mb-3 cursor-pointer select-none"
+                        onHoverStart={() =>
+                          avatarPhase === "idle" && setAvatarPhase("hover")
+                        }
+                        onHoverEnd={() =>
+                          avatarPhase === "hover" && setAvatarPhase("idle")
+                        }
+                        onTapStart={() => {
+                          if (
+                            avatarPhase === "idle" ||
+                            avatarPhase === "hover"
+                          ) {
+                            fileInputRef.current?.click();
+                          }
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setAvatarPhase("dragging");
+                        }}
+                        onDragLeave={() => setAvatarPhase("idle")}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          const file = e.dataTransfer.files?.[0];
+                          if (!file) return;
+                          setAvatarPhase("uploading");
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            setTimeout(() => {
+                              setAvatarUrl(ev.target?.result as string);
+                              setAvatarPhase("success");
+                              toast.success("Profile photo updated!");
+                              setTimeout(() => setAvatarPhase("idle"), 2000);
+                            }, 800);
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                        data-ocid="dashboard.upload_button"
                       >
-                        {initials}
-                      </div>
+                        {/* Idle pulsing ring */}
+                        {avatarPhase === "idle" && (
+                          <motion.div
+                            className="absolute inset-[-4px] rounded-full pointer-events-none"
+                            animate={{
+                              opacity: [0.3, 0.7, 0.3],
+                              scale: [1, 1.06, 1],
+                            }}
+                            transition={{
+                              duration: 2.5,
+                              repeat: Number.POSITIVE_INFINITY,
+                              ease: "easeInOut",
+                            }}
+                            style={{
+                              border: `2px solid ${tierStyle ? tierStyle.color : "oklch(0.65 0.15 210)"}`,
+                              boxShadow: `0 0 12px ${tierStyle ? tierStyle.color : "oklch(0.65 0.15 210)"}40`,
+                            }}
+                          />
+                        )}
+
+                        {/* Drag-over glowing ring */}
+                        {avatarPhase === "dragging" && (
+                          <motion.div
+                            className="absolute inset-[-6px] rounded-full pointer-events-none"
+                            animate={{
+                              borderColor: ["#00c6ff", "#7c3aed", "#00c6ff"],
+                            }}
+                            transition={{
+                              duration: 1,
+                              repeat: Number.POSITIVE_INFINITY,
+                            }}
+                            style={{
+                              border: "3px solid #00c6ff",
+                              boxShadow: "0 0 24px #00c6ff80",
+                            }}
+                          />
+                        )}
+
+                        {/* Hover sparkles */}
+                        {avatarPhase === "hover" &&
+                          [0, 60, 120, 180, 240, 300].map((deg, idx) => (
+                            <motion.div
+                              key={deg}
+                              className="absolute w-1.5 h-1.5 rounded-full pointer-events-none"
+                              style={{
+                                background: [
+                                  "#00c6ff",
+                                  "#f59e0b",
+                                  "#a78bfa",
+                                  "#34d399",
+                                  "#f472b6",
+                                  "#60a5fa",
+                                ][idx],
+                                top: "50%",
+                                left: "50%",
+                              }}
+                              animate={{
+                                x: [0, Math.cos((deg * Math.PI) / 180) * 42],
+                                y: [0, Math.sin((deg * Math.PI) / 180) * 42],
+                                opacity: [0, 1, 0],
+                                scale: [0, 1.5, 0],
+                              }}
+                              transition={{
+                                duration: 1,
+                                repeat: Number.POSITIVE_INFINITY,
+                                delay: idx * 0.08,
+                                ease: "easeOut",
+                              }}
+                            />
+                          ))}
+
+                        {/* Uploading: SVG circular progress */}
+                        {avatarPhase === "uploading" && (
+                          <motion.div
+                            className="absolute inset-[-4px] rounded-full pointer-events-none"
+                            animate={{ rotate: 360 }}
+                            transition={{
+                              duration: 1,
+                              repeat: Number.POSITIVE_INFINITY,
+                              ease: "linear",
+                            }}
+                          >
+                            <svg
+                              width="96"
+                              height="96"
+                              viewBox="0 0 96 96"
+                              className="absolute inset-0"
+                              aria-hidden="true"
+                              role="presentation"
+                            >
+                              <circle
+                                cx="48"
+                                cy="48"
+                                r="44"
+                                fill="none"
+                                stroke="url(#uploadGrad)"
+                                strokeWidth="3"
+                                strokeDasharray="138 138"
+                                strokeLinecap="round"
+                                strokeDashoffset="34"
+                              />
+                              <defs>
+                                <linearGradient
+                                  id="uploadGrad"
+                                  x1="0%"
+                                  y1="0%"
+                                  x2="100%"
+                                  y2="0%"
+                                >
+                                  <stop offset="0%" stopColor="#00c6ff" />
+                                  <stop offset="100%" stopColor="#7c3aed" />
+                                </linearGradient>
+                              </defs>
+                            </svg>
+                          </motion.div>
+                        )}
+
+                        {/* Success: green burst */}
+                        {avatarPhase === "success" && (
+                          <motion.div
+                            className="absolute inset-0 rounded-full pointer-events-none flex items-center justify-center"
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: [1.4, 1], opacity: [1, 0] }}
+                            transition={{ duration: 1.2, ease: "easeOut" }}
+                            style={{
+                              background:
+                                "radial-gradient(circle, rgba(52,211,153,0.6) 0%, transparent 70%)",
+                            }}
+                          />
+                        )}
+
+                        {/* Avatar circle */}
+                        <motion.div
+                          className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-black text-white relative z-10 overflow-hidden"
+                          whileHover={{ scale: 1.05 }}
+                          style={{
+                            background: avatarUrl
+                              ? "transparent"
+                              : tierStyle
+                                ? `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`
+                                : "linear-gradient(135deg, oklch(0.65 0.15 210), oklch(0.45 0.12 240))",
+                            boxShadow: tierStyle
+                              ? `0 0 0 2px oklch(0.15 0.02 240), 0 0 20px ${tierStyle.color}60`
+                              : "0 0 0 2px oklch(0.15 0.02 240)",
+                          }}
+                        >
+                          {avatarUrl ? (
+                            <img
+                              src={avatarUrl}
+                              alt="Profile"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : avatarPhase === "uploading" ? (
+                            <Loader2 className="w-7 h-7 animate-spin text-white/70" />
+                          ) : avatarPhase === "success" ? (
+                            <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+                          ) : (
+                            <span>{initials}</span>
+                          )}
+
+                          {/* Hover overlay */}
+                          {(avatarPhase === "hover" ||
+                            avatarPhase === "dragging") && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1"
+                            >
+                              <User className="w-5 h-5 text-white" />
+                              <span className="text-[9px] text-white font-medium">
+                                {avatarPhase === "dragging"
+                                  ? "Drop here"
+                                  : "Upload"}
+                              </span>
+                            </motion.div>
+                          )}
+                        </motion.div>
+                      </motion.div>
 
                       {/* Full Name */}
                       <p className="font-bold text-base text-[oklch(0.95_0.02_210)] leading-tight truncate w-full px-2">
@@ -374,12 +665,12 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1.5">
+                    <div className="flex flex-col gap-1">
                       {/* WhatsApp Bot */}
                       <button
                         type="button"
                         onClick={() => setActiveTab("chatbot")}
-                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all text-center group"
+                        className="flex items-center gap-2 p-2 rounded-lg border transition-all hover:brightness-110"
                         style={{
                           background: hasWhatsapp
                             ? "oklch(0.55 0.18 150 / 8%)"
@@ -390,19 +681,19 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                         }}
                       >
                         <SiWhatsapp
-                          className="w-5 h-5"
+                          className="w-4 h-4 flex-shrink-0"
                           style={{
                             color: hasWhatsapp
                               ? "oklch(0.65 0.18 150)"
                               : "oklch(0.40 0.02 210)",
                           }}
                         />
-                        <span className="text-[9px] text-[oklch(0.65_0.03_210)] leading-tight">
-                          WhatsApp
+                        <span className="text-[10px] text-[oklch(0.65_0.03_210)]">
+                          WhatsApp Bot
                         </span>
                         {hasWhatsapp && (
-                          <span className="text-[8px] text-[oklch(0.65_0.18_150)] font-semibold">
-                            Active
+                          <span className="ml-auto text-[8px] text-[oklch(0.65_0.18_150)] font-semibold bg-[oklch(0.55_0.18_150)/12%] px-1.5 py-0.5 rounded-full">
+                            ON
                           </span>
                         )}
                       </button>
@@ -411,7 +702,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                       <button
                         type="button"
                         onClick={() => setActiveTab("ai")}
-                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border transition-all text-center group"
+                        className="flex items-center gap-2 p-2 rounded-lg border transition-all hover:brightness-110"
                         style={{
                           background: hasOpenAI
                             ? "oklch(0.60 0.20 290 / 8%)"
@@ -422,19 +713,19 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                         }}
                       >
                         <Sparkles
-                          className="w-5 h-5"
+                          className="w-4 h-4 flex-shrink-0"
                           style={{
                             color: hasOpenAI
                               ? "oklch(0.75 0.22 290)"
                               : "oklch(0.40 0.02 210)",
                           }}
                         />
-                        <span className="text-[9px] text-[oklch(0.65_0.03_210)] leading-tight">
-                          AI Assist
+                        <span className="text-[10px] text-[oklch(0.65_0.03_210)]">
+                          AI Assistant
                         </span>
                         {hasOpenAI && (
-                          <span className="text-[8px] text-[oklch(0.75_0.22_290)] font-semibold">
-                            Active
+                          <span className="ml-auto text-[8px] text-[oklch(0.75_0.22_290)] font-semibold bg-[oklch(0.60_0.20_290)/12%] px-1.5 py-0.5 rounded-full">
+                            ON
                           </span>
                         )}
                       </button>
@@ -443,14 +734,11 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                       <button
                         type="button"
                         onClick={() => setActiveTab("api")}
-                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.01_240)] transition-all text-center"
+                        className="flex items-center gap-2 p-2 rounded-lg border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.01_240)] transition-all hover:brightness-110"
                       >
-                        <Terminal className="w-5 h-5 text-[oklch(0.65_0.15_200)]" />
-                        <span className="text-[9px] text-[oklch(0.65_0.03_210)] leading-tight">
-                          API
-                        </span>
-                        <span className="text-[8px] text-[oklch(0.55_0.12_200)] font-semibold">
-                          Explorer
+                        <Terminal className="w-4 h-4 flex-shrink-0 text-[oklch(0.65_0.15_200)]" />
+                        <span className="text-[10px] text-[oklch(0.65_0.03_210)]">
+                          API Explorer
                         </span>
                       </button>
 
@@ -458,11 +746,11 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                       <button
                         type="button"
                         onClick={() => setActiveTab("profile")}
-                        className="flex flex-col items-center gap-1 p-2.5 rounded-xl border border-dashed border-[oklch(1_0_0_/_12%)] bg-transparent transition-all text-center hover:border-[oklch(0.65_0.12_210)]/40 hover:bg-[oklch(0.65_0.12_210)]/5"
+                        className="flex items-center gap-2 p-2 rounded-lg border border-dashed border-[oklch(1_0_0_/_12%)] bg-transparent transition-all hover:border-[oklch(0.65_0.12_210)]/40 hover:bg-[oklch(0.65_0.12_210)]/5"
                       >
-                        <Plus className="w-5 h-5 text-[oklch(0.38_0.02_210)]" />
-                        <span className="text-[9px] text-[oklch(0.38_0.02_210)] leading-tight">
-                          Add more
+                        <Plus className="w-4 h-4 flex-shrink-0 text-[oklch(0.38_0.02_210)]" />
+                        <span className="text-[10px] text-[oklch(0.38_0.02_210)]">
+                          Add integration
                         </span>
                       </button>
                     </div>
@@ -545,7 +833,13 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
             </aside>
 
             {/* ─── RIGHT MAIN PANEL ─── */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div
+              className="flex-1 flex flex-col min-w-0 overflow-hidden"
+              style={{
+                background: "oklch(0.095 0.015 240)",
+                boxShadow: "inset 0 1px 0 oklch(1 0 0 / 10%)",
+              }}
+            >
               {/* Top bar with close button */}
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-[oklch(1_0_0_/_7%)] bg-[oklch(0.10_0.012_240)] flex-shrink-0">
                 <div className="flex items-center gap-3">
@@ -597,7 +891,10 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                 onValueChange={setActiveTab}
                 className="flex-1 flex flex-col overflow-hidden"
               >
-                <TabsList className="flex mx-4 mt-3 mb-0 bg-[oklch(0.08_0.01_240)] border border-[oklch(1_0_0_/_7%)] flex-shrink-0 h-auto p-1 gap-0.5 overflow-x-auto rounded-xl">
+                <TabsList
+                  className="flex mx-4 mt-3 mb-0 bg-[oklch(0.08_0.01_240)] border border-[oklch(1_0_0_/_8%)] flex-shrink-0 h-auto p-1 gap-0.5 overflow-x-auto rounded-xl"
+                  style={{ boxShadow: "inset 0 1px 0 oklch(1 0 0 / 5%)" }}
+                >
                   {[
                     {
                       value: "profile",
@@ -651,7 +948,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                     <TabsTrigger
                       key={tab.value}
                       value={tab.value}
-                      className="relative flex-1 py-2 px-2 flex items-center justify-center gap-1.5 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all data-[state=active]:bg-[oklch(1_0_0_/_10%)] data-[state=active]:text-[oklch(0.90_0.04_210)] text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.03_210)]"
+                      className="relative flex-1 py-2 px-2 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all data-[state=active]:bg-[oklch(0.65_0.15_210)/15%] data-[state=active]:text-[oklch(0.85_0.12_210)] data-[state=active]:shadow-[0_0_12px_oklch(0.65_0.15_210/30%)] text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.08_210)] hover:bg-[oklch(1_0_0_/_4%)]"
                     >
                       {tab.icon}
                       <span className="hidden sm:inline">{tab.label}</span>
@@ -666,7 +963,7 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
 
                 <ScrollArea className="flex-1 mt-3">
                   {/* ── Profile Tab ── */}
-                  <TabsContent value="profile" className="px-5 pb-6 mt-0">
+                  <TabsContent value="profile" className="px-6 pb-6 mt-0">
                     <div className="space-y-5 max-w-lg">
                       {/* Handle card */}
                       <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] p-5 space-y-4">
@@ -717,6 +1014,28 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                             Shown on your profile card.
                           </p>
                         </div>
+
+                        {userAccount?.email && (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-[oklch(0.55_0.03_210)]">
+                              Email
+                            </Label>
+                            <div className="flex items-center px-3 py-2.5 rounded-lg border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.09_0.01_240)] text-sm text-[oklch(0.55_0.05_210)] font-mono">
+                              {userAccount.email}
+                            </div>
+                          </div>
+                        )}
+
+                        {userAccount?.phone && (
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-[oklch(0.55_0.03_210)]">
+                              Phone
+                            </Label>
+                            <div className="flex items-center px-3 py-2.5 rounded-lg border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.09_0.01_240)] text-sm text-[oklch(0.55_0.05_210)] font-mono">
+                              {userAccount.phone}
+                            </div>
+                          </div>
+                        )}
 
                         <Button
                           onClick={handleSaveProfile}
@@ -919,8 +1238,17 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                   <TabsContent value="notifications" className="px-5 pb-6 mt-0">
                     <NotificationsTab
                       membership={membership ?? null}
-                      onRead={() => setUnreadCount(0)}
+                      onRead={async () => {
+                        if (forumNotifications) {
+                          await Promise.all(
+                            forumNotifications
+                              .filter((n) => !n.read)
+                              .map((n) => markForumNotifRead.mutateAsync(n.id)),
+                          );
+                        }
+                      }}
                       isInTop3={userIsTop3}
+                      forumNotifications={forumNotifications ?? []}
                     />
                   </TabsContent>
                 </ScrollArea>
@@ -2572,8 +2900,9 @@ function LeaderboardTab({
 
 interface NotificationsTabProps {
   membership: { tier: MembershipTier } | null;
-  onRead: () => void;
+  onRead: () => void | Promise<void>;
   isInTop3?: boolean;
+  forumNotifications?: import("../backend.d").ForumNotification[];
 }
 
 type NotificationType =
@@ -2678,6 +3007,7 @@ function NotificationsTab({
   membership: _membership,
   onRead,
   isInTop3 = false,
+  forumNotifications = [],
 }: NotificationsTabProps) {
   const top3Notification: NotificationItem | null = isInTop3
     ? {
@@ -2705,10 +3035,67 @@ function NotificationsTab({
     onRead();
   };
 
-  const unread = allNotifications.filter((n) => !n.read).length;
+  const forumUnread = forumNotifications.filter((n) => !n.read).length;
+  const unread = allNotifications.filter((n) => !n.read).length + forumUnread;
 
   return (
     <div className="space-y-4 max-w-2xl">
+      {/* Forum Reply Notifications */}
+      {forumNotifications.length > 0 && (
+        <div className="rounded-xl border border-cyan-500/20 bg-[oklch(0.10_0.012_240)] overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/6">
+            <BellIcon className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="text-xs font-semibold text-cyan-300">
+              Forum Replies
+            </span>
+            {forumUnread > 0 && (
+              <span className="ml-auto text-[9px] bg-red-500 text-white rounded-full px-1.5 py-0.5 font-bold">
+                {forumUnread} new
+              </span>
+            )}
+          </div>
+          <div className="divide-y divide-white/5">
+            {forumNotifications.slice(0, 5).map((notif, i) => (
+              <motion.div
+                key={notif.id.toString()}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className={`flex items-start gap-3 px-4 py-3 ${!notif.read ? "bg-cyan-500/5" : ""}`}
+              >
+                <div className="w-7 h-7 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5">
+                  {notif.fromHandle.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-slate-300">
+                    <span className="font-semibold text-white">
+                      @{notif.fromHandle}
+                    </span>{" "}
+                    replied to{" "}
+                    <span className="text-cyan-400">{notif.threadTitle}</span>
+                  </p>
+                  <p className="text-[10px] text-slate-600 mt-0.5">
+                    {(() => {
+                      const ms = Number(notif.createdAt) / 1_000_000;
+                      const diff = Date.now() - ms;
+                      const m = Math.floor(diff / 60000);
+                      if (m < 1) return "Just now";
+                      if (m < 60) return `${m}m ago`;
+                      const h = Math.floor(m / 60);
+                      if (h < 24) return `${h}h ago`;
+                      return `${Math.floor(h / 24)}d ago`;
+                    })()}
+                  </p>
+                </div>
+                {!notif.read && (
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 flex-shrink-0 mt-2" />
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3 py-1">

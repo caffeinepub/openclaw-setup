@@ -3,11 +3,123 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, Star } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import type React from "react";
 import { useState } from "react";
 import type { Changelog } from "../../backend.d";
 import { useAllChangelog } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
+
+// ── Changelog Glow Styles ───────────────────────────────────────────────────
+const CHANGELOG_STYLES = `
+  @keyframes clGlowPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50%       { opacity: 1;   transform: scale(1.15); }
+  }
+  @keyframes clCardGlow {
+    0%, 100% { box-shadow: 0 0 10px var(--cl-color), 0 0 0 1px var(--cl-color-dim); }
+    50%       { box-shadow: 0 0 20px var(--cl-color), 0 0 0 1px var(--cl-color-mid), 0 0 40px var(--cl-color-faint); }
+  }
+`;
+
+// ── Corner Glow Component (borrowed from PartnerSection pattern) ─────────────
+type CornerPos = "tl" | "tr" | "bl" | "br";
+
+interface CornerGlowProps {
+  position: CornerPos;
+  colors: [string, string];
+  animDelay?: string;
+  animName: string;
+}
+
+function CornerGlow({
+  position,
+  colors,
+  animDelay = "0s",
+  animName,
+}: CornerGlowProps) {
+  const posStyles: Record<CornerPos, React.CSSProperties> = {
+    tl: { top: -2, left: -2 },
+    tr: { top: -2, right: -2, transform: "rotate(90deg)" },
+    br: { bottom: -2, right: -2, transform: "rotate(180deg)" },
+    bl: { bottom: -2, left: -2, transform: "rotate(270deg)" },
+  };
+
+  return (
+    <span
+      style={{
+        position: "absolute",
+        width: 24,
+        height: 24,
+        pointerEvents: "none",
+        zIndex: 10,
+        animation: `${animName} 3s ease-in-out infinite`,
+        animationDelay: animDelay,
+        ...posStyles[position],
+      }}
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        overflow="visible"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient
+            id={`cl-cg-${animName}-${position}`}
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
+            <stop offset="0%" stopColor={colors[0]} />
+            <stop offset="100%" stopColor={colors[1]} />
+          </linearGradient>
+        </defs>
+        <path
+          d="M2 22 L2 4 Q2 2 4 2 L22 2"
+          stroke={`url(#cl-cg-${animName}-${position})`}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </svg>
+    </span>
+  );
+}
+
+// ── Type → glow config mapping ───────────────────────────────────────────────
+const TYPE_GLOW: Record<
+  string,
+  { circleGlow: string; c1: string; c2: string; animName: string }
+> = {
+  major: {
+    circleGlow: "0 0 12px #ef4444, 0 0 24px #ef444450",
+    c1: "#ef4444",
+    c2: "#f87171",
+    animName: "clGlowMajor",
+  },
+  minor: {
+    circleGlow: "0 0 12px #3b82f6, 0 0 24px #3b82f650",
+    c1: "#3b82f6",
+    c2: "#60a5fa",
+    animName: "clGlowMinor",
+  },
+  patch: {
+    circleGlow: "0 0 12px #22c55e, 0 0 24px #22c55e50",
+    c1: "#22c55e",
+    c2: "#4ade80",
+    animName: "clGlowPatch",
+  },
+  latest: {
+    circleGlow: "0 0 16px #22d3ee, 0 0 32px #22d3ee60",
+    c1: "#22d3ee",
+    c2: "#67e8f9",
+    animName: "clGlowLatest",
+  },
+};
 
 const FALLBACK_CHANGELOG: Changelog[] = [
   {
@@ -99,66 +211,128 @@ function ChangelogCard({
 
   const typeStyle = TYPE_STYLES[entry.changeType] ?? TYPE_STYLES.patch;
 
+  const glowKey = isLatest ? "latest" : entry.changeType;
+  const glowCfg = TYPE_GLOW[glowKey] ?? TYPE_GLOW.patch;
+
   return (
-    <div className="flex gap-4 sm:gap-6">
-      {/* Timeline */}
-      <div className="flex flex-col items-center">
-        <div
-          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 ${
-            isLatest
-              ? "border-cyan bg-cyan/20 shadow-glow-sm"
-              : "border-border bg-card"
-          }`}
-        >
-          {isLatest ? (
-            <Star className="w-4 h-4 text-cyan" />
-          ) : (
-            <div className="w-2 h-2 rounded-full bg-muted-foreground" />
-          )}
+    <>
+      <style>{`
+        ${CHANGELOG_STYLES}
+        @keyframes ${glowCfg.animName} {
+          0%, 100% { box-shadow: ${glowCfg.circleGlow}; opacity: 0.75; }
+          50%       { opacity: 1; }
+        }
+        @keyframes clCard${entry.changeType}${isLatest ? "L" : ""} {
+          0%, 100% { box-shadow: 0 0 8px ${glowCfg.c1}33, 0 0 0 1px ${glowCfg.c1}20; }
+          50%       { box-shadow: 0 0 16px ${glowCfg.c1}55, 0 0 0 1px ${glowCfg.c1}40, 0 0 32px ${glowCfg.c1}18; }
+        }
+      `}</style>
+      <div className="flex gap-4 sm:gap-6">
+        {/* Timeline */}
+        <div className="flex flex-col items-center">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2"
+            style={{
+              borderColor: glowCfg.c1,
+              background: `${glowCfg.c1}20`,
+              boxShadow: glowCfg.circleGlow,
+              animation: `${glowCfg.animName} 2.5s ease-in-out infinite`,
+            }}
+          >
+            {isLatest ? (
+              <Star className="w-4 h-4" style={{ color: glowCfg.c1 }} />
+            ) : (
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{ background: glowCfg.c1 }}
+              />
+            )}
+          </div>
+          <div className="flex-1 w-px bg-gradient-to-b from-border to-transparent mt-2" />
         </div>
-        <div className="flex-1 w-px bg-gradient-to-b from-border to-transparent mt-2" />
-      </div>
 
-      {/* Content */}
-      <div className="pb-10 flex-1 min-w-0">
-        <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span
-            className={`font-mono font-bold text-lg ${isLatest ? "text-cyan text-glow-cyan" : "text-foreground"}`}
-          >
-            v{entry.version}
-          </span>
-          <Badge
-            variant="outline"
-            className={`text-xs font-mono ${typeStyle.className}`}
-          >
-            {typeStyle.label}
-          </Badge>
-          {isLatest && (
-            <Badge className="bg-cyan/20 text-cyan border-cyan/40 text-xs">
-              {t.changelog.latest}
+        {/* Content */}
+        <div className="pb-10 flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span
+              className="font-mono font-bold text-lg"
+              style={{
+                color: glowCfg.c1,
+                textShadow: `0 0 10px ${glowCfg.c1}80`,
+              }}
+            >
+              v{entry.version}
+            </span>
+            <Badge
+              variant="outline"
+              className={`text-xs font-mono ${typeStyle.className}`}
+            >
+              {typeStyle.label}
             </Badge>
-          )}
-          <span className="text-xs text-muted-foreground ml-auto font-mono">
-            {entry.releaseDate}
-          </span>
-        </div>
+            {isLatest && (
+              <Badge className="bg-cyan/20 text-cyan border-cyan/40 text-xs">
+                {t.changelog.latest}
+              </Badge>
+            )}
+            <span className="text-xs text-muted-foreground ml-auto font-mono">
+              {entry.releaseDate}
+            </span>
+          </div>
 
-        <div className="rounded-xl border border-border bg-card p-4 hover:border-cyan/30 transition-colors">
-          <h3 className="font-bold text-base mb-1">{entry.title}</h3>
-          <p className="text-sm text-muted-foreground mb-3">
-            {entry.description}
-          </p>
-          <ul className="space-y-1.5">
-            {entry.changesList.map((change) => (
-              <li key={change} className="flex items-start gap-2 text-sm">
-                <span className="text-cyan mt-0.5 flex-shrink-0">›</span>
-                <span className="text-muted-foreground">{change}</span>
-              </li>
-            ))}
-          </ul>
+          {/* Card with glowing corners */}
+          <div
+            className="relative rounded-xl border bg-card p-4 transition-all"
+            style={{
+              borderColor: `${glowCfg.c1}30`,
+              animation: `clCard${entry.changeType}${isLatest ? "L" : ""} 3s ease-in-out infinite`,
+            }}
+          >
+            {/* Corner glows */}
+            <CornerGlow
+              position="tl"
+              colors={[glowCfg.c1, glowCfg.c2]}
+              animDelay="0s"
+              animName={`${glowCfg.animName}Corner`}
+            />
+            <CornerGlow
+              position="tr"
+              colors={[glowCfg.c2, glowCfg.c1]}
+              animDelay="0.75s"
+              animName={`${glowCfg.animName}Corner`}
+            />
+            <CornerGlow
+              position="br"
+              colors={[glowCfg.c1, glowCfg.c2]}
+              animDelay="1.5s"
+              animName={`${glowCfg.animName}Corner`}
+            />
+            <CornerGlow
+              position="bl"
+              colors={[glowCfg.c2, glowCfg.c1]}
+              animDelay="2.25s"
+              animName={`${glowCfg.animName}Corner`}
+            />
+            <h3 className="font-bold text-base mb-1">{entry.title}</h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              {entry.description}
+            </p>
+            <ul className="space-y-1.5">
+              {entry.changesList.map((change) => (
+                <li key={change} className="flex items-start gap-2 text-sm">
+                  <span
+                    className="mt-0.5 flex-shrink-0"
+                    style={{ color: glowCfg.c1 }}
+                  >
+                    ›
+                  </span>
+                  <span className="text-muted-foreground">{change}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

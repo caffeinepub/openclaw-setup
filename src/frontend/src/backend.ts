@@ -89,6 +89,16 @@ export class ExternalBlob {
         return this;
     }
 }
+export interface BlogPost {
+    id: bigint;
+    coverImageUrl: string;
+    title: string;
+    body: string;
+    createdAt: bigint;
+    tags: Array<string>;
+    authorName: string;
+    category: string;
+}
 export interface LeaderboardEntry {
     principal: Principal;
     displayName: string;
@@ -104,20 +114,6 @@ export interface FAQ {
     answer: string;
     category: string;
 }
-export interface MembershipRecord {
-    id: bigint;
-    owner: Principal;
-    tier: MembershipTier;
-    purchasedAt: bigint;
-}
-export interface TopReward {
-    title: string;
-    color: string;
-    rank: bigint;
-    description: string;
-    badge: string;
-    bonusTokens: bigint;
-}
 export interface ClaimedReward {
     title: string;
     rank: bigint;
@@ -125,9 +121,19 @@ export interface ClaimedReward {
     badge: string;
     bonusTokens: bigint;
 }
-export interface ChatbotConfig {
-    enabled: boolean;
-    phoneNumber: string;
+export interface ForumPost {
+    id: bigint;
+    body: string;
+    createdAt: bigint;
+    threadId: bigint;
+    authorHandle: string;
+    authorPrincipal: Principal;
+}
+export interface UserAccount {
+    fullName: string;
+    email: string;
+    handle: string;
+    phone: string;
 }
 export interface DownloadStats {
     windowsDownloads: bigint;
@@ -143,6 +149,52 @@ export interface SavedConfig {
     createdAt: bigint;
     configData: string;
 }
+export interface Changelog {
+    id: bigint;
+    title: string;
+    changeType: string;
+    description: string;
+    version: string;
+    releaseDate: string;
+    changesList: Array<string>;
+}
+export interface ForumThread {
+    id: bigint;
+    title: string;
+    createdAt: bigint;
+    replyCount: bigint;
+    lastActivityAt: bigint;
+    authorHandle: string;
+    authorPrincipal: Principal;
+    topicId: bigint;
+}
+export interface TopReward {
+    title: string;
+    color: string;
+    rank: bigint;
+    description: string;
+    badge: string;
+    bonusTokens: bigint;
+}
+export interface MembershipRecord {
+    id: bigint;
+    owner: Principal;
+    tier: MembershipTier;
+    purchasedAt: bigint;
+}
+export interface ForumNotification {
+    id: bigint;
+    createdAt: bigint;
+    read: boolean;
+    threadTitle: string;
+    threadId: bigint;
+    recipientPrincipal: Principal;
+    fromHandle: string;
+}
+export interface ChatbotConfig {
+    enabled: boolean;
+    phoneNumber: string;
+}
 export interface MembershipStats {
     totalGold: bigint;
     totalSilver: bigint;
@@ -153,14 +205,12 @@ export interface UserProfile {
     bio?: string;
     name: string;
 }
-export interface Changelog {
+export interface ForumTopic {
     id: bigint;
     title: string;
-    changeType: string;
+    createdAt: bigint;
     description: string;
-    version: string;
-    releaseDate: string;
-    changesList: Array<string>;
+    category: string;
 }
 export enum MembershipTier {
     gold = "gold",
@@ -174,41 +224,53 @@ export enum UserRole {
 }
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    addBlogPost(title: string, body: string, authorName: string, category: string, tags: Array<string>, coverImageUrl: string): Promise<BlogPost>;
     addChangelog(version: string, releaseDate: string, title: string, description: string, changesList: Array<string>, changeType: string): Promise<void>;
     addFAQ(question: string, answer: string, category: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     claimTopReward(rank: bigint): Promise<ClaimedReward>;
+    createForumPost(threadId: bigint, body: string): Promise<ForumPost>;
+    createForumThread(topicId: bigint, title: string, body: string): Promise<ForumThread>;
     deleteChangelog(id: bigint): Promise<void>;
     deleteChatbotConfig(): Promise<void>;
     deleteConfig(id: bigint): Promise<void>;
     deleteFAQ(id: bigint): Promise<void>;
     getAllChangelog(): Promise<Array<Changelog>>;
     getAllFAQs(): Promise<Array<FAQ>>;
+    getBlogPosts(): Promise<Array<BlogPost>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChatbotConfig(): Promise<ChatbotConfig | null>;
     getDownloadsByOS(): Promise<DownloadStats>;
+    getForumPostsByThread(threadId: bigint): Promise<Array<ForumPost>>;
+    getForumThreadsByTopic(topicId: bigint): Promise<Array<ForumThread>>;
+    getForumTopics(): Promise<Array<ForumTopic>>;
     getLatestVersion(): Promise<string>;
     getLeaderboard(): Promise<Array<LeaderboardEntry>>;
     getMembershipStats(): Promise<MembershipStats>;
     getMyClaimedRewards(): Promise<Array<ClaimedReward>>;
     getMyConfigs(): Promise<Array<SavedConfig>>;
+    getMyForumNotifications(): Promise<Array<ForumNotification>>;
     getMyLeaderboardRank(): Promise<LeaderboardEntry | null>;
     getMyMembership(): Promise<MembershipRecord | null>;
+    getMyUserAccount(): Promise<UserAccount | null>;
     getTopRewards(): Promise<Array<TopReward>>;
     getTotalConfigsCount(): Promise<bigint>;
     getTotalDownloads(): Promise<bigint>;
     getTotalMembersCount(): Promise<bigint>;
+    getUserAccountByHandle(handle: string): Promise<UserAccount | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     hasClaimedReward(rank: bigint): Promise<boolean>;
     incrementDownload(os: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
+    markForumNotificationRead(id: bigint): Promise<boolean>;
     purchaseMembership(tier: MembershipTier): Promise<bigint>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveChatbotConfig(phoneNumber: string, enabled: boolean): Promise<void>;
     saveConfig(name: string, os: string, configData: string): Promise<bigint>;
+    saveUserAccount(email: string, phone: string, fullName: string, handle: string): Promise<void>;
 }
-import type { ChatbotConfig as _ChatbotConfig, LeaderboardEntry as _LeaderboardEntry, MembershipRecord as _MembershipRecord, MembershipTier as _MembershipTier, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
+import type { ChatbotConfig as _ChatbotConfig, LeaderboardEntry as _LeaderboardEntry, MembershipRecord as _MembershipRecord, MembershipTier as _MembershipTier, UserAccount as _UserAccount, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
@@ -222,6 +284,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor._initializeAccessControlWithSecret(arg0);
+            return result;
+        }
+    }
+    async addBlogPost(arg0: string, arg1: string, arg2: string, arg3: string, arg4: Array<string>, arg5: string): Promise<BlogPost> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addBlogPost(arg0, arg1, arg2, arg3, arg4, arg5);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addBlogPost(arg0, arg1, arg2, arg3, arg4, arg5);
             return result;
         }
     }
@@ -278,6 +354,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.claimTopReward(arg0);
+            return result;
+        }
+    }
+    async createForumPost(arg0: bigint, arg1: string): Promise<ForumPost> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createForumPost(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createForumPost(arg0, arg1);
+            return result;
+        }
+    }
+    async createForumThread(arg0: bigint, arg1: string, arg2: string): Promise<ForumThread> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createForumThread(arg0, arg1, arg2);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createForumThread(arg0, arg1, arg2);
             return result;
         }
     }
@@ -365,6 +469,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getBlogPosts(): Promise<Array<BlogPost>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getBlogPosts();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getBlogPosts();
+            return result;
+        }
+    }
     async getCallerUserProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
@@ -418,6 +536,48 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getDownloadsByOS();
+            return result;
+        }
+    }
+    async getForumPostsByThread(arg0: bigint): Promise<Array<ForumPost>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getForumPostsByThread(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getForumPostsByThread(arg0);
+            return result;
+        }
+    }
+    async getForumThreadsByTopic(arg0: bigint): Promise<Array<ForumThread>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getForumThreadsByTopic(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getForumThreadsByTopic(arg0);
+            return result;
+        }
+    }
+    async getForumTopics(): Promise<Array<ForumTopic>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getForumTopics();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getForumTopics();
             return result;
         }
     }
@@ -491,6 +651,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getMyForumNotifications(): Promise<Array<ForumNotification>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyForumNotifications();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyForumNotifications();
+            return result;
+        }
+    }
     async getMyLeaderboardRank(): Promise<LeaderboardEntry | null> {
         if (this.processError) {
             try {
@@ -517,6 +691,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getMyMembership();
             return from_candid_opt_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getMyUserAccount(): Promise<UserAccount | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getMyUserAccount();
+                return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getMyUserAccount();
+            return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
         }
     }
     async getTopRewards(): Promise<Array<TopReward>> {
@@ -575,6 +763,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getUserAccountByHandle(arg0: string): Promise<UserAccount | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUserAccountByHandle(arg0);
+                return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUserAccountByHandle(arg0);
+            return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
         if (this.processError) {
             try {
@@ -631,31 +833,45 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async purchaseMembership(arg0: MembershipTier): Promise<bigint> {
+    async markForumNotificationRead(arg0: bigint): Promise<boolean> {
         if (this.processError) {
             try {
-                const result = await this.actor.purchaseMembership(to_candid_MembershipTier_n19(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.markForumNotificationRead(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.purchaseMembership(to_candid_MembershipTier_n19(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.markForumNotificationRead(arg0);
+            return result;
+        }
+    }
+    async purchaseMembership(arg0: MembershipTier): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.purchaseMembership(to_candid_MembershipTier_n20(this._uploadFile, this._downloadFile, arg0));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.purchaseMembership(to_candid_MembershipTier_n20(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
     async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n21(this._uploadFile, this._downloadFile, arg0));
+                const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n22(this._uploadFile, this._downloadFile, arg0));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n21(this._uploadFile, this._downloadFile, arg0));
+            const result = await this.actor.saveCallerUserProfile(to_candid_UserProfile_n22(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
     }
@@ -687,6 +903,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async saveUserAccount(arg0: string, arg1: string, arg2: string, arg3: string): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveUserAccount(arg0, arg1, arg2, arg3);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveUserAccount(arg0, arg1, arg2, arg3);
+            return result;
+        }
+    }
 }
 function from_candid_LeaderboardEntry_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _LeaderboardEntry): LeaderboardEntry {
     return from_candid_record_n12(_uploadFile, _downloadFile, value);
@@ -708,6 +938,9 @@ function from_candid_opt_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
 }
 function from_candid_opt_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_MembershipRecord]): MembershipRecord | null {
     return value.length === 0 ? null : from_candid_MembershipRecord_n17(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserAccount]): UserAccount | null {
+    return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : from_candid_UserProfile_n4(_uploadFile, _downloadFile, value[0]);
@@ -796,16 +1029,16 @@ function from_candid_variant_n8(_uploadFile: (file: ExternalBlob) => Promise<Uin
 function from_candid_vec_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_LeaderboardEntry>): Array<LeaderboardEntry> {
     return value.map((x)=>from_candid_LeaderboardEntry_n11(_uploadFile, _downloadFile, x));
 }
-function to_candid_MembershipTier_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: MembershipTier): _MembershipTier {
-    return to_candid_variant_n20(_uploadFile, _downloadFile, value);
+function to_candid_MembershipTier_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: MembershipTier): _MembershipTier {
+    return to_candid_variant_n21(_uploadFile, _downloadFile, value);
 }
-function to_candid_UserProfile_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
-    return to_candid_record_n22(_uploadFile, _downloadFile, value);
+function to_candid_UserProfile_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserProfile): _UserProfile {
+    return to_candid_record_n23(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_record_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function to_candid_record_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     bio?: string;
     name: string;
 }): {
@@ -832,7 +1065,7 @@ function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         guest: null
     } : value;
 }
-function to_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: MembershipTier): {
+function to_candid_variant_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: MembershipTier): {
     gold: null;
 } | {
     platinum: null;
