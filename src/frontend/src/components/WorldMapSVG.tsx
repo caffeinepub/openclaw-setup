@@ -20,15 +20,161 @@ interface CountryShape {
   code: string;
   name: string;
   region: Region;
-  // SVG path(s) - simplified but recognizable outlines on a 1000x500 Mercator-like projection
   d: string;
-  // label position
   lx: number;
   ly: number;
 }
 
+// Deterministic country color map — each country gets a unique vibrant color
+const COUNTRY_COLORS: Record<string, string> = {
+  // Americas — blues, teals, navy variants
+  CA: "#2a6b9e",
+  US: "#1a4d7a",
+  MX: "#c0392b",
+  GT: "#e74c3c",
+  CU: "#2980b9",
+  CO: "#16a085",
+  VE: "#27ae60",
+  EC: "#8e44ad",
+  PE: "#2471a3",
+  BR: "#e67e22",
+  BO: "#d35400",
+  PY: "#1abc9c",
+  AR: "#3498db",
+  CL: "#154360",
+  UY: "#5dade2",
+  // Europe — reds, oranges, dark reds
+  IS: "#7b241c",
+  NO: "#c0392b",
+  SE: "#a93226",
+  FI: "#e74c3c",
+  DK: "#d98880",
+  GB: "#922b21",
+  IE: "#cb4335",
+  PT: "#b03a2e",
+  ES: "#e74c3c",
+  FR: "#c0392b",
+  BE: "#a04000",
+  NL: "#d35400",
+  DE: "#e67e22",
+  CH: "#af601a",
+  AT: "#ca6f1e",
+  IT: "#a93226",
+  PL: "#cb4335",
+  CZ: "#b03a2e",
+  HU: "#922b21",
+  RO: "#7b241c",
+  BG: "#d98880",
+  GR: "#c0392b",
+  HR: "#e74c3c",
+  RS: "#a93226",
+  UA: "#8e44ad",
+  BY: "#7d3c98",
+  MD: "#6c3483",
+  LT: "#cb4335",
+  LV: "#b03a2e",
+  EE: "#922b21",
+  RU: "#8b2020",
+  // Middle East — oranges, golds
+  TR: "#d4ac0d",
+  GE: "#f39c12",
+  AM: "#d68910",
+  AZ: "#b9770e",
+  SY: "#e67e22",
+  LB: "#f0b27a",
+  IL: "#f9e79f",
+  JO: "#f5cba7",
+  IQ: "#e59866",
+  IR: "#d35400",
+  KW: "#f0b27a",
+  SA: "#d4ac0d",
+  AE: "#f39c12",
+  OM: "#d68910",
+  YE: "#b9770e",
+  QA: "#e67e22",
+  BH: "#f0b27a",
+  // Africa — oranges, yellows, greens, teals, reds
+  MA: "#e67e22",
+  DZ: "#e59866",
+  TN: "#f0b27a",
+  LY: "#d35400",
+  EG: "#ca6f1e",
+  SD: "#af601a",
+  SS: "#117a65",
+  ET: "#148f77",
+  SO: "#1a5276",
+  KE: "#27ae60",
+  UG: "#1e8449",
+  TZ: "#196f3d",
+  RW: "#239b56",
+  MZ: "#2ecc71",
+  ZA: "#117864",
+  NA: "#1abc9c",
+  BW: "#16a085",
+  ZW: "#138d75",
+  ZM: "#0e6655",
+  AO: "#d35400",
+  CD: "#a04000",
+  CG: "#873600",
+  CM: "#e67e22",
+  NG: "#f39c12",
+  NE: "#d4ac0d",
+  ML: "#b7950b",
+  SN: "#e67e22",
+  GH: "#d4ac0d",
+  CI: "#b9770e",
+  TD: "#ca6f1e",
+  CF: "#a04000",
+  MG: "#8e44ad",
+  // Asia — greens, teals, yellows, golds
+  KZ: "#1a5276",
+  TM: "#1a6b5e",
+  UZ: "#148f77",
+  KG: "#0e7a68",
+  TJ: "#117a65",
+  AF: "#7d6608",
+  PK: "#6e6e00",
+  IN: "#27ae60",
+  NP: "#1e8449",
+  BD: "#196f3d",
+  LK: "#239b56",
+  MM: "#2ecc71",
+  TH: "#16a085",
+  LA: "#148f77",
+  VN: "#117a65",
+  KH: "#0e6655",
+  MY: "#1abc9c",
+  SG: "#22c5a0",
+  ID: "#117864",
+  PH: "#0d8571",
+  TW: "#1abc9c",
+  CN: "#c0a020",
+  MN: "#8e7f10",
+  KP: "#1a5276",
+  KR: "#2471a3",
+  JP: "#2980b9",
+  // Oceania
+  AU: "#2980b9",
+  NZ: "#5dade2",
+  PG: "#1a6b9e",
+};
+
+// Fallback color by region if country not in COUNTRY_COLORS
+const REGION_FALLBACK: Record<Region, string> = {
+  All: "#1a4a6a",
+  Americas: "#1a4d7a",
+  Europe: "#a93226",
+  "Middle East": "#d4ac0d",
+  Africa: "#e67e22",
+  Asia: "#27ae60",
+  Oceania: "#2980b9",
+};
+
+function getCountryBaseColor(code: string, region: Region): string {
+  return COUNTRY_COLORS[code] ?? REGION_FALLBACK[region];
+}
+
 // Simplified but shaped country outlines on 1000x500 viewbox
-// Each path is a recognizable simplified polygon of the country's shape
 const COUNTRIES: CountryShape[] = [
   // ── North America ──────────────────────────────────────────────
   {
@@ -1035,71 +1181,8 @@ const COUNTRIES: CountryShape[] = [
   },
 ];
 
-const REGIONS: Region[] = [
-  "All",
-  "Asia",
-  "Europe",
-  "Americas",
-  "Africa",
-  "Oceania",
-  "Middle East",
-];
-
-const REGION_COLORS: Record<
-  Region,
-  { fill: string; glow: string; hover: string; active: string }
-> = {
-  All: {
-    fill: "#1a4a6a",
-    glow: "#00d4ff",
-    hover: "#00ffcc",
-    active: "#ff4444",
-  },
-  Asia: {
-    fill: "#1a3a5a",
-    glow: "#00aaff",
-    hover: "#00e5ff",
-    active: "#0088ff",
-  },
-  Europe: {
-    fill: "#2a2a5a",
-    glow: "#8888ff",
-    hover: "#aaaaff",
-    active: "#5555ff",
-  },
-  Americas: {
-    fill: "#1a4a2a",
-    glow: "#00cc88",
-    hover: "#00ffaa",
-    active: "#00aa44",
-  },
-  Africa: {
-    fill: "#4a2a1a",
-    glow: "#ffaa44",
-    hover: "#ffcc66",
-    active: "#ff8800",
-  },
-  Oceania: {
-    fill: "#1a3a4a",
-    glow: "#00ccaa",
-    hover: "#00eebb",
-    active: "#00aaaa",
-  },
-  "Middle East": {
-    fill: "#3a2a1a",
-    glow: "#ffcc44",
-    hover: "#ffee88",
-    active: "#ffaa00",
-  },
-};
-
-interface HoverLabel {
-  code: string;
-  name: string;
-  region: Region;
-  x: number;
-  y: number;
-}
+const VIEWBOX_W = 1000;
+const VIEWBOX_H = 500;
 
 interface ActiveCountry {
   code: string;
@@ -1109,70 +1192,23 @@ interface ActiveCountry {
   y: number;
 }
 
-const VIEWBOX_W = 1000;
-const VIEWBOX_H = 500;
-
 export function WorldMapSVG() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedRegion, setSelectedRegion] = useState<Region>("All");
-  const [hoveredCountry, setHoveredCountry] = useState<HoverLabel | null>(null);
   const [activeCountry, setActiveCountry] = useState<ActiveCountry | null>(
     null,
   );
-  const [glowSet, setGlowSet] = useState<Set<string>>(new Set());
+  const [glowCode, setGlowCode] = useState<string | null>(null);
+  const [hoveredCode, setHoveredCode] = useState<string | null>(null);
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Ambient glow animation
+  // Every 1 second: pick ONE random country to glow
   useEffect(() => {
     const interval = setInterval(() => {
-      const filtered = COUNTRIES.filter(
-        (c) => selectedRegion === "All" || c.region === selectedRegion,
-      );
-      if (filtered.length === 0) return;
-      const count = Math.min(
-        Math.floor(Math.random() * 4) + 2,
-        filtered.length,
-      );
-      const s = new Set<string>();
-      while (s.size < count) {
-        s.add(filtered[Math.floor(Math.random() * filtered.length)].code);
-      }
-      setGlowSet(s);
-    }, 2000);
+      const idx = Math.floor(Math.random() * COUNTRIES.length);
+      setGlowCode(COUNTRIES[idx].code);
+    }, 1000);
     return () => clearInterval(interval);
-  }, [selectedRegion]);
-
-  const visibleCountries =
-    selectedRegion === "All"
-      ? COUNTRIES
-      : COUNTRIES.filter((c) => c.region === selectedRegion);
-
-  const handleMouseEnter = (
-    c: CountryShape,
-    e: React.MouseEvent<SVGGElement>,
-  ) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const svg = e.currentTarget.closest("svg");
-    if (!svg) return;
-    const pt = (svg as SVGSVGElement).createSVGPoint();
-    pt.x = e.clientX;
-    pt.y = e.clientY;
-    const ctm = (svg as SVGSVGElement).getScreenCTM();
-    if (!ctm) return;
-    const svgPt = pt.matrixTransform(ctm.inverse());
-    setHoveredCountry({
-      code: c.code,
-      name: c.name,
-      region: c.region,
-      x: svgPt.x,
-      y: svgPt.y,
-    });
-  };
-
-  const handleMouseLeave = () => {
-    setHoveredCountry(null);
-  };
+  }, []);
 
   const handleClick = (c: CountryShape, e: React.MouseEvent<SVGGElement>) => {
     const svg = e.currentTarget.closest("svg");
@@ -1191,85 +1227,79 @@ export function WorldMapSVG() {
       y: svgPt.y,
     });
     if (popupTimerRef.current) clearTimeout(popupTimerRef.current);
-    popupTimerRef.current = setTimeout(() => setActiveCountry(null), 4500);
-  };
-
-  const getCountryColor = (
-    c: CountryShape,
-    isHovered: boolean,
-    isActive: boolean,
-    isGlowing: boolean,
-  ) => {
-    const col = REGION_COLORS[c.region];
-    if (isActive) return col.active;
-    if (isHovered) return col.hover;
-    if (isGlowing) return col.glow;
-    return col.fill;
-  };
-
-  const getCountryOpacity = (c: CountryShape) => {
-    if (selectedRegion === "All") return 0.82;
-    return c.region === selectedRegion ? 0.92 : 0.15;
+    popupTimerRef.current = setTimeout(() => setActiveCountry(null), 4000);
   };
 
   return (
     <div className="w-full mt-8" ref={containerRef}>
       <style>{`
-        @keyframes wmCountryGlow {
-          0%,100% { opacity: 0.82; filter: brightness(1.3) drop-shadow(0 0 4px var(--wm-glow,#00d4ff)); }
-          50% { opacity: 1; filter: brightness(2.2) drop-shadow(0 0 12px var(--wm-glow,#00d4ff)) drop-shadow(0 0 24px var(--wm-glow,#00d4ff88)); }
+        @keyframes wmGlowPulse {
+          0%   { filter: brightness(1.8) drop-shadow(0 0 6px var(--wm-c)) drop-shadow(0 0 14px var(--wm-c)); opacity: 1; }
+          50%  { filter: brightness(2.6) drop-shadow(0 0 16px var(--wm-c)) drop-shadow(0 0 32px var(--wm-c)); opacity: 1; }
+          100% { filter: brightness(1.8) drop-shadow(0 0 6px var(--wm-c)) drop-shadow(0 0 14px var(--wm-c)); opacity: 1; }
         }
-        @keyframes wmCountryActive {
-          0%,100% { filter: brightness(2) drop-shadow(0 0 8px #ff4444) drop-shadow(0 0 20px #ff222288); }
-          50% { filter: brightness(2.8) drop-shadow(0 0 18px #ff6666) drop-shadow(0 0 40px #ff444488); }
+        @keyframes wmActiveFlash {
+          0%,100% { filter: brightness(2.2) drop-shadow(0 0 10px #fff) drop-shadow(0 0 22px #fff8); }
+          50%     { filter: brightness(3)   drop-shadow(0 0 20px #fff) drop-shadow(0 0 44px #fffd); }
         }
         @keyframes wmHoverPop {
-          0% { opacity: 0; transform: translateY(6px) scale(0.9); }
-          100% { opacity: 1; transform: translateY(0) scale(1); }
+          0%   { opacity: 0; transform: translateY(8px) scale(0.92); }
+          100% { opacity: 1; transform: translateY(0)  scale(1); }
         }
         @keyframes wmScan {
-          0% { transform: translateY(-100%); opacity: 0; }
-          10% { opacity: 0.5; }
-          90% { opacity: 0.5; }
-          100% { transform: translateY(200%); opacity: 0; }
+          0%   { transform: translateY(-100%); opacity: 0; }
+          8%   { opacity: 0.45; }
+          92%  { opacity: 0.45; }
+          100% { transform: translateY(600%); opacity: 0; }
         }
         @keyframes wmCornerFlicker {
-          0%,100% { opacity: 0.7; }
-          50% { opacity: 1; }
+          0%,100% { opacity: 0.65; }
+          50%     { opacity: 1; }
         }
-        @keyframes wmRegionPulse {
-          0%,100% { box-shadow: 0 0 0 rgba(0,212,255,0); }
-          50% { box-shadow: 0 0 12px rgba(0,212,255,0.5); }
+        @keyframes wmLiveDot {
+          0%,100% { box-shadow: 0 0 0 rgba(0,255,180,0); }
+          50%     { box-shadow: 0 0 10px rgba(0,255,180,0.6); }
         }
-        .wm-country { cursor: pointer; transition: opacity 0.25s ease; }
-        .wm-country path { transition: fill 0.2s ease, filter 0.2s ease; }
-        .wm-country:hover path { stroke-width: 1.5 !important; }
-        .wm-region-btn { transition: all 0.2s ease; }
-        .wm-region-btn:hover { transform: translateY(-1px); }
-        .wm-region-btn.active { transform: translateY(-2px); }
+        .wm-country {
+          cursor: pointer;
+        }
+        .wm-country path {
+          transition: filter 0.15s ease;
+        }
+        .wm-country:hover path {
+          filter: brightness(1.5) !important;
+        }
       `}</style>
 
       {/* Header */}
       <div className="text-center mb-5">
         <div className="inline-flex items-center gap-2 mb-1.5">
           <span
-            className="w-1.5 h-1.5 rounded-full bg-cyan-400"
             style={{
-              boxShadow: "0 0 6px #00d4ff",
-              animation: "wmRegionPulse 2s ease infinite",
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: "#00d4ff",
+              boxShadow: "0 0 8px #00d4ff",
+              display: "inline-block",
+              animation: "wmLiveDot 2s ease infinite",
             }}
           />
           <span
-            className="text-xs font-mono font-bold uppercase tracking-widest text-cyan-400"
-            style={{ textShadow: "0 0 8px #00d4ff88" }}
+            className="text-xs font-mono font-bold uppercase tracking-widest"
+            style={{ color: "#00d4ff", textShadow: "0 0 8px #00d4ff88" }}
           >
             Global Coverage
           </span>
           <span
-            className="w-1.5 h-1.5 rounded-full bg-cyan-400"
             style={{
-              boxShadow: "0 0 6px #00d4ff",
-              animation: "wmRegionPulse 2s ease infinite 1s",
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: "#00d4ff",
+              boxShadow: "0 0 8px #00d4ff",
+              display: "inline-block",
+              animation: "wmLiveDot 2s ease infinite 1s",
             }}
           />
         </div>
@@ -1284,61 +1314,20 @@ export function WorldMapSVG() {
         >
           ClawPro Available Worldwide
         </h3>
-        <p className="text-xs text-muted-foreground">
-          Hover to see country name · Click to confirm availability ·{" "}
-          {COUNTRIES.length}+ countries
+        <p className="text-xs" style={{ color: "rgba(140,170,200,0.7)" }}>
+          Click any country to confirm availability · {COUNTRIES.length}+
+          countries
         </p>
-      </div>
-
-      {/* Region Filter Buttons */}
-      <div className="flex flex-wrap justify-center gap-2 mb-4">
-        {REGIONS.map((region) => {
-          const col = REGION_COLORS[region];
-          const isActive = selectedRegion === region;
-          const count =
-            region === "All"
-              ? COUNTRIES.length
-              : COUNTRIES.filter((c) => c.region === region).length;
-          return (
-            <button
-              key={region}
-              type="button"
-              onClick={() => {
-                setSelectedRegion(region);
-                setActiveCountry(null);
-              }}
-              className={`wm-region-btn px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${isActive ? "active" : ""}`}
-              style={{
-                background: isActive
-                  ? `linear-gradient(135deg, ${col.fill}, ${col.glow}22)`
-                  : "rgba(0,10,25,0.6)",
-                border: isActive
-                  ? `1.5px solid ${col.glow}`
-                  : "1px solid rgba(255,255,255,0.1)",
-                color: isActive ? col.hover : "rgba(180,200,220,0.7)",
-                boxShadow: isActive
-                  ? `0 0 16px ${col.glow}44, 0 0 32px ${col.glow}22`
-                  : "none",
-                textShadow: isActive ? `0 0 8px ${col.glow}88` : "none",
-              }}
-              data-ocid={`worldmap.region.${region.toLowerCase().replace(" ", "_")}.toggle`}
-            >
-              {region}
-              <span className="ml-1 opacity-60 text-[10px]">({count})</span>
-            </button>
-          );
-        })}
       </div>
 
       {/* Map Container */}
       <div
         className="relative rounded-2xl overflow-hidden"
         style={{
-          background:
-            "linear-gradient(160deg, #020b18 0%, #030d22 50%, #010a15 100%)",
-          border: "1px solid rgba(0,180,255,0.15)",
+          background: "#050e1c",
+          border: "1px solid rgba(0,180,255,0.14)",
           boxShadow:
-            "0 0 40px rgba(0,100,200,0.1), inset 0 0 60px rgba(0,50,100,0.06)",
+            "0 0 50px rgba(0,80,180,0.1), inset 0 0 80px rgba(0,40,80,0.06)",
         }}
       >
         {/* Corner accents */}
@@ -1363,19 +1352,9 @@ export function WorldMapSVG() {
                 aria-hidden="true"
               >
                 <title>corner</title>
-                <path
-                  d="M2 38 L2 6 Q2 2 6 2 L38 2"
-                  stroke="url(#wmCornerGrad)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  style={{
-                    animation: "wmCornerFlicker 2.5s ease-in-out infinite",
-                    filter: "drop-shadow(0 0 5px #00d4ff88)",
-                  }}
-                />
                 <defs>
                   <linearGradient
-                    id="wmCornerGrad"
+                    id={`wcg-${pos}`}
                     x1="0%"
                     y1="100%"
                     x2="100%"
@@ -1385,6 +1364,16 @@ export function WorldMapSVG() {
                     <stop offset="100%" stopColor="#0055ff" />
                   </linearGradient>
                 </defs>
+                <path
+                  d="M2 38 L2 6 Q2 2 6 2 L38 2"
+                  stroke={`url(#wcg-${pos})`}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    animation: "wmCornerFlicker 2.5s ease-in-out infinite",
+                    filter: "drop-shadow(0 0 5px #00d4ff88)",
+                  }}
+                />
               </svg>
             </div>
           );
@@ -1399,8 +1388,8 @@ export function WorldMapSVG() {
               right: 0,
               height: "2px",
               background:
-                "linear-gradient(90deg, transparent, rgba(0,212,255,0.2), rgba(0,180,255,0.45), rgba(0,212,255,0.2), transparent)",
-              animation: "wmScan 7s linear infinite",
+                "linear-gradient(90deg, transparent, rgba(0,212,255,0.18), rgba(0,180,255,0.4), rgba(0,212,255,0.18), transparent)",
+              animation: "wmScan 8s linear infinite",
               top: "0%",
             }}
           />
@@ -1417,9 +1406,9 @@ export function WorldMapSVG() {
           <title>World Map - ClawPro Global Coverage</title>
           <defs>
             <radialGradient id="wmOcean" cx="50%" cy="40%" r="70%">
-              <stop offset="0%" stopColor="#0a1f3a" />
-              <stop offset="60%" stopColor="#061428" />
-              <stop offset="100%" stopColor="#020b18" />
+              <stop offset="0%" stopColor="#071828" />
+              <stop offset="60%" stopColor="#040f1e" />
+              <stop offset="100%" stopColor="#020b16" />
             </radialGradient>
             <pattern
               id="wmGrid"
@@ -1432,35 +1421,22 @@ export function WorldMapSVG() {
                 y1="0"
                 x2="50"
                 y2="0"
-                stroke="rgba(0,180,255,0.04)"
+                stroke="rgba(0,160,220,0.05)"
                 strokeWidth="0.4"
-                strokeDasharray="3,10"
+                strokeDasharray="3,12"
               />
               <line
                 x1="0"
                 y1="0"
                 x2="0"
                 y2="50"
-                stroke="rgba(0,180,255,0.04)"
+                stroke="rgba(0,160,220,0.05)"
                 strokeWidth="0.4"
-                strokeDasharray="3,10"
+                strokeDasharray="3,12"
               />
             </pattern>
-            <filter id="wmGlow" x="-30%" y="-30%" width="160%" height="160%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter
-              id="wmActiveGlow"
-              x="-50%"
-              y="-50%"
-              width="200%"
-              height="200%"
-            >
-              <feGaussianBlur stdDeviation="5" result="blur" />
+            <filter id="wmGlow" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -1495,13 +1471,14 @@ export function WorldMapSVG() {
                 x2={VIEWBOX_W}
                 y2={y}
                 stroke={
-                  lat === 0 ? "rgba(0,200,255,0.35)" : "rgba(0,150,200,0.12)"
+                  lat === 0 ? "rgba(0,200,255,0.3)" : "rgba(0,130,180,0.1)"
                 }
-                strokeWidth={lat === 0 ? 0.8 : 0.35}
-                strokeDasharray={lat === 0 ? "" : "5,12"}
+                strokeWidth={lat === 0 ? 0.7 : 0.3}
+                strokeDasharray={lat === 0 ? "" : "5,14"}
               />
             );
           })}
+
           {/* Longitude lines */}
           {[-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150].map((lon) => {
             const x = ((lon + 180) / 360) * VIEWBOX_W;
@@ -1512,211 +1489,93 @@ export function WorldMapSVG() {
                 y1="0"
                 x2={x}
                 y2={VIEWBOX_H}
-                stroke="rgba(0,150,200,0.08)"
-                strokeWidth="0.35"
-                strokeDasharray="5,14"
+                stroke="rgba(0,130,180,0.07)"
+                strokeWidth="0.3"
+                strokeDasharray="5,16"
               />
             );
           })}
 
-          {/* All country shapes (dimmed non-selected) */}
+          {/* Country shapes */}
           {COUNTRIES.map((c) => {
-            const isVisible =
-              selectedRegion === "All" || c.region === selectedRegion;
-            const isHov = hoveredCountry?.code === c.code;
-            const isAct = activeCountry?.code === c.code;
-            const isGlow = glowSet.has(c.code);
-            const col = REGION_COLORS[c.region];
-            const fillColor = getCountryColor(c, isHov, isAct, isGlow);
-            const opacity = getCountryOpacity(c);
+            const base = getCountryBaseColor(c.code, c.region);
+            const isActive = activeCountry?.code === c.code;
+            const isGlowing = glowCode === c.code;
+            const isHovered = hoveredCode === c.code;
+
+            // Build fill: active = lighter, glow = brighter, default = base
+            let fill = base;
+            if (isActive) {
+              fill = "#ffffff";
+            } else if (isGlowing) {
+              fill = base;
+            }
+
+            // Stroke
+            const stroke = isActive
+              ? "#ffffff"
+              : isGlowing
+                ? base
+                : isHovered
+                  ? "#ffffff"
+                  : "rgba(0,0,0,0.5)";
+            const strokeWidth = isActive
+              ? 1.5
+              : isGlowing
+                ? 1.2
+                : isHovered
+                  ? 0.9
+                  : 0.6;
+
+            // Path style with CSS custom property for glow color
+            const pathStyle: React.CSSProperties = isActive
+              ? { animation: "wmActiveFlash 0.8s ease-in-out infinite" }
+              : isGlowing
+                ? {
+                    animation: "wmGlowPulse 1s ease-in-out",
+                    ["--wm-c" as string]: base,
+                  }
+                : {};
 
             return (
               <g
                 key={c.code}
                 className="wm-country"
-                style={{ opacity }}
-                onClick={(e) => isVisible && handleClick(c, e)}
+                onClick={(e) => handleClick(c, e)}
                 onKeyDown={(e) => {
-                  if ((e.key === "Enter" || e.key === " ") && isVisible) {
+                  if (e.key === "Enter" || e.key === " ") {
                     handleClick(
                       c,
                       e as unknown as React.MouseEvent<SVGGElement>,
                     );
                   }
                 }}
-                onMouseEnter={(e) => isVisible && handleMouseEnter(c, e)}
-                onMouseLeave={() => isVisible && handleMouseLeave()}
+                onMouseEnter={() => setHoveredCode(c.code)}
+                onMouseLeave={() => setHoveredCode(null)}
                 data-ocid={`worldmap.${c.code.toLowerCase()}.map_marker`}
-                aria-label={`${c.name} (${c.region})`}
-                tabIndex={isVisible ? 0 : -1}
+                aria-label={c.name}
+                tabIndex={0}
               >
-                {/* Country shape */}
                 <path
                   d={c.d}
-                  fill={fillColor}
-                  stroke={
-                    isAct
-                      ? col.active
-                      : isHov
-                        ? col.hover
-                        : isGlow
-                          ? col.glow
-                          : "rgba(0,180,255,0.25)"
-                  }
-                  strokeWidth={isAct ? 1.5 : isHov ? 1.2 : 0.6}
-                  filter={
-                    isAct
-                      ? "url(#wmActiveGlow)"
-                      : isGlow || isHov
-                        ? "url(#wmGlow)"
-                        : undefined
-                  }
-                  style={
-                    isAct
-                      ? { animation: "wmCountryActive 1s ease-in-out infinite" }
-                      : isGlow
-                        ? {
-                            animation: "wmCountryGlow 2s ease-in-out infinite",
-                            ["--wm-glow" as string]: col.glow,
-                          }
-                        : undefined
-                  }
-                />
-                {/* Country name label always visible on the map for selected region */}
-                {isVisible && selectedRegion !== "All" && (
-                  <text
-                    x={c.lx}
-                    y={c.ly + 2}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize="5.5"
-                    fontFamily="monospace"
-                    fontWeight="600"
-                    fill={
-                      isAct
-                        ? "#ffffff"
-                        : isHov
-                          ? col.hover
-                          : "rgba(180,220,255,0.7)"
-                    }
-                    style={{
-                      pointerEvents: "none",
-                      userSelect: "none",
-                      textShadow: `0 0 4px ${col.glow}`,
-                    }}
-                  >
-                    {c.name.length > 12 ? c.code : c.name}
-                  </text>
-                )}
-                {/* Hover inline label (country code) for "All" mode */}
-                {isHov && selectedRegion === "All" && (
-                  <text
-                    x={c.lx}
-                    y={c.ly - 2}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize="5.5"
-                    fontFamily="monospace"
-                    fontWeight="700"
-                    fill={col.hover}
-                    style={{
-                      pointerEvents: "none",
-                      userSelect: "none",
-                      filter: `drop-shadow(0 0 3px ${col.glow})`,
-                    }}
-                  >
-                    {c.code}
-                  </text>
-                )}
-                {/* Center dot */}
-                <circle
-                  cx={c.lx}
-                  cy={c.ly}
-                  r={isAct ? 3.5 : isHov ? 3 : 1.8}
-                  fill={
-                    isAct
-                      ? col.active
-                      : isHov
-                        ? col.hover
-                        : isGlow
-                          ? col.glow
-                          : "rgba(0,180,255,0.5)"
-                  }
-                  filter={isAct || isHov ? "url(#wmGlow)" : undefined}
+                  fill={fill}
+                  stroke={stroke}
+                  strokeWidth={strokeWidth}
+                  strokeLinejoin="round"
+                  opacity={isActive ? 1 : 0.88}
+                  style={pathStyle}
+                  filter={isGlowing || isActive ? "url(#wmGlow)" : undefined}
                 />
               </g>
             );
           })}
 
-          {/* Floating hover label tooltip */}
-          {hoveredCountry && (
-            <g style={{ pointerEvents: "none" }}>
-              {(() => {
-                const col = REGION_COLORS[hoveredCountry.region];
-                const lx = Math.min(
-                  Math.max(hoveredCountry.x, 60),
-                  VIEWBOX_W - 60,
-                );
-                const ly = Math.max(hoveredCountry.y - 30, 20);
-                const labelW = Math.min(
-                  hoveredCountry.name.length * 5.2 + 18,
-                  120,
-                );
-                return (
-                  <>
-                    <rect
-                      x={lx - labelW / 2}
-                      y={ly - 11}
-                      width={labelW}
-                      height={20}
-                      rx="4"
-                      fill="rgba(2,12,30,0.92)"
-                      stroke={col.glow}
-                      strokeWidth="0.8"
-                      style={{ filter: `drop-shadow(0 0 6px ${col.glow}66)` }}
-                    />
-                    <text
-                      x={lx}
-                      y={ly - 1}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fontSize="7"
-                      fontFamily="system-ui, sans-serif"
-                      fontWeight="700"
-                      fill={col.hover}
-                      style={{ userSelect: "none" }}
-                    >
-                      {hoveredCountry.name}
-                    </text>
-                    <text
-                      x={lx + labelW / 2 - 16}
-                      y={ly - 7}
-                      fontSize="5.5"
-                      fontFamily="monospace"
-                      fill={col.glow}
-                      style={{ userSelect: "none", opacity: 0.7 }}
-                    >
-                      {hoveredCountry.code}
-                    </text>
-                    {/* Arrow */}
-                    <polygon
-                      points={`${lx - 4},${ly + 9} ${lx + 4},${ly + 9} ${lx},${ly + 14}`}
-                      fill="rgba(2,12,30,0.92)"
-                      stroke={col.glow}
-                      strokeWidth="0.5"
-                    />
-                  </>
-                );
-              })()}
-            </g>
-          )}
-
-          {/* Tropic labels */}
+          {/* Equator / Tropic labels */}
           <text
             x="8"
             y={((90 - 23.5) / 180) * VIEWBOX_H - 3}
-            fontSize="6"
-            fill="rgba(0,200,255,0.25)"
+            fontSize="5.5"
+            fill="rgba(0,180,240,0.2)"
             fontFamily="monospace"
           >
             Tropic of Cancer
@@ -1724,8 +1583,8 @@ export function WorldMapSVG() {
           <text
             x="8"
             y={((90 + 23.5) / 180) * VIEWBOX_H - 3}
-            fontSize="6"
-            fill="rgba(0,200,255,0.25)"
+            fontSize="5.5"
+            fill="rgba(0,180,240,0.2)"
             fontFamily="monospace"
           >
             Tropic of Capricorn
@@ -1733,8 +1592,8 @@ export function WorldMapSVG() {
           <text
             x="8"
             y={(90 / 180) * VIEWBOX_H - 3}
-            fontSize="6"
-            fill="rgba(0,200,255,0.35)"
+            fontSize="5.5"
+            fill="rgba(0,190,255,0.28)"
             fontFamily="monospace"
           >
             Equator
@@ -1744,13 +1603,10 @@ export function WorldMapSVG() {
         {/* Click popup overlay */}
         {activeCountry &&
           (() => {
-            const col = REGION_COLORS[activeCountry.region];
             const containerW = containerRef.current?.clientWidth ?? 600;
-            const containerH = containerRef.current?.clientHeight ?? 400;
-            // Convert SVG coords to container coords
             const svgEl = containerRef.current?.querySelector("svg");
             let px = containerW * 0.5;
-            let py = containerH * 0.3;
+            let py = 120;
             if (svgEl) {
               const svgRect = svgEl.getBoundingClientRect();
               const scaleX = svgRect.width / VIEWBOX_W;
@@ -1758,54 +1614,47 @@ export function WorldMapSVG() {
               px = activeCountry.x * scaleX;
               py = activeCountry.y * scaleY;
             }
+            const baseColor = getCountryBaseColor(
+              activeCountry.code,
+              activeCountry.region,
+            );
             return (
               <div
                 className="absolute z-30 pointer-events-none"
                 style={{
-                  left: Math.min(Math.max(px - 85, 8), containerW - 178),
-                  top: Math.max(py - 130, 8),
-                  animation: "wmHoverPop 0.2s ease-out forwards",
+                  left: Math.min(Math.max(px - 88, 8), containerW - 184),
+                  top: Math.max(py - 138, 8),
+                  animation: "wmHoverPop 0.22s ease-out forwards",
                 }}
               >
                 <div
-                  className="rounded-xl px-4 py-3 text-center min-w-[170px]"
+                  className="rounded-xl px-4 py-3 text-center min-w-[176px]"
                   style={{
                     background:
-                      "linear-gradient(135deg, rgba(2,12,30,0.97), rgba(3,18,42,0.97))",
-                    border: `1.5px solid ${col.glow}`,
-                    boxShadow: `0 8px 32px rgba(0,0,0,0.85), 0 0 24px ${col.glow}44, 0 0 50px ${col.glow}22`,
+                      "linear-gradient(135deg, rgba(4,14,32,0.97), rgba(6,20,44,0.97))",
+                    border: `1.5px solid ${baseColor}`,
+                    boxShadow: `0 8px 32px rgba(0,0,0,0.9), 0 0 24px ${baseColor}55, 0 0 50px ${baseColor}28`,
                   }}
                 >
-                  {/* Region badge */}
-                  <div
-                    className="inline-flex items-center gap-1 mb-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold"
-                    style={{
-                      background: `${col.glow}18`,
-                      border: `1px solid ${col.glow}55`,
-                      color: col.glow,
-                    }}
-                  >
-                    {activeCountry.region}
-                  </div>
                   {/* Flag */}
-                  <div className="text-3xl mb-1 leading-none">
+                  <div className="text-4xl mb-1.5 leading-none">
                     {countryFlag(activeCountry.code)}
                   </div>
-                  {/* Name */}
+                  {/* Country name */}
                   <p
                     className="text-sm font-bold mb-0.5"
-                    style={{ color: "rgba(210,235,255,0.95)" }}
+                    style={{ color: "rgba(220,240,255,0.97)" }}
                   >
                     {activeCountry.name}
                   </p>
-                  {/* Code */}
+                  {/* Country code */}
                   <p
                     className="text-xs font-mono mb-2"
-                    style={{ color: col.glow, opacity: 0.8 }}
+                    style={{ color: baseColor, opacity: 0.85 }}
                   >
                     {activeCountry.code}
                   </p>
-                  {/* Status */}
+                  {/* Status badge */}
                   <div
                     className="flex items-center justify-center gap-1.5 text-xs font-semibold"
                     style={{
@@ -1830,9 +1679,9 @@ export function WorldMapSVG() {
                 <div
                   className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 rotate-45"
                   style={{
-                    background: "rgba(3,18,42,0.97)",
-                    borderRight: `1.5px solid ${col.glow}`,
-                    borderBottom: `1.5px solid ${col.glow}`,
+                    background: "rgba(6,20,44,0.97)",
+                    borderRight: `1.5px solid ${baseColor}`,
+                    borderBottom: `1.5px solid ${baseColor}`,
                   }}
                 />
               </div>
@@ -1843,8 +1692,8 @@ export function WorldMapSVG() {
         <div
           className="flex items-center justify-between px-4 py-2"
           style={{
-            borderTop: "1px solid rgba(0,150,200,0.12)",
-            background: "rgba(0,8,20,0.7)",
+            borderTop: "1px solid rgba(0,140,190,0.1)",
+            background: "rgba(2,8,18,0.75)",
           }}
         >
           <div className="flex items-center gap-2">
@@ -1856,22 +1705,21 @@ export function WorldMapSVG() {
                 background: "#00ffcc",
                 boxShadow: "0 0 8px #00ffcc",
                 display: "inline-block",
-                animation: "wmRegionPulse 1.5s ease-in-out infinite",
+                animation: "wmLiveDot 1.5s ease-in-out infinite",
               }}
             />
             <span
               className="text-xs font-mono"
               style={{ color: "rgba(0,200,200,0.8)" }}
             >
-              LIVE · {visibleCountries.length}
-              {selectedRegion !== "All" ? ` ${selectedRegion}` : ""} countries
+              LIVE · {COUNTRIES.length} countries
             </span>
           </div>
           <span
             className="text-xs font-mono"
-            style={{ color: "rgba(0,150,200,0.55)" }}
+            style={{ color: "rgba(0,140,190,0.5)" }}
           >
-            Hover = name · Click = details
+            Click = details
           </span>
         </div>
       </div>
