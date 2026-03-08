@@ -7,7 +7,7 @@ import {
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
-import { InteractiveWorldMap } from "../InteractiveWorldMap";
+import { WorldMapSimple } from "../WorldMapSimple";
 
 function useCountUp(target: number, duration = 1500, shouldStart = false) {
   const [count, setCount] = useState(0);
@@ -162,7 +162,7 @@ export function StatsSection() {
         </div>
 
         {/* Interactive World Map */}
-        <InteractiveWorldMap />
+        <WorldMapSimple />
       </div>
     </section>
   );

@@ -169,74 +169,6 @@ function usePartnerApis(): PartnerApiData {
   return data;
 }
 
-// ── Spinning Corner Glow ──
-type CornerPos = "tl" | "tr" | "bl" | "br";
-
-interface CornerGlowProps {
-  position: CornerPos;
-  colors: [string, string];
-  animDelay?: string;
-  animName: string;
-}
-
-function CornerGlow({
-  position,
-  colors,
-  animDelay = "0s",
-  animName,
-}: CornerGlowProps) {
-  const posStyles: Record<CornerPos, React.CSSProperties> = {
-    tl: { top: -2, left: -2 },
-    tr: { top: -2, right: -2, transform: "rotate(90deg)" },
-    br: { bottom: -2, right: -2, transform: "rotate(180deg)" },
-    bl: { bottom: -2, left: -2, transform: "rotate(270deg)" },
-  };
-
-  return (
-    <span
-      style={{
-        position: "absolute",
-        width: 24,
-        height: 24,
-        pointerEvents: "none",
-        zIndex: 10,
-        animation: `${animName} 3s ease-in-out infinite`,
-        animationDelay: animDelay,
-        ...posStyles[position],
-      }}
-    >
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        overflow="visible"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient
-            id={`cg-${animName}-${position}`}
-            x1="0%"
-            y1="0%"
-            x2="100%"
-            y2="100%"
-          >
-            <stop offset="0%" stopColor={colors[0]} />
-            <stop offset="100%" stopColor={colors[1]} />
-          </linearGradient>
-        </defs>
-        <path
-          d="M2 22 L2 4 Q2 2 4 2 L22 2"
-          stroke={`url(#cg-${animName}-${position})`}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          fill="none"
-        />
-      </svg>
-    </span>
-  );
-}
-
 function OpenClawLogo({ size = 32 }: { size?: number }) {
   return (
     <svg
@@ -598,125 +530,98 @@ function EmailSubscribeForm({
     setTimeout(() => setStatus("idle"), 3000);
   };
 
+  const [clicked, setClicked] = React.useState(false);
+
+  const handleClick = () => {
+    setClicked(true);
+    setTimeout(() => setClicked(false), 600);
+  };
+
   return (
-    <div>
+    <div className="max-w-md mx-auto">
       <style>{`
-        @keyframes emailInputGlow {
-          0%, 100% { filter: drop-shadow(0 0 2px #00c6ff) drop-shadow(0 0 5px #0072ff); opacity: 0.55; }
-          33% { filter: drop-shadow(0 0 4px #0072ff) drop-shadow(0 0 9px #7c3aed); opacity: 0.8; }
-          66% { filter: drop-shadow(0 0 3px #7c3aed) drop-shadow(0 0 7px #00c6ff); opacity: 0.65; }
+        @keyframes emailRingGlow {
+          0%, 100% {
+            box-shadow: 0 0 0 1.5px rgba(0,198,255,0.5), 0 0 10px rgba(0,198,255,0.25), 0 0 20px rgba(0,114,255,0.15);
+          }
+          33% {
+            box-shadow: 0 0 0 1.5px rgba(0,114,255,0.6), 0 0 12px rgba(0,114,255,0.3), 0 0 24px rgba(124,58,237,0.18);
+          }
+          66% {
+            box-shadow: 0 0 0 1.5px rgba(124,58,237,0.55), 0 0 11px rgba(124,58,237,0.28), 0 0 22px rgba(0,198,255,0.15);
+          }
         }
-        @keyframes subscribeBtnGlow {
-          0%, 100% { filter: drop-shadow(0 0 3px #f0abfc) drop-shadow(0 0 6px #22d3ee); opacity: 0.6; }
-          33% { filter: drop-shadow(0 0 5px #22d3ee) drop-shadow(0 0 10px #818cf8); opacity: 0.85; }
-          66% { filter: drop-shadow(0 0 4px #818cf8) drop-shadow(0 0 8px #f0abfc); opacity: 0.7; }
+        @keyframes subscribeBtnClickGlow {
+          0%   { box-shadow: 0 0 0 0 rgba(34,211,238,0), 0 0 0 0 rgba(129,140,248,0); transform: scale(1); }
+          40%  { box-shadow: 0 0 0 8px rgba(34,211,238,0.35), 0 0 24px rgba(129,140,248,0.5); transform: scale(0.97); }
+          100% { box-shadow: 0 0 0 20px rgba(34,211,238,0), 0 0 40px rgba(129,140,248,0); transform: scale(1); }
         }
-        @keyframes outerSubscribeGlow {
-          0%, 100% { box-shadow: 0 0 12px rgba(34,211,238,0.12), 0 0 24px rgba(34,211,238,0.06), 0 0 0 1px rgba(34,211,238,0.10); }
-          33%       { box-shadow: 0 0 16px rgba(129,140,248,0.14), 0 0 30px rgba(129,140,248,0.07), 0 0 0 1px rgba(129,140,248,0.12); }
-          66%       { box-shadow: 0 0 14px rgba(240,171,252,0.13), 0 0 26px rgba(240,171,252,0.06), 0 0 0 1px rgba(240,171,252,0.10); }
+        @keyframes subscribeBtnIdle {
+          0%, 100% { box-shadow: 0 0 8px rgba(34,211,238,0.3), 0 0 16px rgba(129,140,248,0.2); }
+          50%       { box-shadow: 0 0 14px rgba(129,140,248,0.4), 0 0 28px rgba(240,171,252,0.25); }
         }
       `}</style>
-      {/* Outer glowing wrapper surrounding both input and button */}
-      <div
-        className="relative rounded-2xl p-3 max-w-md mx-auto bg-muted/10"
-        style={{
-          border: "1px solid rgba(128,128,128,0.15)",
-          animation: "outerSubscribeGlow 4s ease-in-out infinite",
-        }}
-      >
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col sm:flex-row gap-3"
-        >
-          {/* Email input with spinning corner glows */}
-          <div className="relative flex-1">
-            <CornerGlow
-              position="tl"
-              colors={["#00c6ff", "#0072ff"]}
-              animDelay="0s"
-              animName="emailInputGlow"
-            />
-            <CornerGlow
-              position="tr"
-              colors={["#0072ff", "#7c3aed"]}
-              animDelay="0.75s"
-              animName="emailInputGlow"
-            />
-            <CornerGlow
-              position="br"
-              colors={["#7c3aed", "#00c6ff"]}
-              animDelay="1.5s"
-              animName="emailInputGlow"
-            />
-            <CornerGlow
-              position="bl"
-              colors={["#00c6ff", "#7c3aed"]}
-              animDelay="2.25s"
-              animName="emailInputGlow"
-            />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setStatus("idle");
-              }}
-              placeholder={placeholder}
-              className="w-full px-4 py-3 rounded-xl bg-background/80 border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary/50 focus:bg-muted/20 transition-all duration-200"
-            />
-          </div>
 
-          {/* Subscribe button with spinning corner glows */}
-          <div className="relative flex-shrink-0">
-            <CornerGlow
-              position="tl"
-              colors={["#f0abfc", "#22d3ee"]}
-              animDelay="0s"
-              animName="subscribeBtnGlow"
-            />
-            <CornerGlow
-              position="tr"
-              colors={["#22d3ee", "#818cf8"]}
-              animDelay="0.75s"
-              animName="subscribeBtnGlow"
-            />
-            <CornerGlow
-              position="br"
-              colors={["#818cf8", "#f0abfc"]}
-              animDelay="1.5s"
-              animName="subscribeBtnGlow"
-            />
-            <CornerGlow
-              position="bl"
-              colors={["#f0abfc", "#818cf8"]}
-              animDelay="2.25s"
-              animName="subscribeBtnGlow"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap hover:scale-[1.03] active:scale-[0.97]"
-              style={{
-                background:
-                  "linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #f0abfc 100%)",
-                color: "#fff",
-                boxShadow:
-                  "0 3px 12px rgba(34, 211, 238, 0.22), 0 1px 6px rgba(129, 140, 248, 0.18)",
-              }}
-            >
-              {subscribeLabel}
-            </button>
-          </div>
-        </form>
-        {status === "success" && (
-          <p className="mt-2 text-sm text-cyan-400 text-center">
-            ✓ {successMsg}
-          </p>
-        )}
-        {status === "error" && (
-          <p className="mt-2 text-sm text-red-400 text-center">{errorMsg}</p>
-        )}
-      </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        {/* Email input — border glow melingkar */}
+        <div
+          className="relative rounded-xl"
+          style={{
+            animation: "emailRingGlow 3.5s ease-in-out infinite",
+          }}
+        >
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setStatus("idle");
+            }}
+            placeholder={placeholder}
+            data-ocid="subscribe.input"
+            className="w-full px-4 py-3 rounded-xl bg-background/80 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none transition-all duration-200"
+            style={{
+              border: "none",
+              background: "rgba(3,8,20,0.85)",
+            }}
+          />
+        </div>
+
+        {/* Subscribe button — full width, glow melingkar saat klik */}
+        <button
+          type="submit"
+          onClick={handleClick}
+          data-ocid="subscribe.submit_button"
+          className="w-full py-3 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.97]"
+          style={{
+            background:
+              "linear-gradient(135deg, #22d3ee 0%, #818cf8 55%, #f0abfc 100%)",
+            color: "#fff",
+            animation: clicked
+              ? "subscribeBtnClickGlow 0.6s ease-out forwards"
+              : "subscribeBtnIdle 3s ease-in-out infinite",
+          }}
+        >
+          {subscribeLabel}
+        </button>
+      </form>
+
+      {status === "success" && (
+        <p
+          className="mt-2 text-sm text-cyan-400 text-center"
+          data-ocid="subscribe.success_state"
+        >
+          ✓ {successMsg}
+        </p>
+      )}
+      {status === "error" && (
+        <p
+          className="mt-2 text-sm text-red-400 text-center"
+          data-ocid="subscribe.error_state"
+        >
+          {errorMsg}
+        </p>
+      )}
     </div>
   );
 }

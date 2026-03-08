@@ -13,6 +13,7 @@ import { TierLandingPage } from "./components/TierLandingPage";
 import { AdminPanel } from "./components/sections/AdminPanel";
 import { ChangelogSection } from "./components/sections/ChangelogSection";
 import { ConfigSection } from "./components/sections/ConfigSection";
+import { CryptoTickerSection } from "./components/sections/CryptoTickerSection";
 import { DocsSection } from "./components/sections/DocsSection";
 import { FeaturesSection } from "./components/sections/FeaturesSection";
 import { HeroSection } from "./components/sections/HeroSection";
@@ -127,6 +128,7 @@ export default function App() {
           }}
         />
         <LogoMarqueeSection />
+        <CryptoTickerSection />
         <FeaturesSection />
         <WorkWithEverythingSection
           onGetStarted={(tier) => {

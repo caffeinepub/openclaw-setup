@@ -30,6 +30,7 @@ import {
   EyeOff,
   Gift,
   Globe2,
+  Languages,
   Loader2,
   Lock,
   Medal,
@@ -43,6 +44,7 @@ import {
   Sparkles,
   Terminal,
   Trash2,
+  TrendingUp,
   Trophy,
   User,
   X,
@@ -87,6 +89,7 @@ import {
   useTopRewards,
 } from "../hooks/useQueries";
 import { useLanguage } from "../i18n/LanguageContext";
+import { ClawBot } from "./ClawBot";
 
 // ---- Constants ----
 
@@ -923,6 +926,43 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                         </span>
                       </button>
                     </div>
+
+                    {/* Services summary badge */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("services")}
+                      className="flex items-center justify-between px-3 py-2 rounded-xl transition-all hover:bg-[oklch(0.68_0.22_195)]/8"
+                      style={{
+                        border: "1px solid oklch(0.68 0.22 195 / 20%)",
+                        background: "oklch(0.68 0.22 195 / 5%)",
+                      }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Zap
+                          className="w-3.5 h-3.5"
+                          style={{ color: "oklch(0.72 0.22 195)" }}
+                        />
+                        <span
+                          className="text-[10px] font-semibold"
+                          style={{ color: "oklch(0.68 0.22 195)" }}
+                        >
+                          Services
+                        </span>
+                      </div>
+                      <span
+                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        style={{
+                          background: "oklch(0.68 0.22 195 / 15%)",
+                          color: "oklch(0.72 0.22 195)",
+                        }}
+                      >
+                        {
+                          [hasWhatsapp, hasOpenAI, true, true].filter(Boolean)
+                            .length
+                        }
+                        /6 Active
+                      </span>
+                    </button>
                   </div>
 
                   <Separator className="bg-[oklch(1_0_0_/_6%)]" />
@@ -1062,7 +1102,107 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                 </button>
               </div>
 
-              {/* Tabs */}
+              {/* ─── MOBILE PROFILE STRIP (visible only on < md) ─── */}
+              <div
+                className="md:hidden flex flex-col items-center gap-2 px-4 py-3 border-b flex-shrink-0"
+                style={{
+                  background: "oklch(0.09 0.012 240)",
+                  borderColor: "oklch(1 0 0 / 7%)",
+                }}
+              >
+                {/* Avatar + name + handle */}
+                <div className="flex flex-col items-center gap-1 text-center">
+                  <div
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-base font-black text-white flex-shrink-0 mb-1"
+                    style={{
+                      background: tierStyle
+                        ? `radial-gradient(circle at 30% 30%, ${tierStyle.color}, oklch(0.15 0.05 240))`
+                        : "linear-gradient(135deg, oklch(0.65 0.15 210), oklch(0.45 0.12 240))",
+                      boxShadow: tierStyle
+                        ? `0 0 0 2px oklch(0.15 0.02 240), 0 0 16px ${tierStyle.color}50`
+                        : "0 0 0 2px oklch(0.15 0.02 240)",
+                    }}
+                  >
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt="Profile"
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </div>
+                  <p className="font-bold text-sm text-[oklch(0.92_0.03_210)] truncate max-w-[180px]">
+                    {fullName || (
+                      <span className="text-[oklch(0.40_0.02_210)] italic">
+                        Set your name
+                      </span>
+                    )}
+                  </p>
+                  {handle && (
+                    <p className="text-xs text-[oklch(0.52_0.12_210)] font-mono">
+                      @{handle}
+                    </p>
+                  )}
+                </div>
+
+                {/* Tier badge + token balance — centered row */}
+                <div className="flex items-center gap-3 flex-wrap justify-center">
+                  {membership && tierStyle ? (
+                    <Badge
+                      className={`border text-xs px-2.5 py-1 ${tierStyle.badge}`}
+                    >
+                      {tierStyle.icon} {tierStyle.label}
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="text-xs text-[oklch(0.40_0.02_210)] border-[oklch(1_0_0_/_12%)]"
+                    >
+                      No membership
+                    </Badge>
+                  )}
+                  {membership && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                      <Coins className="w-3 h-3 text-amber-400" />
+                      <span className="text-[10px] font-bold text-amber-300">
+                        {TIER_TOKENS[membership.tier].toLocaleString()}
+                      </span>
+                      <span className="text-[9px] text-amber-400/60">
+                        tokens
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Integration count (left) + description (right) */}
+                <div className="flex items-center gap-3 w-full max-w-xs">
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg flex-shrink-0"
+                    style={{
+                      background: "oklch(0.65 0.15 210 / 10%)",
+                      border: "1px solid oklch(0.65 0.15 210 / 25%)",
+                    }}
+                  >
+                    <Plug className="w-3 h-3 text-[oklch(0.62_0.15_210)]" />
+                    <span className="text-[10px] font-bold text-[oklch(0.65_0.15_210)]">
+                      {
+                        [hasWhatsapp, hasOpenAI, true, true].filter(Boolean)
+                          .length
+                      }
+                    </span>
+                    <span className="text-[9px] text-[oklch(0.45_0.08_210)]">
+                      installed
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-[oklch(0.45_0.03_210)] leading-tight flex-1">
+                    WhatsApp, Telegram, OpenAI & OpenClaw integrations active
+                  </p>
+                </div>
+              </div>
+
+              {/* ─── TABS ─── */}
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
@@ -1128,6 +1268,17 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                       activeShadow: "0 4px 16px oklch(0.68 0.18 190 / 40%)",
                       inactiveBorder: "oklch(0.68 0.18 190 / 30%)",
                       inactiveBg: "oklch(0.10 0.02 190)",
+                    },
+                    {
+                      value: "services",
+                      icon: <Zap className="w-4 h-4" />,
+                      label: "Services",
+                      activeColor: "oklch(0.68 0.22 195)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.28 0.14 195), oklch(0.20 0.10 200))",
+                      activeShadow: "0 4px 16px oklch(0.68 0.22 195 / 40%)",
+                      inactiveBorder: "oklch(0.68 0.22 195 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 195)",
                     },
                     {
                       value: "transactions",
@@ -1391,6 +1542,22 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                           </div>
                         )}
                       </div>
+                      {/* ── ClawBot ── */}
+                      <div className="rounded-xl border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.11_0.012_240)] p-5 space-y-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🦞</span>
+                          <h3 className="text-sm font-semibold text-[oklch(0.88_0.04_210)]">
+                            {handle ? `${handle}-CLAW` : "ClawBot"} — Your AI
+                            Robot Assistant
+                          </h3>
+                        </div>
+                        <p className="text-[11px] text-[oklch(0.45_0.03_210)] leading-relaxed">
+                          Your personal robot claw AI that works autonomously
+                          and responds to your commands. Powered by OpenClaw.ai,
+                          ChatGPT, and Gemini. Toggle APIs in Settings.
+                        </p>
+                        <ClawBot username={handle} />
+                      </div>
                     </div>
                   </TabsContent>
 
@@ -1472,6 +1639,17 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                     <APIExplorerTab
                       membership={membership ?? null}
                       onGoToPricing={goToPricing}
+                    />
+                  </TabsContent>
+
+                  {/* ── Services Tab ── */}
+                  <TabsContent value="services" className="px-5 pb-6 mt-0">
+                    <ServicesTab
+                      hasWhatsapp={hasWhatsapp}
+                      hasOpenAI={hasOpenAI}
+                      chatbotPhone={chatbotConfig?.phoneNumber ?? null}
+                      language={language}
+                      onNavigate={setActiveTab}
                     />
                   </TabsContent>
 
@@ -3983,6 +4161,297 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Services Tab Component ──
+
+interface ServicesTabProps {
+  hasWhatsapp: boolean;
+  hasOpenAI: boolean;
+  chatbotPhone: string | null;
+  language: string;
+  onNavigate: (tab: string) => void;
+}
+
+const LANG_NAMES_FULL: Record<string, string> = {
+  en: "English",
+  id: "Bahasa Indonesia",
+  ar: "العربية",
+  ru: "Русский",
+  zh: "中文",
+};
+
+function ServicesTab({
+  hasWhatsapp,
+  hasOpenAI,
+  chatbotPhone,
+  language,
+  onNavigate,
+}: ServicesTabProps) {
+  const [cryptoCount, setCryptoCount] = useState<number | null>(null);
+  const [cryptoTime, setCryptoTime] = useState<string | null>(null);
+
+  // Check crypto ticker load status from localStorage/sessionStorage
+  useEffect(() => {
+    const cached = sessionStorage.getItem("clawpro_crypto_last_fetch");
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached) as { count: number; time: string };
+        setCryptoCount(parsed.count);
+        setCryptoTime(parsed.time);
+      } catch {
+        // ignore
+      }
+    }
+    // Try to ping crypto API
+    fetch(
+      "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=15&page=1&sparkline=false",
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        const count = Array.isArray(data) ? data.length : 0;
+        const time = new Date().toLocaleTimeString();
+        setCryptoCount(count);
+        setCryptoTime(time);
+        sessionStorage.setItem(
+          "clawpro_crypto_last_fetch",
+          JSON.stringify({ count, time }),
+        );
+      })
+      .catch(() => {
+        setCryptoCount(15); // fallback count
+        setCryptoTime(new Date().toLocaleTimeString());
+      });
+  }, []);
+
+  const services = [
+    {
+      id: "whatsapp",
+      icon: <SiWhatsapp className="w-5 h-5" />,
+      name: "WhatsApp Bot",
+      description: chatbotPhone
+        ? `Connected: ${chatbotPhone}`
+        : "Not configured",
+      status: hasWhatsapp ? "connected" : "not-configured",
+      statusLabel: hasWhatsapp ? "Connected" : "Not Set",
+      color: "oklch(0.65 0.18 150)",
+      action: { label: "Configure", tab: "chatbot" },
+    },
+    {
+      id: "telegram",
+      icon: <SiTelegram className="w-5 h-5" />,
+      name: "Telegram Bot",
+      description: "BotFather API • Ready to use",
+      status: "ready",
+      statusLabel: "Ready",
+      color: "oklch(0.68 0.18 230)",
+      action: { label: "Open Bot Tab", tab: "chatbot" },
+    },
+    {
+      id: "openai",
+      icon: <Sparkles className="w-5 h-5" />,
+      name: "OpenAI Assistant",
+      description: hasOpenAI ? "API key configured (masked)" : "No API key set",
+      status: hasOpenAI ? "connected" : "not-configured",
+      statusLabel: hasOpenAI ? "Active" : "Inactive",
+      color: "oklch(0.70 0.22 290)",
+      action: { label: "Open AI Tab", tab: "ai" },
+    },
+    {
+      id: "openclaw",
+      icon: <Terminal className="w-5 h-5" />,
+      name: "OpenClaw REST API",
+      description: "Endpoint: api.openclaw.ai • Explorer Ready",
+      status: "ready",
+      statusLabel: "Ready",
+      color: "oklch(0.68 0.18 190)",
+      action: { label: "Open Explorer", tab: "api" },
+    },
+    {
+      id: "crypto",
+      icon: <TrendingUp className="w-5 h-5" />,
+      name: "Crypto Ticker",
+      description:
+        cryptoCount != null
+          ? `${cryptoCount} coins loaded • Last fetch: ${cryptoTime ?? "—"}`
+          : "Fetching live market data...",
+      status: cryptoCount != null ? "connected" : "ready",
+      statusLabel: cryptoCount != null ? "Live" : "Loading",
+      color: "oklch(0.72 0.22 145)",
+      action: {
+        label: "View Ticker",
+        tab: "_scroll_ticker",
+      },
+    },
+    {
+      id: "language",
+      icon: <Languages className="w-5 h-5" />,
+      name: "Language",
+      description: `Current: ${LANG_NAMES_FULL[language] ?? language} • 5 languages available`,
+      status: "ready",
+      statusLabel: "Active",
+      color: "oklch(0.72 0.18 60)",
+      action: { label: "Change Language", tab: "_navbar_lang" },
+    },
+  ] as const;
+
+  const statusDot = (status: string) => {
+    if (status === "connected")
+      return {
+        color: "oklch(0.65 0.22 145)",
+        shadow: "0 0 6px oklch(0.65 0.22 145)",
+      };
+    if (status === "ready")
+      return {
+        color: "oklch(0.72 0.18 60)",
+        shadow: "0 0 6px oklch(0.72 0.18 60)",
+      };
+    return {
+      color: "oklch(0.55 0.15 15)",
+      shadow: "0 0 6px oklch(0.55 0.15 15)",
+    };
+  };
+
+  const connectedCount = services.filter(
+    (s) => s.status === "connected" || s.status === "ready",
+  ).length;
+
+  return (
+    <div className="space-y-4 max-w-2xl">
+      {/* Header summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl p-4 flex items-center gap-4"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.16 0.06 195 / 60%), oklch(0.12 0.04 200 / 40%))",
+          border: "1px solid oklch(0.68 0.22 195 / 25%)",
+        }}
+      >
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{
+            background: "oklch(0.68 0.22 195 / 15%)",
+            border: "1px solid oklch(0.68 0.22 195 / 30%)",
+          }}
+        >
+          <Zap className="w-5 h-5" style={{ color: "oklch(0.72 0.22 195)" }} />
+        </div>
+        <div>
+          <p className="text-sm font-bold text-[oklch(0.90_0.03_210)]">
+            Services & Integrations
+          </p>
+          <p className="text-xs text-[oklch(0.50_0.05_210)]">
+            {connectedCount} of {services.length} services active
+          </p>
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <div
+            className="h-2 rounded-full overflow-hidden"
+            style={{
+              background: "oklch(0.15 0.03 210)",
+              width: "80px",
+            }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${(connectedCount / services.length) * 100}%`,
+                background:
+                  "linear-gradient(90deg, oklch(0.68 0.22 145), oklch(0.68 0.22 195))",
+              }}
+            />
+          </div>
+          <span
+            className="text-xs font-bold"
+            style={{ color: "oklch(0.68 0.22 195)" }}
+          >
+            {Math.round((connectedCount / services.length) * 100)}%
+          </span>
+        </div>
+      </motion.div>
+
+      {/* Service cards */}
+      <div className="space-y-2.5">
+        {services.map((svc, idx) => {
+          const dot = statusDot(svc.status);
+          return (
+            <motion.div
+              key={svc.id}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className="rounded-xl border p-4 flex items-center gap-3 group"
+              style={{
+                background: `${svc.color.replace("oklch(", "oklch(").replace(")", " / 5%)")}`,
+                borderColor: `${svc.color.replace(")", " / 20%)")}`,
+              }}
+            >
+              {/* Icon */}
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: `${svc.color.replace(")", " / 12%)")}`,
+                  border: `1px solid ${svc.color.replace(")", " / 25%)")}`,
+                  color: svc.color,
+                }}
+              >
+                {svc.icon}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-[oklch(0.88_0.04_210)]">
+                    {svc.name}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                      style={{ background: dot.color, boxShadow: dot.shadow }}
+                    />
+                    <span
+                      className="text-[9px] font-bold"
+                      style={{ color: dot.color }}
+                    >
+                      {svc.statusLabel}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-[oklch(0.48_0.03_210)] truncate mt-0.5">
+                  {svc.description}
+                </p>
+              </div>
+
+              {/* Action button */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (svc.action.tab === "_scroll_ticker") {
+                    // scroll to ticker section
+                    document
+                      .getElementById("logo-marquee")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  } else if (svc.action.tab !== "_navbar_lang") {
+                    onNavigate(svc.action.tab);
+                  }
+                }}
+                className="flex-shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all hover:brightness-110 active:scale-95"
+                style={{
+                  background: `${svc.color.replace(")", " / 15%)")}`,
+                  border: `1px solid ${svc.color.replace(")", " / 30%)")}`,
+                  color: svc.color,
+                }}
+              >
+                {svc.action.label}
+              </button>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
 }

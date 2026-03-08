@@ -300,6 +300,12 @@ export type TranslationKey = {
     saving: string;
     deleting: string;
   };
+  // Crypto Ticker
+  cryptoTicker: {
+    sectionLabel: string;
+    loading: string;
+    rank: string;
+  };
 };
 
 type StepGroup = {
@@ -671,6 +677,11 @@ const en: TranslationKey = {
     saving: "Saving...",
     deleting: "Removing...",
   },
+  cryptoTicker: {
+    sectionLabel: "Live Crypto Markets",
+    loading: "Loading...",
+    rank: "#",
+  },
 };
 
 const id: TranslationKey = {
@@ -1041,6 +1052,11 @@ const id: TranslationKey = {
     saving: "Menyimpan...",
     deleting: "Menghapus...",
   },
+  cryptoTicker: {
+    sectionLabel: "Pasar Kripto Live",
+    loading: "Memuat...",
+    rank: "#",
+  },
 };
 
 const ar: TranslationKey = {
@@ -1403,6 +1419,11 @@ const ar: TranslationKey = {
     inactive: "غير نشط",
     saving: "جاري الحفظ...",
     deleting: "جاري الإزالة...",
+  },
+  cryptoTicker: {
+    sectionLabel: "أسواق العملات المشفرة المباشرة",
+    loading: "جاري التحميل...",
+    rank: "#",
   },
 };
 
@@ -1772,6 +1793,11 @@ const ru: TranslationKey = {
     saving: "Сохранение...",
     deleting: "Удаление...",
   },
+  cryptoTicker: {
+    sectionLabel: "Крипто-рынки в реальном времени",
+    loading: "Загрузка...",
+    rank: "#",
+  },
 };
 
 const zh: TranslationKey = {
@@ -2131,6 +2157,11 @@ const zh: TranslationKey = {
     inactive: "未激活",
     saving: "保存中...",
     deleting: "删除中...",
+  },
+  cryptoTicker: {
+    sectionLabel: "实时加密货币市场",
+    loading: "加载中...",
+    rank: "#",
   },
 };
 

@@ -21,6 +21,75 @@ interface BlogPageProps {
 
 const STATIC_BLOG_POSTS: BlogPost[] = [
   {
+    id: BigInt(3),
+    title:
+      "Google Gemini Ultra 2.0: The AI Revolution That's Reshaping Tech in 2026",
+    body: `In early 2026, Google unveiled Gemini Ultra 2.0 — a multimodal AI model that has rapidly become the benchmark against which all other AI systems are measured. Its arrival didn't just shift the AI landscape; it fundamentally rewired how businesses, developers, and individuals think about intelligent automation.
+
+**Unprecedented Multimodal Capabilities**
+
+Gemini Ultra 2.0 processes text, images, audio, video, and code natively — not as separate pipelines bolted together, but as a unified cognitive architecture. The model can watch a product demo video, analyze the UI, generate a matching codebase, and write documentation, all in a single prompt. Early benchmarks show it outperforming GPT-4o on 18 of 22 standard evaluations, including mathematics, scientific reasoning, and multilingual understanding.
+
+**The Real-World Impact on Technology**
+
+Enterprises adopting Gemini Ultra 2.0 via Google Cloud's Vertex AI are reporting 40–60% reductions in software development cycles. Code review automation, intelligent bug detection, and natural language database querying have moved from experimental to production-grade. In healthcare, the model's ability to reason across medical literature, imaging data, and patient records has accelerated diagnostic assistance tools to regulatory-ready status in record time.
+
+**What This Means for Developers and Platforms Like ClawPro**
+
+The integration of Gemini Ultra 2.0 with platforms like ClawPro opens new frontiers. Imagine an automation engine that doesn't just follow rules but genuinely understands context — adapting workflows dynamically based on real-time signals. ClawPro's AI Assistant tab already supports GPT-4o; Gemini integration is on the 2026 roadmap, promising even deeper multimodal automation for members. The AI revolution isn't a future event — it's the operating environment we now live in.`,
+    createdAt: BigInt(1740000000000000000),
+    tags: ["Gemini", "Google", "AI", "2026", "Innovation"],
+    authorName: "Tech Desk",
+    category: "Technology",
+    coverImageUrl: "",
+  },
+  {
+    id: BigInt(4),
+    title:
+      "Bitcoin Hits New Milestones: What the 2026 Crypto Bull Market Means for Investors",
+    body: `Bitcoin crossed the $100,000 mark for the first time in late 2024 and has continued its ascent throughout 2025 and into 2026, establishing a new paradigm for institutional and retail investors alike. The 2026 bull market isn't simply a repeat of previous cycles — it's driven by fundamentally different catalysts.
+
+**Institutional Adoption at Scale**
+
+The approval of spot Bitcoin ETFs in major markets has unlocked trillions of dollars in institutional capital. Pension funds, sovereign wealth funds, and Fortune 500 treasury departments now hold Bitcoin as a standard reserve asset. BlackRock's iShares Bitcoin Trust alone crossed $50 billion AUM in 2025, signaling that the "institution phase" of Bitcoin adoption is not coming — it has arrived.
+
+**DeFi and the Broader Crypto Ecosystem**
+
+The Bitcoin bull run is lifting all boats in the crypto ecosystem. Ethereum's Layer 2 networks have reached mainstream adoption, processing over 10 million daily transactions at near-zero fees. DeFi protocols on Solana, Avalanche, and the Internet Computer (ICP) are handling real-world financial services — lending, derivatives, insurance — without intermediaries. For ClawPro users, ICP integration means your membership and configurations are stored in a truly decentralized, censorship-resistant environment.
+
+**What Investors Should Know**
+
+The 2026 crypto market is characterized by greater regulatory clarity, deeper liquidity, and reduced volatility compared to prior cycles. However, the opportunities remain substantial. Analysts project Bitcoin reaching $150,000–$200,000 by end of 2026 under base-case scenarios. Dollar-cost averaging, portfolio diversification across Bitcoin, Ethereum, and emerging L1/L2 assets, and understanding the tax implications in your jurisdiction remain the cornerstones of sound crypto investment strategy in this new era.`,
+    createdAt: BigInt(1741000000000000000),
+    tags: ["Bitcoin", "BTC", "Crypto", "Investment", "DeFi"],
+    authorName: "Crypto Analyst",
+    category: "Crypto",
+    coverImageUrl: "",
+  },
+  {
+    id: BigInt(5),
+    title:
+      "The Global AI Race: How Nations Are Competing for Artificial Intelligence Supremacy",
+    body: `Artificial Intelligence has become the defining geopolitical technology of the 21st century. The competition between the United States, China, the European Union, and emerging players like India and the UAE for AI leadership is reshaping economies, defense strategies, and international alliances with breathtaking speed.
+
+**The United States: Innovation Leadership Under Pressure**
+
+The US currently leads in frontier AI model development, with OpenAI, Anthropic, Google DeepMind, and Meta AI collectively publishing the most-cited research and deploying the most widely used AI systems globally. However, export controls on advanced semiconductors, designed to limit Chinese AI capabilities, have accelerated China's domestic chip development programs. TSMC's Arizona fabs and Intel's Ohio investment represent America's bet on onshoring critical AI infrastructure.
+
+**China's Rapid Catch-Up and Unique Advantages**
+
+China's AI ecosystem — anchored by Baidu, Alibaba, Tencent, and Huawei — is not far behind, and in some domains, including facial recognition, autonomous vehicles, and AI-powered manufacturing, it leads the world. The Chinese government's 2030 AI development plan, backed by $15 billion in direct funding, is creating a state-directed innovation engine unlike anything the West has deployed. DeepSeek's recent open-source models have shocked Western observers with their performance-to-cost efficiency.
+
+**The EU, India, and the Rest of the World**
+
+The European Union is carving a distinct path: rather than competing purely on raw capability, it's becoming the global standard-setter for AI governance through the EU AI Act. India, with its vast English-language data advantage and world-class engineering talent, is positioning itself as the AI services powerhouse of the next decade. Platforms like ClawPro, built on the Internet Computer Protocol and integrating with global AI APIs, sit at the nexus of this geopolitical realignment — enabling anyone, anywhere, to access frontier AI capabilities regardless of national borders.`,
+    createdAt: BigInt(1742000000000000000),
+    tags: ["AI", "Geopolitics", "Technology", "Future", "Nations"],
+    authorName: "World Desk",
+    category: "Global",
+    coverImageUrl: "",
+  },
+  {
     id: BigInt(1),
     title: "The Rise of AI Agents: How OpenClaw Supercharges Your Automation",
     body: `Artificial Intelligence has evolved beyond simple chatbots. Today, AI agents can reason, plan, and execute complex multi-step workflows autonomously — and ClawPro is at the forefront of this revolution.
@@ -136,6 +205,20 @@ function getCategoryStyle(category: string) {
         glow: "0 0 20px rgba(245,158,11,0.2)",
         headerGradient:
           "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.05))",
+      };
+    case "crypto":
+      return {
+        bg: "bg-orange-500/15 border-orange-500/35 text-orange-300",
+        glow: "0 0 20px rgba(249,115,22,0.2)",
+        headerGradient:
+          "linear-gradient(135deg, rgba(249,115,22,0.15), rgba(234,88,12,0.05))",
+      };
+    case "global":
+      return {
+        bg: "bg-emerald-500/15 border-emerald-500/35 text-emerald-300",
+        glow: "0 0 20px rgba(52,211,153,0.2)",
+        headerGradient:
+          "linear-gradient(135deg, rgba(52,211,153,0.15), rgba(16,185,129,0.05))",
       };
     default:
       return {
@@ -346,7 +429,7 @@ export function BlogPage({ onClose }: BlogPageProps) {
                 <BlogSkeleton />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {posts.map((post, i) => (
                   <BlogCard key={post.id.toString()} post={post} index={i} />
                 ))}
