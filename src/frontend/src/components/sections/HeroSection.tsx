@@ -38,7 +38,7 @@ import {
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
-import { WorldMapFlat } from "../WorldMapFlat";
+import { WorldMapSVG } from "../WorldMapSVG";
 
 function RobotMascot() {
   return (
@@ -2221,7 +2221,7 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
 
         {/* World Map — full-width below claim section */}
         <div className="w-full mt-6">
-          <WorldMapFlat />
+          <WorldMapSVG />
         </div>
       </div>
 
