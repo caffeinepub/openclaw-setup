@@ -3466,24 +3466,144 @@ interface RequestHistoryEntry {
   response: string;
 }
 
-const OPENCLAW_ENDPOINTS = [
-  { method: "GET", path: "/status", hasBody: false, label: "GET /status" },
-  { method: "GET", path: "/devices", hasBody: false, label: "GET /devices" },
+interface ApiEndpoint {
+  method: string;
+  path: string;
+  hasBody: boolean;
+  label: string;
+  baseUrl?: string;
+  group?: string;
+}
+
+const API_PROVIDERS = [
   {
-    method: "POST",
-    path: "/devices/{id}/configure",
-    hasBody: true,
-    label: "POST /devices/{id}/configure",
+    id: "openclaw",
+    label: "OpenClaw API",
+    baseUrl: "https://api.openclaw.ai/v1",
+    color: "#00c6ff",
   },
-  { method: "GET", path: "/configs", hasBody: false, label: "GET /configs" },
-  { method: "POST", path: "/configs", hasBody: true, label: "POST /configs" },
   {
-    method: "GET",
-    path: "/analytics",
-    hasBody: false,
-    label: "GET /analytics",
+    id: "github",
+    label: "GitHub API",
+    baseUrl: "https://api.github.com",
+    color: "#d0dce8",
   },
-];
+  {
+    id: "openai",
+    label: "OpenAI Status",
+    baseUrl: "https://status.openai.com/api/v2",
+    color: "#10b981",
+  },
+] as const;
+
+const PROVIDER_ENDPOINTS: Record<string, ApiEndpoint[]> = {
+  openclaw: [
+    {
+      method: "GET",
+      path: "/status",
+      hasBody: false,
+      label: "GET /status",
+      group: "OpenClaw",
+    },
+    {
+      method: "GET",
+      path: "/devices",
+      hasBody: false,
+      label: "GET /devices",
+      group: "OpenClaw",
+    },
+    {
+      method: "POST",
+      path: "/devices/{id}/configure",
+      hasBody: true,
+      label: "POST /devices/{id}/configure",
+      group: "OpenClaw",
+    },
+    {
+      method: "GET",
+      path: "/configs",
+      hasBody: false,
+      label: "GET /configs",
+      group: "OpenClaw",
+    },
+    {
+      method: "POST",
+      path: "/configs",
+      hasBody: true,
+      label: "POST /configs",
+      group: "OpenClaw",
+    },
+    {
+      method: "GET",
+      path: "/analytics",
+      hasBody: false,
+      label: "GET /analytics",
+      group: "OpenClaw",
+    },
+  ],
+  github: [
+    {
+      method: "GET",
+      path: "/rate_limit",
+      hasBody: false,
+      label: "GET /rate_limit",
+      group: "GitHub",
+    },
+    {
+      method: "GET",
+      path: "/repos/octocat/hello-world",
+      hasBody: false,
+      label: "GET /repos/octocat/hello-world",
+      group: "GitHub",
+    },
+    {
+      method: "GET",
+      path: "/repos/openai/openai-python",
+      hasBody: false,
+      label: "GET /repos/openai/openai-python",
+      group: "GitHub",
+    },
+    {
+      method: "GET",
+      path: "/users/github",
+      hasBody: false,
+      label: "GET /users/github",
+      group: "GitHub",
+    },
+    {
+      method: "GET",
+      path: "/search/repositories?q=clawpro&sort=stars",
+      hasBody: false,
+      label: "GET Search repos: clawpro",
+      group: "GitHub",
+    },
+  ],
+  openai: [
+    {
+      method: "GET",
+      path: "/status.json",
+      hasBody: false,
+      label: "GET /status.json",
+      group: "OpenAI",
+    },
+    {
+      method: "GET",
+      path: "/components.json",
+      hasBody: false,
+      label: "GET /components.json",
+      group: "OpenAI",
+    },
+    {
+      method: "GET",
+      path: "/incidents.json",
+      hasBody: false,
+      label: "GET /incidents.json",
+      group: "OpenAI",
+    },
+  ],
+};
+
+const OPENCLAW_ENDPOINTS = PROVIDER_ENDPOINTS.openclaw;
 
 interface APIExplorerTabProps {
   membership: { tier: MembershipTier } | null;
@@ -3496,6 +3616,10 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
     membership?.tier === MembershipTier.gold ||
     membership?.tier === MembershipTier.platinum;
 
+  const [providerId, setProviderId] = useState<
+    "openclaw" | "github" | "openai"
+  >("openclaw");
+  const currentEndpoints = PROVIDER_ENDPOINTS[providerId] ?? OPENCLAW_ENDPOINTS;
   const [baseUrl, setBaseUrl] = useState("https://api.openclaw.ai/v1");
   const [apiKey, setApiKey] = useState(
     () => localStorage.getItem("openclaw_api_key") ?? "",
@@ -3517,7 +3641,17 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
     }
   });
 
-  const selectedEndpoint = OPENCLAW_ENDPOINTS[selectedEndpointIdx];
+  const handleProviderChange = (newId: "openclaw" | "github" | "openai") => {
+    setProviderId(newId);
+    setSelectedEndpointIdx(0);
+    setResponse("");
+    setResponseStatus(null);
+    const prov = API_PROVIDERS.find((p) => p.id === newId);
+    if (prov) setBaseUrl(prov.baseUrl);
+  };
+
+  const selectedEndpoint =
+    currentEndpoints[selectedEndpointIdx] ?? currentEndpoints[0];
 
   const saveApiKey = (key: string) => {
     setApiKey(key);
@@ -3575,7 +3709,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : "Network error";
       setResponse(
-        `Error: ${errMsg}\n\nNote: The OpenClaw API may not be publicly accessible. This explorer is for testing purposes.`,
+        `Error: ${errMsg}\n\nNote: Some APIs may not be publicly accessible or may have CORS restrictions. Try a different endpoint.`,
       );
       setResponseStatus(null);
       toast.error(`Request failed: ${errMsg}`);
@@ -3651,9 +3785,31 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
             API Explorer
           </h3>
           <p className="text-xs text-[oklch(0.50_0.02_210)]">
-            OpenClaw REST API · Interactive tester
+            Multi-API Tester · OpenClaw · GitHub · OpenAI
           </p>
         </div>
+      </div>
+
+      {/* Provider Switcher */}
+      <div className="flex gap-2 flex-wrap">
+        {API_PROVIDERS.map((p) => (
+          <button
+            type="button"
+            key={p.id}
+            onClick={() =>
+              handleProviderChange(p.id as "openclaw" | "github" | "openai")
+            }
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+            style={{
+              background: providerId === p.id ? `${p.color}22` : "transparent",
+              border: `1px solid ${providerId === p.id ? p.color : "rgba(255,255,255,0.1)"}`,
+              color: providerId === p.id ? p.color : "rgba(255,255,255,0.5)",
+              boxShadow: providerId === p.id ? `0 0 10px ${p.color}33` : "none",
+            }}
+          >
+            {p.label}
+          </button>
+        ))}
       </div>
 
       {/* Config */}
@@ -3705,7 +3861,7 @@ function APIExplorerTab({ membership, onGoToPricing }: APIExplorerTabProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {OPENCLAW_ENDPOINTS.map((ep, i) => (
+            {currentEndpoints.map((ep, i) => (
               <SelectItem key={ep.label} value={i.toString()}>
                 <span
                   className={`font-mono font-bold mr-2 ${ep.method === "GET" ? "text-emerald-400" : "text-amber-400"}`}

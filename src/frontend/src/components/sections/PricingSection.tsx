@@ -1645,7 +1645,7 @@ function PricingCard({
               variant="ghost"
               size="sm"
               onClick={() => onExploreTier(config.tier)}
-              className={`w-full mt-2 text-xs border ${config.borderColor} ${config.accentColor} hover:bg-white/5 transition-all`}
+              className={`w-full mt-2 text-xs border ${config.borderColor} ${config.accentColor} hover:bg-muted/20 transition-all`}
             >
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
               Explore Benefits

@@ -321,7 +321,7 @@ export function SetupSection() {
                     key={os}
                     value={os}
                     data-ocid={`setup.${os}.tab`}
-                    className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold border transition-all duration-200 data-[state=inactive]:bg-black/40 data-[state=inactive]:text-white/60 data-[state=inactive]:border-white/15 data-[state=inactive]:shadow-none"
+                    className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold border transition-all duration-200 data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground data-[state=inactive]:border-border data-[state=inactive]:shadow-none"
                   >
                     <Icon className="w-4 h-4" />
                     {OS_LABELS[os]}

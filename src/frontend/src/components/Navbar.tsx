@@ -111,22 +111,60 @@ export function Navbar({
               whileHover={{ scale: 1.02 }}
               onClick={() => handleNavClick("#hero")}
             >
-              <img
-                src="/assets/generated/clawpro-navbar-logo-claw-elegant-transparent.dim_500x120.png"
-                alt="ClawPro.ai"
-                className="h-10 w-auto object-contain"
-                style={{
-                  filter:
-                    "drop-shadow(0 0 10px rgba(220, 38, 38, 0.75)) drop-shadow(0 0 22px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 38px rgba(180, 0, 0, 0.4))",
-                  animation: "logoGlow 3s ease-in-out infinite alternate",
-                }}
-              />
               <style>{`
-                @keyframes logoGlow {
-                  0% { filter: drop-shadow(0 0 8px rgba(220,38,38,0.65)) drop-shadow(0 0 16px rgba(255,215,0,0.4)); }
-                  100% { filter: drop-shadow(0 0 20px rgba(220,38,38,0.95)) drop-shadow(0 0 36px rgba(255,215,0,0.65)) drop-shadow(0 0 52px rgba(192,192,192,0.35)); }
+                @keyframes navLogoShimmer {
+                  0% { background-position: -200% center; }
+                  100% { background-position: 200% center; }
+                }
+                @keyframes navLogoFloat {
+                  0%, 100% { transform: translateY(0px); }
+                  50% { transform: translateY(-2px); }
+                }
+                @keyframes navLogoGlow {
+                  0%, 100% { filter: drop-shadow(0 0 5px rgba(0,198,255,0.55)) drop-shadow(0 0 12px rgba(124,58,237,0.3)); }
+                  50% { filter: drop-shadow(0 0 12px rgba(0,198,255,0.9)) drop-shadow(0 0 26px rgba(124,58,237,0.6)) drop-shadow(0 0 40px rgba(245,158,11,0.35)); }
                 }
               `}</style>
+              <div
+                style={{
+                  animation:
+                    "navLogoFloat 3s ease-in-out infinite, navLogoGlow 3s ease-in-out infinite",
+                  display: "inline-flex",
+                  alignItems: "baseline",
+                  gap: "1px",
+                }}
+              >
+                <span
+                  className="font-black leading-none select-none"
+                  style={{
+                    fontSize: "1.35rem",
+                    background:
+                      "linear-gradient(90deg, #a8bcc8 0%, #00c6ff 12%, #ffffff 28%, #f59e0b 44%, #7c3aed 60%, #00c6ff 76%, #ffffff 90%, #a8bcc8 100%)",
+                    backgroundSize: "300% auto",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    animation: "navLogoShimmer 3s linear infinite",
+                  }}
+                >
+                  ClawPro
+                </span>
+                <span
+                  className="font-bold leading-none select-none"
+                  style={{
+                    fontSize: "0.75rem",
+                    background:
+                      "linear-gradient(90deg, #f59e0b 0%, #00c6ff 50%, #a78bfa 100%)",
+                    backgroundSize: "200% auto",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    animation: "navLogoShimmer 3s linear infinite",
+                  }}
+                >
+                  .ai
+                </span>
+              </div>
             </motion.div>
 
             {/* Desktop Nav */}

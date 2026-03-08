@@ -352,12 +352,12 @@ function MarqueeRow({
 export function WorksWithMarquee() {
   const { t } = useLanguage();
   return (
-    <div className="relative py-5 overflow-hidden border-b border-white/5 bg-background/60 backdrop-blur-sm">
+    <div className="relative py-5 overflow-hidden border-b border-border bg-background/60 backdrop-blur-sm">
       <div className="flex items-center gap-4 px-6 mb-3">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest shrink-0">
           {t.workWith?.sectionLabel || "Works With Everything"}
         </span>
-        <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+        <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
       </div>
       <div className="flex flex-col gap-3">
         <MarqueeRow items={LOOP_A} direction="left" />

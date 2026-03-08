@@ -39,215 +39,288 @@ import {
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
 
-const ORBS = [
-  { color: "#f59e0b", r: 190 },
-  { color: "#dc2626", r: 160 },
-  { color: "#10b981", r: 200 },
-  { color: "#ffd700", r: 140 },
-  { color: "#10b981", r: 175 },
-  { color: "#f59e0b", r: 165 },
-  { color: "#dc2626", r: 145 },
-  { color: "#ffd700", r: 130 },
-  { color: "#10b981", r: 155 },
-  { color: "#f59e0b", r: 185 },
-  { color: "#dc2626", r: 135 },
-  { color: "#10b981", r: 125 },
-];
-
-function ColorfulBackground() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animId: number;
-
-    const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    // Initialize orb positions and velocities
-    const orbs = ORBS.map((orb) => ({
-      ...orb,
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      opacity: 0.15 + Math.random() * 0.2,
-    }));
-
-    const draw = () => {
-      if (!canvas || !ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      for (const orb of orbs) {
-        // Move
-        orb.x += orb.vx;
-        orb.y += orb.vy;
-
-        // Bounce off edges softly
-        if (orb.x < -orb.r) orb.x = canvas.width + orb.r;
-        if (orb.x > canvas.width + orb.r) orb.x = -orb.r;
-        if (orb.y < -orb.r) orb.y = canvas.height + orb.r;
-        if (orb.y > canvas.height + orb.r) orb.y = -orb.r;
-
-        // Draw soft radial gradient blob
-        const grad = ctx.createRadialGradient(
-          orb.x,
-          orb.y,
-          0,
-          orb.x,
-          orb.y,
-          orb.r,
-        );
-        grad.addColorStop(
-          0,
-          `${orb.color}${Math.round(orb.opacity * 255)
-            .toString(16)
-            .padStart(2, "0")}`,
-        );
-        grad.addColorStop(1, `${orb.color}00`);
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      animId = requestAnimationFrame(draw);
-    };
-
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  return (
-    <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />
-  );
-}
-
 function RobotMascot() {
   return (
-    <div className="relative flex items-center justify-center w-full">
-      {/* Outer radial glow halo -- red/gold theme */}
+    <div
+      className="relative flex items-center justify-center w-full"
+      style={{ minHeight: "clamp(280px, 48vw, 540px)" }}
+    >
+      {/* Deep red outer glow background */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute pointer-events-none"
         style={{
-          background:
-            "radial-gradient(ellipse 65% 75% at 50% 55%, rgba(220,38,38,0.22) 0%, rgba(255,215,0,0.14) 35%, rgba(180,0,0,0.08) 60%, transparent 80%)",
-          animation: "mascotHalo 4s ease-in-out infinite alternate",
+          width: "min(560px, 130vw)",
+          height: "min(560px, 130vw)",
           borderRadius: "50%",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background:
+            "radial-gradient(ellipse at center, rgba(180,0,0,0.18) 0%, rgba(220,38,38,0.10) 35%, rgba(255,215,0,0.05) 60%, transparent 75%)",
+          animation: "mascotGlowBg 4.5s ease-in-out infinite alternate",
+          zIndex: 2,
+        }}
+      />
+
+      {/* Spinning orbit ring -- red dashes */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "min(380px, 90vw)",
+          height: "min(380px, 90vw)",
+          borderRadius: "50%",
+          border: "1.5px dashed rgba(220,38,38,0.3)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "orbitSpin 18s linear infinite",
+          zIndex: 3,
+        }}
+      />
+
+      {/* Spinning orbit ring 2 -- gold dashes (counter) */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "min(460px, 110vw)",
+          height: "min(460px, 110vw)",
+          borderRadius: "50%",
+          border: "1px dashed rgba(255,215,0,0.18)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "orbitSpinReverse 24s linear infinite",
+          zIndex: 3,
+        }}
+      />
+
+      {/* Pulsing glow ring 1 -- crimson */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "min(310px, 78vw)",
+          height: "min(310px, 78vw)",
+          borderRadius: "50%",
+          border: "2px solid rgba(220,38,38,0.45)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "mascotRing1 2.8s ease-in-out infinite",
+          zIndex: 4,
+          boxShadow:
+            "0 0 20px rgba(220,38,38,0.25), inset 0 0 20px rgba(220,38,38,0.1)",
+        }}
+      />
+
+      {/* Pulsing glow ring 2 -- gold */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "min(420px, 100vw)",
+          height: "min(420px, 100vw)",
+          borderRadius: "50%",
+          border: "1.5px solid rgba(255,215,0,0.25)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "mascotRing2 3.5s ease-in-out infinite 0.7s",
+          zIndex: 4,
+          boxShadow: "0 0 15px rgba(255,215,0,0.15)",
+        }}
+      />
+
+      {/* Pulsing glow ring 3 -- silver thin */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "min(500px, 118vw)",
+          height: "min(500px, 118vw)",
+          borderRadius: "50%",
+          border: "1px solid rgba(192,192,192,0.15)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "mascotRing3 5s ease-in-out infinite 1.4s",
+          zIndex: 4,
+        }}
+      />
+
+      {/* Particle sparks SVG overlay */}
+      <svg
+        className="absolute pointer-events-none"
+        style={{
+          width: "min(500px, 115vw)",
+          height: "min(500px, 115vw)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
           zIndex: 5,
         }}
-      />
-      {/* Pulsing ring 1 -- crimson red */}
+        viewBox="0 0 500 500"
+        aria-hidden="true"
+      >
+        <title>decoration</title>
+        {/* Spark dots rotating around mascot */}
+        {[
+          { cx: 250, cy: 30, r: 3, color: "#dc2626", delay: "0s", id: "s1" },
+          {
+            cx: 460,
+            cy: 180,
+            r: 2.5,
+            color: "#ffd700",
+            delay: "0.5s",
+            id: "s2",
+          },
+          { cx: 470, cy: 340, r: 2, color: "#dc2626", delay: "1s", id: "s3" },
+          { cx: 330, cy: 480, r: 3, color: "#c0c0c0", delay: "1.5s", id: "s4" },
+          { cx: 120, cy: 470, r: 2.5, color: "#ffd700", delay: "2s", id: "s5" },
+          { cx: 30, cy: 310, r: 2, color: "#dc2626", delay: "2.5s", id: "s6" },
+          { cx: 40, cy: 160, r: 3, color: "#c0c0c0", delay: "3s", id: "s7" },
+          {
+            cx: 170,
+            cy: 25,
+            r: 2.5,
+            color: "#ffd700",
+            delay: "3.5s",
+            id: "s8",
+          },
+        ].map((spark) => (
+          <circle
+            key={spark.id}
+            cx={spark.cx}
+            cy={spark.cy}
+            r={spark.r}
+            fill={spark.color}
+            style={{
+              filter: `drop-shadow(0 0 4px ${spark.color})`,
+              animation: `sparkPulse 2s ease-in-out infinite ${spark.delay}`,
+            }}
+          />
+        ))}
+        {/* Claw slash decorative lines */}
+        <line
+          x1="60"
+          y1="390"
+          x2="110"
+          y2="350"
+          stroke="rgba(220,38,38,0.3)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <line
+          x1="55"
+          y1="405"
+          x2="118"
+          y2="358"
+          stroke="rgba(255,215,0,0.2)"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+        <line
+          x1="390"
+          y1="100"
+          x2="440"
+          y2="60"
+          stroke="rgba(220,38,38,0.3)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <line
+          x1="400"
+          y1="90"
+          x2="450"
+          y2="70"
+          stroke="rgba(255,215,0,0.2)"
+          strokeWidth="1"
+          strokeLinecap="round"
+        />
+      </svg>
+
+      {/* Ground reflection glow */}
       <div
         className="absolute pointer-events-none"
         style={{
-          width: "min(300px, 80vw)",
-          height: "min(300px, 80vw)",
-          borderRadius: "50%",
-          border: "2px solid rgba(220,38,38,0.35)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          animation: "mascotRing1 3s ease-in-out infinite",
-          zIndex: 4,
-        }}
-      />
-      {/* Pulsing ring 2 -- gold */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          width: "min(400px, 95vw)",
-          height: "min(400px, 95vw)",
-          borderRadius: "50%",
-          border: "1.5px solid rgba(255,215,0,0.2)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          animation: "mascotRing2 3.5s ease-in-out infinite 0.8s",
-          zIndex: 4,
-        }}
-      />
-      {/* Pulsing ring 3 -- silver */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          width: "min(480px, 110vw)",
-          height: "min(480px, 110vw)",
-          borderRadius: "50%",
-          border: "1px solid rgba(192,192,192,0.12)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          animation: "mascotRing3 5s ease-in-out infinite 1.5s",
-          zIndex: 4,
-        }}
-      />
-      {/* Ground shadow */}
-      <div
-        className="absolute bottom-2 pointer-events-none"
-        style={{
-          width: "min(220px, 60vw)",
-          height: "28px",
-          borderRadius: "50%",
-          background:
-            "radial-gradient(ellipse, rgba(220,38,38,0.35) 0%, rgba(255,215,0,0.2) 40%, transparent 70%)",
-          animation: "mascotShadow 2.5s ease-in-out infinite alternate",
-          zIndex: 4,
+          bottom: "2%",
           left: "50%",
           transform: "translateX(-50%)",
+          width: "min(260px, 65vw)",
+          height: "30px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(ellipse, rgba(220,38,38,0.45) 0%, rgba(255,215,0,0.25) 40%, transparent 70%)",
+          animation: "mascotShadow 2.5s ease-in-out infinite alternate",
+          zIndex: 4,
+          filter: "blur(6px)",
         }}
       />
-      {/* Mascot image -- shrimp claw */}
+
+      {/* Main mascot image */}
       <img
-        src="/assets/generated/clawpro-shrimp-mascot-red-silver-gold-transparent.dim_700x800.png"
-        alt="ClawPro Shrimp Claw Mascot"
-        className="relative z-10 w-auto"
+        src="/assets/uploads/WhatsApp-Image-2026-03-08-at-13.01.23-1-1.jpeg"
+        alt="ClawPro Robot Claw Mascot"
+        className="relative w-auto mascot-hover"
         style={{
-          height: "clamp(260px, 42vw, 480px)",
-          maxHeight: "480px",
+          height: "clamp(270px, 44vw, 500px)",
+          maxHeight: "500px",
           objectFit: "contain",
-          animation: "mascotFloat 3.5s ease-in-out infinite",
+          animation: "mascotFloat 3.8s ease-in-out infinite",
           filter:
-            "drop-shadow(0 0 18px rgba(220,38,38,0.7)) drop-shadow(0 0 36px rgba(255,215,0,0.45)) drop-shadow(0 0 55px rgba(180,0,0,0.35))",
+            "drop-shadow(0 0 20px rgba(220,38,38,0.8)) drop-shadow(0 0 45px rgba(255,215,0,0.5)) drop-shadow(0 0 70px rgba(180,0,0,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.9))",
+          zIndex: 10,
+          cursor: "pointer",
+          transition: "filter 0.3s ease",
+          borderRadius: "16px",
+        }}
+        onMouseEnter={(e) => {
+          const el = e.currentTarget as HTMLImageElement;
+          el.style.filter =
+            "drop-shadow(0 0 35px rgba(220,38,38,1)) drop-shadow(0 0 65px rgba(255,215,0,0.8)) drop-shadow(0 0 100px rgba(180,0,0,0.6)) drop-shadow(0 2px 8px rgba(0,0,0,0.9))";
+        }}
+        onMouseLeave={(e) => {
+          const el = e.currentTarget as HTMLImageElement;
+          el.style.filter =
+            "drop-shadow(0 0 20px rgba(220,38,38,0.8)) drop-shadow(0 0 45px rgba(255,215,0,0.5)) drop-shadow(0 0 70px rgba(180,0,0,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.9))";
         }}
       />
+
       <style>{`
         @keyframes mascotFloat {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          30% { transform: translateY(-14px) rotate(0.6deg); }
-          65% { transform: translateY(-7px) rotate(-0.4deg); }
+          0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+          25% { transform: translateY(-16px) rotate(0.8deg) scale(1.01); }
+          65% { transform: translateY(-8px) rotate(-0.5deg) scale(1.005); }
+          80% { transform: translateY(-12px) rotate(0.3deg) scale(1.008); }
         }
-        @keyframes mascotHalo {
-          0% { opacity: 0.55; transform: scale(1); }
-          100% { opacity: 1; transform: scale(1.1); }
+        @keyframes mascotGlowBg {
+          0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.95); }
+          100% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+        }
+        @keyframes orbitSpin {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes orbitSpinReverse {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(-360deg); }
         }
         @keyframes mascotRing1 {
-          0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.09); }
+          0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.08); }
         }
         @keyframes mascotRing2 {
           0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.07); }
+          50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.06); }
         }
         @keyframes mascotRing3 {
           0%, 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.35; transform: translate(-50%, -50%) scale(1.05); }
+          50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.04); }
         }
         @keyframes mascotShadow {
-          0% { opacity: 0.4; transform: translateX(-50%) scaleX(0.75); }
-          100% { opacity: 0.85; transform: translateX(-50%) scaleX(1.15); }
+          0% { opacity: 0.4; transform: translateX(-50%) scaleX(0.7); }
+          100% { opacity: 0.9; transform: translateX(-50%) scaleX(1.2); }
+        }
+        @keyframes sparkPulse {
+          0%, 100% { opacity: 0.3; r: attr(r); }
+          50% { opacity: 1; }
         }
       `}</style>
     </div>
@@ -2025,38 +2098,13 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
   return (
     <section
       id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden"
+      className="relative min-h-screen flex items-center overflow-hidden bg-black"
     >
-      {/* Colorful animated background */}
-      <ColorfulBackground />
-
-      {/* Gold-green pulsing ambient layer */}
-      <div
-        className="absolute inset-0 pointer-events-none z-[1]"
-        style={{
-          background: `
-            radial-gradient(ellipse at 20% 50%, rgba(245,158,11,0.08) 0%, transparent 50%),
-            radial-gradient(ellipse at 80% 50%, rgba(16,185,129,0.07) 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 20%, rgba(220,38,38,0.05) 0%, transparent 40%)
-          `,
-          animation: "goldGreenPulse 4s ease-in-out infinite alternate",
-        }}
-      />
-
-      {/* Moving dots overlay */}
+      {/* Moving dots background — same as other sections */}
       <DotsBackground />
 
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat z-[1]"
-        style={{
-          backgroundImage:
-            "url('/assets/generated/openclaw-hero-banner.dim_1200x400.jpg')",
-          opacity: 0.25,
-        }}
-      />
-      {/* Dark overlay — slightly transparent to let colors through */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/50 to-background z-[2]" />
+      {/* Subtle dark gradient overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 z-[2] pointer-events-none" />
 
       {/* Content: two-column on lg+, stacked on mobile */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">

@@ -283,7 +283,7 @@ function MarqueeTrack({
         {items.map((item, i) => (
           <div
             key={`${item.id}-${i}`}
-            className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm shrink-0 hover:bg-white/10 transition-colors"
+            className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-xl bg-muted/30 border border-border backdrop-blur-sm shrink-0 hover:bg-muted/50 transition-colors"
             title={item.label}
           >
             {item.component}
@@ -299,12 +299,12 @@ function MarqueeTrack({
 
 export function PaymentMarquee() {
   return (
-    <div className="relative py-4 overflow-hidden border-y border-white/5 bg-background/60 backdrop-blur-sm">
+    <div className="relative py-4 overflow-hidden border-y border-border bg-background/60 backdrop-blur-sm">
       <div className="flex items-center gap-4 px-6 mb-1">
         <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest shrink-0">
           Accepted Payments
         </span>
-        <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+        <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
       </div>
       <MarqueeTrack items={PAYMENT_LOOP} speed={4} />
     </div>
