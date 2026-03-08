@@ -602,19 +602,19 @@ function EmailSubscribeForm({
     <div>
       <style>{`
         @keyframes emailInputGlow {
-          0%, 100% { filter: drop-shadow(0 0 4px #00c6ff) drop-shadow(0 0 8px #0072ff); opacity: 0.75; }
-          33% { filter: drop-shadow(0 0 8px #0072ff) drop-shadow(0 0 16px #7c3aed); opacity: 1; }
-          66% { filter: drop-shadow(0 0 6px #7c3aed) drop-shadow(0 0 12px #00c6ff); opacity: 0.85; }
+          0%, 100% { filter: drop-shadow(0 0 2px #00c6ff) drop-shadow(0 0 5px #0072ff); opacity: 0.55; }
+          33% { filter: drop-shadow(0 0 4px #0072ff) drop-shadow(0 0 9px #7c3aed); opacity: 0.8; }
+          66% { filter: drop-shadow(0 0 3px #7c3aed) drop-shadow(0 0 7px #00c6ff); opacity: 0.65; }
         }
         @keyframes subscribeBtnGlow {
-          0%, 100% { filter: drop-shadow(0 0 5px #f0abfc) drop-shadow(0 0 10px #22d3ee); opacity: 0.8; }
-          33% { filter: drop-shadow(0 0 9px #22d3ee) drop-shadow(0 0 18px #818cf8); opacity: 1; }
-          66% { filter: drop-shadow(0 0 7px #818cf8) drop-shadow(0 0 14px #f0abfc); opacity: 0.9; }
+          0%, 100% { filter: drop-shadow(0 0 3px #f0abfc) drop-shadow(0 0 6px #22d3ee); opacity: 0.6; }
+          33% { filter: drop-shadow(0 0 5px #22d3ee) drop-shadow(0 0 10px #818cf8); opacity: 0.85; }
+          66% { filter: drop-shadow(0 0 4px #818cf8) drop-shadow(0 0 8px #f0abfc); opacity: 0.7; }
         }
         @keyframes outerSubscribeGlow {
-          0%, 100% { box-shadow: 0 0 20px rgba(34,211,238,0.2), 0 0 40px rgba(34,211,238,0.1), 0 0 0 1px rgba(34,211,238,0.15); }
-          33%       { box-shadow: 0 0 30px rgba(129,140,248,0.25), 0 0 50px rgba(129,140,248,0.12), 0 0 0 1px rgba(129,140,248,0.20); }
-          66%       { box-shadow: 0 0 25px rgba(240,171,252,0.22), 0 0 45px rgba(240,171,252,0.11), 0 0 0 1px rgba(240,171,252,0.18); }
+          0%, 100% { box-shadow: 0 0 12px rgba(34,211,238,0.12), 0 0 24px rgba(34,211,238,0.06), 0 0 0 1px rgba(34,211,238,0.10); }
+          33%       { box-shadow: 0 0 16px rgba(129,140,248,0.14), 0 0 30px rgba(129,140,248,0.07), 0 0 0 1px rgba(129,140,248,0.12); }
+          66%       { box-shadow: 0 0 14px rgba(240,171,252,0.13), 0 0 26px rgba(240,171,252,0.06), 0 0 0 1px rgba(240,171,252,0.10); }
         }
       `}</style>
       {/* Outer glowing wrapper surrounding both input and button */}
@@ -701,7 +701,7 @@ function EmailSubscribeForm({
                   "linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #f0abfc 100%)",
                 color: "#fff",
                 boxShadow:
-                  "0 4px 20px rgba(34, 211, 238, 0.35), 0 2px 8px rgba(129, 140, 248, 0.3)",
+                  "0 3px 12px rgba(34, 211, 238, 0.22), 0 1px 6px rgba(129, 140, 248, 0.18)",
               }}
             >
               {subscribeLabel}
@@ -728,22 +728,22 @@ function ApiStatusBadge({ status }: { status: ApiStatus }) {
       loading: {
         color: "#94a3b8",
         label: "Checking...",
-        glow: "rgba(148,163,184,0.4)",
+        glow: "rgba(148,163,184,0.25)",
       },
       connected: {
         color: "#4ade80",
         label: "Connected",
-        glow: "rgba(74,222,128,0.5)",
+        glow: "rgba(74,222,128,0.3)",
       },
       degraded: {
         color: "#fbbf24",
         label: "Degraded",
-        glow: "rgba(251,191,36,0.5)",
+        glow: "rgba(251,191,36,0.3)",
       },
       error: {
         color: "#f87171",
         label: "Offline",
-        glow: "rgba(248,113,113,0.5)",
+        glow: "rgba(248,113,113,0.3)",
       },
     };
   const c = cfg[status];
@@ -805,8 +805,8 @@ function PartnerApiCard({
         background: "rgba(10,10,20,0.7)",
         border: `1px solid ${accentColor}30`,
         boxShadow: expanded
-          ? `0 0 30px ${accentColor}25, 0 0 60px ${accentColor}10`
-          : `0 0 10px ${accentColor}15`,
+          ? `0 0 18px ${accentColor}18, 0 0 36px ${accentColor}08`
+          : `0 0 6px ${accentColor}10`,
         minWidth: 180,
         maxWidth: 220,
       }}
@@ -884,12 +884,12 @@ export function PartnerSection() {
               50% { transform: translateY(-6px); }
             }
             @keyframes clawproPartnerGlow {
-              0%, 100% { filter: drop-shadow(0 0 8px rgba(0,198,255,0.5)) drop-shadow(0 0 20px rgba(124,58,237,0.3)); }
-              50% { filter: drop-shadow(0 0 18px rgba(0,198,255,0.85)) drop-shadow(0 0 45px rgba(124,58,237,0.55)) drop-shadow(0 0 70px rgba(245,158,11,0.35)); }
+              0%, 100% { filter: drop-shadow(0 0 5px rgba(0,198,255,0.3)) drop-shadow(0 0 12px rgba(124,58,237,0.18)); }
+              50% { filter: drop-shadow(0 0 10px rgba(0,198,255,0.55)) drop-shadow(0 0 25px rgba(124,58,237,0.32)) drop-shadow(0 0 40px rgba(245,158,11,0.2)); }
             }
             @keyframes clawproSubtitleGlow {
-              0%, 100% { opacity: 0.45; letter-spacing: 0.12em; }
-              50% { opacity: 0.7; letter-spacing: 0.14em; }
+              0%, 100% { opacity: 0.38; letter-spacing: 0.12em; }
+              50% { opacity: 0.6; letter-spacing: 0.13em; }
             }
           `}</style>
           <div

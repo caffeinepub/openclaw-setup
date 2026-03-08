@@ -47,19 +47,19 @@ import { DotsBackground } from "../DotsBackground";
 // ─── Spinning Glow Keyframes ─────────────────────────────────────────────────
 const PRICING_GLOW_STYLES = `
   @keyframes spinGlowSilver {
-    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 8px #94a3b8) drop-shadow(0 0 20px #64748b60); }
-    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 16px #cbd5e1) drop-shadow(0 0 32px #94a3b880); }
-    100% { transform: rotate(360deg); filter: drop-shadow(0 0 8px #94a3b8) drop-shadow(0 0 20px #64748b60); }
+    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 4px #94a3b8) drop-shadow(0 0 10px #64748b40); }
+    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 8px #cbd5e1) drop-shadow(0 0 18px #94a3b855); }
+    100% { transform: rotate(360deg); filter: drop-shadow(0 0 4px #94a3b8) drop-shadow(0 0 10px #64748b40); }
   }
   @keyframes spinGlowGold {
-    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 24px #d97706a0); }
-    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 20px #fbbf24) drop-shadow(0 0 40px #f59e0bc0); }
-    100% { transform: rotate(360deg); filter: drop-shadow(0 0 10px #f59e0b) drop-shadow(0 0 24px #d97706a0); }
+    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 5px #f59e0b) drop-shadow(0 0 14px #d9770660); }
+    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 10px #fbbf24) drop-shadow(0 0 22px #f59e0b80); }
+    100% { transform: rotate(360deg); filter: drop-shadow(0 0 5px #f59e0b) drop-shadow(0 0 14px #d9770660); }
   }
   @keyframes spinGlowPlatinum {
-    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 10px #8b5cf6) drop-shadow(0 0 24px #7c3aed90); }
-    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 20px #a78bfa) drop-shadow(0 0 40px #8b5cf6c0); }
-    100% { transform: rotate(360deg); filter: drop-shadow(0 0 10px #8b5cf6) drop-shadow(0 0 24px #7c3aed90); }
+    0%   { transform: rotate(0deg);   filter: drop-shadow(0 0 5px #8b5cf6) drop-shadow(0 0 14px #7c3aed60); }
+    50%  { transform: rotate(180deg); filter: drop-shadow(0 0 10px #a78bfa) drop-shadow(0 0 22px #8b5cf680); }
+    100% { transform: rotate(360deg); filter: drop-shadow(0 0 5px #8b5cf6) drop-shadow(0 0 14px #7c3aed60); }
   }
   @keyframes rotateRing {
     from { transform: rotate(0deg); }
@@ -110,7 +110,7 @@ function PricingGlowRing({ tier }: PricingGlowRingProps) {
           inset: -40,
           animation: `rotateRing ${cfg.duration} linear infinite`,
           background: `conic-gradient(from 0deg, transparent 0%, ${cfg.colors[0]} 20%, ${cfg.colors[1]} 40%, ${cfg.colors[2]} 60%, ${cfg.colors[3]} 80%, transparent 100%)`,
-          opacity: 0.7,
+          opacity: 0.4,
         }}
       />
       {/* Inner mask to show only the ring edge */}
@@ -1679,12 +1679,12 @@ export function PricingSection({
       tagline: t.pricing.silver.tagline,
       features: t.pricing.silverFeatures,
       accentColor: "text-slate-300",
-      glowColor: "shadow-[0_0_20px_oklch(0.72_0.03_240/0.4)]",
-      borderColor: "border-slate-500/40",
-      bgGradient: "from-slate-500/15 via-slate-400/5 to-transparent",
-      badgeClass: "bg-slate-500/20 text-slate-300 border-slate-500/40",
+      glowColor: "shadow-[0_0_14px_oklch(0.72_0.03_240/0.25)]",
+      borderColor: "border-slate-500/30",
+      bgGradient: "from-slate-500/10 via-slate-400/3 to-transparent",
+      badgeClass: "bg-slate-500/15 text-slate-300 border-slate-500/30",
       buttonClass:
-        "bg-slate-600/80 hover:bg-slate-500 text-white border-slate-500/50 hover:shadow-[0_0_15px_oklch(0.55_0.03_240/0.5)]",
+        "bg-slate-600/80 hover:bg-slate-500 text-white border-slate-500/40 hover:shadow-[0_0_10px_oklch(0.55_0.03_240/0.35)]",
       popular: false,
     },
     {
@@ -1695,12 +1695,12 @@ export function PricingSection({
       tagline: t.pricing.gold.tagline,
       features: t.pricing.goldFeatures,
       accentColor: "text-amber-400",
-      glowColor: "shadow-[0_0_30px_oklch(0.78_0.18_85/0.5)]",
-      borderColor: "border-amber-500/50",
-      bgGradient: "from-amber-500/20 via-amber-400/8 to-transparent",
-      badgeClass: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+      glowColor: "shadow-[0_0_18px_oklch(0.78_0.18_85/0.3)]",
+      borderColor: "border-amber-500/35",
+      bgGradient: "from-amber-500/12 via-amber-400/5 to-transparent",
+      badgeClass: "bg-amber-500/15 text-amber-300 border-amber-500/30",
       buttonClass:
-        "bg-amber-500 hover:bg-amber-400 text-black font-bold shadow-[0_0_20px_oklch(0.78_0.18_85/0.4)] hover:shadow-[0_0_30px_oklch(0.78_0.18_85/0.6)]",
+        "bg-amber-500 hover:bg-amber-400 text-black font-bold shadow-[0_0_14px_oklch(0.78_0.18_85/0.28)] hover:shadow-[0_0_22px_oklch(0.78_0.18_85/0.45)]",
       popular: true,
     },
     {
@@ -1711,12 +1711,12 @@ export function PricingSection({
       tagline: t.pricing.platinum.tagline,
       features: t.pricing.platinumFeatures,
       accentColor: "text-violet-400",
-      glowColor: "shadow-[0_0_30px_oklch(0.6_0.22_290/0.5)]",
-      borderColor: "border-violet-500/50",
-      bgGradient: "from-violet-500/20 via-violet-400/8 to-transparent",
-      badgeClass: "bg-violet-500/20 text-violet-300 border-violet-500/40",
+      glowColor: "shadow-[0_0_18px_oklch(0.6_0.22_290/0.3)]",
+      borderColor: "border-violet-500/35",
+      bgGradient: "from-violet-500/12 via-violet-400/5 to-transparent",
+      badgeClass: "bg-violet-500/15 text-violet-300 border-violet-500/30",
       buttonClass:
-        "bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_20px_oklch(0.6_0.22_290/0.4)] hover:shadow-[0_0_30px_oklch(0.6_0.22_290/0.6)]",
+        "bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_14px_oklch(0.6_0.22_290/0.28)] hover:shadow-[0_0_22px_oklch(0.6_0.22_290/0.45)]",
       popular: false,
     },
   ];

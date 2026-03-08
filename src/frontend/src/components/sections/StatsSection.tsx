@@ -7,6 +7,7 @@ import {
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
+import { InteractiveWorldMap } from "../InteractiveWorldMap";
 
 function useCountUp(target: number, duration = 1500, shouldStart = false) {
   const [count, setCount] = useState(0);
@@ -128,7 +129,7 @@ export function StatsSection() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
           <StatCard
             icon={<Download className="w-6 h-6 text-cyan" />}
             value={downloadsNum}
@@ -159,6 +160,9 @@ export function StatsSection() {
             color="bg-gradient-to-br from-amber-500/10 to-transparent"
           />
         </div>
+
+        {/* Interactive World Map */}
+        <InteractiveWorldMap />
       </div>
     </section>
   );

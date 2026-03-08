@@ -38,8 +38,6 @@ import {
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
-import { WorldMapSVG } from "../WorldMapSVG";
-
 function RobotMascot() {
   return (
     <div
@@ -57,8 +55,8 @@ function RobotMascot() {
           left: "50%",
           transform: "translate(-50%, -50%)",
           background:
-            "radial-gradient(ellipse at center, rgba(180,0,0,0.18) 0%, rgba(220,38,38,0.10) 35%, rgba(255,215,0,0.05) 60%, transparent 75%)",
-          animation: "mascotGlowBg 4.5s ease-in-out infinite alternate",
+            "radial-gradient(ellipse at center, rgba(180,0,0,0.10) 0%, rgba(220,38,38,0.06) 35%, rgba(255,215,0,0.03) 60%, transparent 75%)",
+          animation: "mascotGlowBg 5.5s ease-in-out infinite alternate",
           zIndex: 2,
         }}
       />
@@ -70,11 +68,11 @@ function RobotMascot() {
           width: "min(380px, 90vw)",
           height: "min(380px, 90vw)",
           borderRadius: "50%",
-          border: "1.5px dashed rgba(220,38,38,0.3)",
+          border: "1px dashed rgba(220,38,38,0.18)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          animation: "orbitSpin 18s linear infinite",
+          animation: "orbitSpin 24s linear infinite",
           zIndex: 3,
         }}
       />
@@ -86,11 +84,11 @@ function RobotMascot() {
           width: "min(460px, 110vw)",
           height: "min(460px, 110vw)",
           borderRadius: "50%",
-          border: "1px dashed rgba(255,215,0,0.18)",
+          border: "1px dashed rgba(255,215,0,0.10)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          animation: "orbitSpinReverse 24s linear infinite",
+          animation: "orbitSpinReverse 32s linear infinite",
           zIndex: 3,
         }}
       />
@@ -102,14 +100,14 @@ function RobotMascot() {
           width: "min(310px, 78vw)",
           height: "min(310px, 78vw)",
           borderRadius: "50%",
-          border: "2px solid rgba(220,38,38,0.45)",
+          border: "1.5px solid rgba(220,38,38,0.25)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          animation: "mascotRing1 2.8s ease-in-out infinite",
+          animation: "mascotRing1 3.5s ease-in-out infinite",
           zIndex: 4,
           boxShadow:
-            "0 0 20px rgba(220,38,38,0.25), inset 0 0 20px rgba(220,38,38,0.1)",
+            "0 0 12px rgba(220,38,38,0.12), inset 0 0 12px rgba(220,38,38,0.06)",
         }}
       />
 
@@ -120,13 +118,13 @@ function RobotMascot() {
           width: "min(420px, 100vw)",
           height: "min(420px, 100vw)",
           borderRadius: "50%",
-          border: "1.5px solid rgba(255,215,0,0.25)",
+          border: "1px solid rgba(255,215,0,0.14)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          animation: "mascotRing2 3.5s ease-in-out infinite 0.7s",
+          animation: "mascotRing2 4.5s ease-in-out infinite 0.7s",
           zIndex: 4,
-          boxShadow: "0 0 15px rgba(255,215,0,0.15)",
+          boxShadow: "0 0 10px rgba(255,215,0,0.08)",
         }}
       />
 
@@ -137,11 +135,11 @@ function RobotMascot() {
           width: "min(500px, 118vw)",
           height: "min(500px, 118vw)",
           borderRadius: "50%",
-          border: "1px solid rgba(192,192,192,0.15)",
+          border: "1px solid rgba(192,192,192,0.08)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          animation: "mascotRing3 5s ease-in-out infinite 1.4s",
+          animation: "mascotRing3 6s ease-in-out infinite 1.4s",
           zIndex: 4,
         }}
       />
@@ -245,13 +243,13 @@ function RobotMascot() {
           left: "50%",
           transform: "translateX(-50%)",
           width: "min(260px, 65vw)",
-          height: "30px",
+          height: "24px",
           borderRadius: "50%",
           background:
-            "radial-gradient(ellipse, rgba(220,38,38,0.45) 0%, rgba(255,215,0,0.25) 40%, transparent 70%)",
-          animation: "mascotShadow 2.5s ease-in-out infinite alternate",
+            "radial-gradient(ellipse, rgba(220,38,38,0.22) 0%, rgba(255,215,0,0.12) 40%, transparent 70%)",
+          animation: "mascotShadow 3.5s ease-in-out infinite alternate",
           zIndex: 4,
-          filter: "blur(6px)",
+          filter: "blur(8px)",
         }}
       />
 
@@ -264,36 +262,36 @@ function RobotMascot() {
           height: "clamp(270px, 44vw, 500px)",
           maxHeight: "500px",
           objectFit: "contain",
-          animation: "mascotFloat 3.8s ease-in-out infinite",
+          animation: "mascotFloat 4.5s ease-in-out infinite",
           filter:
-            "drop-shadow(0 0 20px rgba(220,38,38,0.8)) drop-shadow(0 0 45px rgba(255,215,0,0.5)) drop-shadow(0 0 70px rgba(180,0,0,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.9))",
+            "drop-shadow(0 0 12px rgba(220,38,38,0.5)) drop-shadow(0 0 28px rgba(255,215,0,0.28)) drop-shadow(0 0 40px rgba(180,0,0,0.22)) drop-shadow(0 2px 8px rgba(0,0,0,0.85))",
           zIndex: 10,
           cursor: "pointer",
-          transition: "filter 0.3s ease",
+          transition: "filter 0.4s ease",
           borderRadius: "16px",
         }}
         onMouseEnter={(e) => {
           const el = e.currentTarget as HTMLImageElement;
           el.style.filter =
-            "drop-shadow(0 0 35px rgba(220,38,38,1)) drop-shadow(0 0 65px rgba(255,215,0,0.8)) drop-shadow(0 0 100px rgba(180,0,0,0.6)) drop-shadow(0 2px 8px rgba(0,0,0,0.9))";
+            "drop-shadow(0 0 20px rgba(220,38,38,0.7)) drop-shadow(0 0 40px rgba(255,215,0,0.45)) drop-shadow(0 0 60px rgba(180,0,0,0.35)) drop-shadow(0 2px 8px rgba(0,0,0,0.9))";
         }}
         onMouseLeave={(e) => {
           const el = e.currentTarget as HTMLImageElement;
           el.style.filter =
-            "drop-shadow(0 0 20px rgba(220,38,38,0.8)) drop-shadow(0 0 45px rgba(255,215,0,0.5)) drop-shadow(0 0 70px rgba(180,0,0,0.4)) drop-shadow(0 2px 8px rgba(0,0,0,0.9))";
+            "drop-shadow(0 0 12px rgba(220,38,38,0.5)) drop-shadow(0 0 28px rgba(255,215,0,0.28)) drop-shadow(0 0 40px rgba(180,0,0,0.22)) drop-shadow(0 2px 8px rgba(0,0,0,0.85))";
         }}
       />
 
       <style>{`
         @keyframes mascotFloat {
           0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-          25% { transform: translateY(-16px) rotate(0.8deg) scale(1.01); }
-          65% { transform: translateY(-8px) rotate(-0.5deg) scale(1.005); }
-          80% { transform: translateY(-12px) rotate(0.3deg) scale(1.008); }
+          25% { transform: translateY(-12px) rotate(0.5deg) scale(1.008); }
+          65% { transform: translateY(-6px) rotate(-0.3deg) scale(1.003); }
+          80% { transform: translateY(-9px) rotate(0.2deg) scale(1.005); }
         }
         @keyframes mascotGlowBg {
-          0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.95); }
-          100% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+          0% { opacity: 0.4; transform: translate(-50%, -50%) scale(0.96); }
+          100% { opacity: 0.75; transform: translate(-50%, -50%) scale(1.05); }
         }
         @keyframes orbitSpin {
           from { transform: translate(-50%, -50%) rotate(0deg); }
@@ -304,370 +302,24 @@ function RobotMascot() {
           to { transform: translate(-50%, -50%) rotate(-360deg); }
         }
         @keyframes mascotRing1 {
-          0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.08); }
+          0%, 100% { opacity: 0.28; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.05); }
         }
         @keyframes mascotRing2 {
-          0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.06); }
+          0%, 100% { opacity: 0.12; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.35; transform: translate(-50%, -50%) scale(1.04); }
         }
         @keyframes mascotRing3 {
-          0%, 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.3; transform: translate(-50%, -50%) scale(1.04); }
+          0%, 100% { opacity: 0.06; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.18; transform: translate(-50%, -50%) scale(1.03); }
         }
         @keyframes mascotShadow {
-          0% { opacity: 0.4; transform: translateX(-50%) scaleX(0.7); }
-          100% { opacity: 0.9; transform: translateX(-50%) scaleX(1.2); }
+          0% { opacity: 0.2; transform: translateX(-50%) scaleX(0.75); }
+          100% { opacity: 0.5; transform: translateX(-50%) scaleX(1.1); }
         }
         @keyframes sparkPulse {
-          0%, 100% { opacity: 0.3; r: attr(r); }
-          50% { opacity: 1; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function GlowCorner({
-  position,
-}: {
-  position: "tl" | "tr" | "bl" | "br";
-}) {
-  const posClass = {
-    tl: "top-0 left-0",
-    tr: "top-0 right-0 rotate-90",
-    bl: "bottom-0 left-0 -rotate-90",
-    br: "bottom-0 right-0 rotate-180",
-  }[position];
-
-  const gradId = `cornerGrad-${position}`;
-
-  return (
-    <span
-      className={`absolute ${posClass} w-6 h-6 pointer-events-none`}
-      style={{ zIndex: 2 }}
-    >
-      <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        aria-label="corner decoration"
-        role="img"
-      >
-        <title>corner decoration</title>
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#dc2626" />
-            <stop offset="50%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#ffd700" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M2 22 L2 4 Q2 2 4 2 L22 2"
-          stroke={`url(#${gradId})`}
-          strokeWidth="2"
-          strokeLinecap="round"
-          style={{
-            filter:
-              "drop-shadow(0 0 6px #f59e0b) drop-shadow(0 0 12px #dc2626)",
-          }}
-        />
-      </svg>
-    </span>
-  );
-}
-
-interface HandleClaimCardProps {
-  onOpenCreateAccount?: (handle: string, fullName: string) => void;
-}
-
-function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
-  const { identity, login } = useInternetIdentity();
-  const { data: profile } = useCallerUserProfile();
-  const saveProfile = useSaveCallerUserProfile();
-  const { t } = useLanguage();
-
-  const [handle, setHandle] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [saved, setSaved] = useState(false);
-  const [pendingSave, setPendingSave] = useState(false);
-
-  useEffect(() => {
-    if (profile) {
-      setHandle(profile.name ?? "");
-      setFullName(profile.bio ?? "");
-    }
-  }, [profile]);
-
-  // After login with pending save, auto-save
-  useEffect(() => {
-    if (identity && pendingSave && handle.trim()) {
-      setPendingSave(false);
-      void (async () => {
-        const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
-        try {
-          await saveProfile.mutateAsync({
-            name: trimmedHandle,
-            bio: fullName.trim() || undefined,
-          });
-          setSaved(true);
-          toast.success("Handle saved! Your ClawPro.ai profile is set.");
-          setTimeout(() => setSaved(false), 3000);
-        } catch {
-          toast.error("Failed to save profile. Please try again.");
-        }
-      })();
-    }
-  }, [identity, pendingSave, handle, fullName, saveProfile]);
-
-  const handleSave = async () => {
-    const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
-    if (!trimmedHandle) {
-      toast.error("Please enter a valid handle (letters, numbers, _ or -).");
-      return;
-    }
-
-    if (!identity) {
-      // Not logged in: open Create Account modal with prefilled data
-      if (onOpenCreateAccount) {
-        onOpenCreateAccount(trimmedHandle, fullName.trim());
-      } else {
-        // Fallback: store intent and trigger ICP login directly
-        setPendingSave(true);
-        toast.info("Please login to save your handle.");
-        login();
-      }
-      return;
-    }
-
-    try {
-      await saveProfile.mutateAsync({
-        name: trimmedHandle,
-        bio: fullName.trim() || undefined,
-      });
-      setSaved(true);
-      toast.success("Handle saved! Your ClawPro.ai profile is set.");
-      setTimeout(() => setSaved(false), 3000);
-    } catch {
-      toast.error("Failed to save profile. Please try again.");
-    }
-  };
-
-  return (
-    <div className="w-full max-w-lg">
-      {/* Outer glow pulse ring */}
-      <div
-        className="relative rounded-2xl"
-        style={{
-          background: "transparent",
-          padding: "1px",
-        }}
-      >
-        {/* Animated border gradient */}
-        <div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(135deg, #dc2626, #f59e0b, #ffd700, #dc2626)",
-            backgroundSize: "300% 300%",
-            animation: "borderGlow 3s ease infinite",
-            opacity: 0.85,
-            zIndex: 0,
-          }}
-        />
-        {/* Inner card */}
-        <div
-          className="relative rounded-2xl bg-black backdrop-blur-md p-5 space-y-4"
-          style={{
-            zIndex: 1,
-            boxShadow:
-              "0 0 30px rgba(220,38,38,0.2), 0 0 60px rgba(245,158,11,0.1), 0 4px 20px rgba(0,0,0,0.4)",
-          }}
-        >
-          {/* Glowing corners */}
-          <GlowCorner position="tl" />
-          <GlowCorner position="tr" />
-          <GlowCorner position="bl" />
-          <GlowCorner position="br" />
-
-          {/* Header */}
-          <div className="flex items-center gap-2 mb-1">
-            <div
-              className="w-7 h-7 rounded-full bg-amber-500/15 border border-amber-500/50 flex items-center justify-center"
-              style={{
-                boxShadow: "0 0 10px rgba(245,158,11,0.5)",
-              }}
-            >
-              <AtSign className="w-3.5 h-3.5 text-amber-400" />
-            </div>
-            <span
-              className="text-sm font-semibold text-foreground/90"
-              style={{
-                textShadow: "0 0 10px rgba(245,158,11,0.4)",
-              }}
-            >
-              {t.hero.claimHandle}
-            </span>
-            {saved && (
-              <CheckCircle2
-                className="w-4 h-4 text-emerald-400 ml-auto"
-                style={{ filter: "drop-shadow(0 0 6px #34d399)" }}
-              />
-            )}
-            {!identity && (
-              <span className="ml-auto text-xs text-amber-500/70 flex items-center gap-1">
-                <LogIn className="w-3 h-3" />
-                {t.hero.loginToSave}
-              </span>
-            )}
-          </div>
-
-          {/* Handle field */}
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">
-              {t.hero.usernameLabel}
-            </Label>
-            <div
-              className="relative rounded-lg p-[1px]"
-              style={{
-                background:
-                  "linear-gradient(90deg, #dc2626, #f59e0b, #ffd700, #f59e0b, #dc2626)",
-                backgroundSize: "300% 100%",
-                animation: "fieldBorderGlow 2s linear infinite",
-              }}
-            >
-              <div className="flex items-center rounded-lg bg-black overflow-hidden">
-                <span
-                  className="px-3 py-2 text-xs font-mono text-amber-400 bg-amber-500/10 border-r border-amber-500/20 whitespace-nowrap flex-shrink-0"
-                  style={{ textShadow: "0 0 8px rgba(245,158,11,0.6)" }}
-                >
-                  ClawPro.ai/
-                </span>
-                <input
-                  type="text"
-                  value={handle}
-                  onChange={(e) =>
-                    setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
-                  }
-                  placeholder="your-handle"
-                  className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
-                  autoComplete="username"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Full name field */}
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <User className="w-3 h-3" />
-              {t.hero.fullNameLabel}
-            </Label>
-            <div
-              className="relative rounded-lg p-[1px]"
-              style={{
-                background:
-                  "linear-gradient(90deg, #dc2626, #f59e0b, #ffd700, #f59e0b, #dc2626)",
-                backgroundSize: "300% 100%",
-                animation: "fieldBorderGlow 2s linear infinite",
-              }}
-            >
-              <div className="rounded-lg bg-black overflow-hidden">
-                <Input
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Your real name"
-                  className="bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm h-9"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Glowing Save Button */}
-          <Button
-            onClick={handleSave}
-            disabled={saveProfile.isPending || !handle.trim()}
-            size="sm"
-            className="w-full font-semibold h-10 text-sm relative overflow-hidden transition-all duration-300"
-            style={{
-              background: "linear-gradient(135deg, #dc2626, #f59e0b, #ffd700)",
-              color: "#fff",
-              border: "1px solid rgba(245,158,11,0.5)",
-              boxShadow:
-                "0 0 25px rgba(245,158,11,0.7), 0 0 50px rgba(220,38,38,0.4), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15)",
-              animation: "btnPulse 1.5s ease-in-out infinite",
-              transform: "translateY(0)",
-              opacity: saveProfile.isPending || !handle.trim() ? 0.6 : 1,
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.boxShadow =
-                "0 0 40px rgba(245,158,11,0.9), 0 0 80px rgba(220,38,38,0.6), 0 8px 25px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2)";
-              el.style.transform = "translateY(-3px)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.boxShadow =
-                "0 0 25px rgba(245,158,11,0.7), 0 0 50px rgba(220,38,38,0.4), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15)";
-              el.style.transform = "translateY(0)";
-            }}
-          >
-            {/* Button shine sweep */}
-            <span
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.25) 50%, transparent 60%)",
-                backgroundSize: "200% 100%",
-                animation: "btnShine 2.5s ease infinite",
-              }}
-            />
-            {saveProfile.isPending ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                {t.chatbot.saving}
-              </>
-            ) : saved ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                {t.hero.saved}
-              </>
-            ) : !identity ? (
-              <>
-                <LogIn className="w-3.5 h-3.5 mr-1.5" />
-                {t.hero.loginSaveHandle}
-              </>
-            ) : (
-              t.hero.saveHandle
-            )}
-          </Button>
-        </div>
-      </div>
-
-      {/* CSS keyframes injected inline via style tag */}
-      <style>{`
-        @keyframes borderGlow {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes btnShine {
-          0% { background-position: -100% 0; }
-          60% { background-position: 200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        @keyframes goldGreenPulse {
-          0% { opacity: 0.5; transform: scale(1); }
-          100% { opacity: 1; transform: scale(1.05); }
-        }
-        @keyframes fieldBorderGlow {
-          0% { background-position: 0% 50%; }
-          100% { background-position: 300% 50%; }
-        }
-        @keyframes btnPulse {
-          0%, 100% { box-shadow: 0 0 25px rgba(245,158,11,0.7), 0 0 50px rgba(220,38,38,0.4), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15); }
-          50% { box-shadow: 0 0 40px rgba(245,158,11,0.9), 0 0 80px rgba(220,38,38,0.6), 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2); }
+          0%, 100% { opacity: 0.2; r: attr(r); }
+          50% { opacity: 0.7; }
         }
       `}</style>
     </div>
@@ -784,56 +436,6 @@ function ProfileDisplayCard() {
         </div>
       </div>
     </div>
-  );
-}
-
-function BlueGlowCorner({
-  position,
-}: {
-  position: "tl" | "tr" | "bl" | "br";
-}) {
-  const posClass = {
-    tl: "top-0 left-0",
-    tr: "top-0 right-0 rotate-90",
-    bl: "bottom-0 left-0 -rotate-90",
-    br: "bottom-0 right-0 rotate-180",
-  }[position];
-
-  const gradId = `blueCornerGrad-${position}`;
-
-  return (
-    <span
-      className={`absolute ${posClass} w-7 h-7 pointer-events-none`}
-      style={{ zIndex: 2 }}
-    >
-      <svg
-        width="28"
-        height="28"
-        viewBox="0 0 28 28"
-        fill="none"
-        aria-label="blue corner decoration"
-        role="img"
-      >
-        <title>blue corner decoration</title>
-        <defs>
-          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00c6ff" />
-            <stop offset="50%" stopColor="#0072ff" />
-            <stop offset="100%" stopColor="#00e5ff" />
-          </linearGradient>
-        </defs>
-        <path
-          d="M2 26 L2 5 Q2 2 5 2 L26 2"
-          stroke={`url(#${gradId})`}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          style={{
-            filter:
-              "drop-shadow(0 0 6px #00c6ff) drop-shadow(0 0 14px #0072ff) drop-shadow(0 0 24px #00e5ff88)",
-          }}
-        />
-      </svg>
-    </span>
   );
 }
 
@@ -1856,24 +1458,94 @@ function getCategoryStyle(category: PlatformCategory): React.CSSProperties {
   return styles[category] ?? {};
 }
 
-function IntegrationSearchBar() {
+// ─── Unified Claim + Search Card ─────────────────────────────────────────────
+
+interface UnifiedClaimSearchCardProps {
+  onOpenCreateAccount?: (handle: string, fullName: string) => void;
+}
+
+function UnifiedClaimSearchCard({
+  onOpenCreateAccount,
+}: UnifiedClaimSearchCardProps) {
+  const { identity, login } = useInternetIdentity();
+  const { data: profile } = useCallerUserProfile();
+  const saveProfile = useSaveCallerUserProfile();
+  const { t } = useLanguage();
+
+  const [handle, setHandle] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [pendingSave, setPendingSave] = useState(false);
+
+  // Search state
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [selectedPlatform, setSelectedPlatform] =
     useState<SearchPlatform | null>(null);
 
+  useEffect(() => {
+    if (profile) {
+      setHandle(profile.name ?? "");
+      setFullName(profile.bio ?? "");
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (identity && pendingSave && handle.trim()) {
+      setPendingSave(false);
+      void (async () => {
+        const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+        try {
+          await saveProfile.mutateAsync({
+            name: trimmedHandle,
+            bio: fullName.trim() || undefined,
+          });
+          setSaved(true);
+          toast.success("Handle saved! Your ClawPro.ai profile is set.");
+          setTimeout(() => setSaved(false), 3000);
+        } catch {
+          toast.error("Failed to save profile. Please try again.");
+        }
+      })();
+    }
+  }, [identity, pendingSave, handle, fullName, saveProfile]);
+
+  const handleSave = async () => {
+    const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!trimmedHandle) {
+      toast.error("Please enter a valid handle (letters, numbers, _ or -).");
+      return;
+    }
+    if (!identity) {
+      if (onOpenCreateAccount) {
+        onOpenCreateAccount(trimmedHandle, fullName.trim());
+      } else {
+        setPendingSave(true);
+        toast.info("Please login to save your handle.");
+        login();
+      }
+      return;
+    }
+    try {
+      await saveProfile.mutateAsync({
+        name: trimmedHandle,
+        bio: fullName.trim() || undefined,
+      });
+      setSaved(true);
+      toast.success("Handle saved! Your ClawPro.ai profile is set.");
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      toast.error("Failed to save profile. Please try again.");
+    }
+  };
+
+  // Search logic
   const filtered =
     query.trim().length > 0
       ? SEARCH_PLATFORMS.filter((p) =>
           p.name.toLowerCase().includes(query.toLowerCase()),
         )
       : [];
-
-  const handleSelect = (platform: SearchPlatform) => {
-    setQuery(platform.name);
-    setFocused(false);
-    setSelectedPlatform(platform);
-  };
 
   const handleSearch = () => {
     if (filtered.length === 1) {
@@ -1884,6 +1556,12 @@ function IntegrationSearchBar() {
     }
   };
 
+  const handleSelectPlatform = (platform: SearchPlatform) => {
+    setQuery(platform.name);
+    setFocused(false);
+    setSelectedPlatform(platform);
+  };
+
   return (
     <>
       <SearchIntegrationModal
@@ -1891,189 +1569,361 @@ function IntegrationSearchBar() {
         onClose={() => setSelectedPlatform(null)}
       />
 
-      <div className="w-full max-w-lg">
-        {/* Outer border glow — animated blue gradient */}
-        <div className="relative rounded-2xl" style={{ padding: "1px" }}>
-          {/* Animated blue border */}
+      <div className="w-full max-w-xl">
+        {/* Outer animated highlight border — melingkari seluruh card */}
+        <div className="relative rounded-2xl" style={{ padding: "2px" }}>
+          {/* Animated gradient border — highlight menyala melingkari */}
           <div
             className="absolute inset-0 rounded-2xl pointer-events-none"
             style={{
               background:
-                "linear-gradient(135deg, #00c6ff, #0072ff, #00e5ff, #0072ff, #00c6ff)",
+                "linear-gradient(135deg, #00c6ff, #0072ff, #a855f7, #00c6ff, #0072ff)",
               backgroundSize: "300% 300%",
-              animation: "blueBorderGlow 3s ease infinite",
-              opacity: 0.9,
+              animation: "unifiedBorderGlow 3s ease infinite",
+              opacity: 0.85,
               zIndex: 0,
             }}
           />
 
-          {/* Inner card */}
+          {/* Inner card — black background */}
           <div
-            className="relative rounded-2xl bg-black/90 backdrop-blur-md p-4 space-y-3"
+            className="relative rounded-2xl bg-black backdrop-blur-md p-5 space-y-4"
             style={{
               zIndex: 1,
               boxShadow:
-                "0 0 30px rgba(0,198,255,0.2), 0 0 60px rgba(0,114,255,0.12), 0 4px 20px rgba(0,0,0,0.5)",
+                "0 0 30px rgba(0,198,255,0.15), 0 0 60px rgba(168,85,247,0.1), 0 4px 24px rgba(0,0,0,0.5)",
             }}
           >
-            {/* Blue glow corners */}
-            <BlueGlowCorner position="tl" />
-            <BlueGlowCorner position="tr" />
-            <BlueGlowCorner position="bl" />
-            <BlueGlowCorner position="br" />
-
-            {/* Header */}
-            <div className="flex items-center gap-2 mb-1">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center"
-                style={{
-                  background: "rgba(0,198,255,0.12)",
-                  border: "1px solid rgba(0,198,255,0.5)",
-                  boxShadow: "0 0 10px rgba(0,198,255,0.5)",
-                }}
-              >
-                <Search className="w-3.5 h-3.5" style={{ color: "#00c6ff" }} />
-              </div>
-              <span
-                className="text-sm font-semibold"
-                style={{
-                  color: "#e0f7ff",
-                  textShadow: "0 0 10px rgba(0,198,255,0.6)",
-                }}
-              >
-                Search Works With Everything
-              </span>
-            </div>
-
-            {/* Search input */}
-            <div className="relative">
-              <div
-                className="relative rounded-xl p-[1px]"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #00c6ff, #0072ff, #00e5ff, #0072ff, #00c6ff)",
-                  backgroundSize: "300% 100%",
-                  animation: focused
-                    ? "blueBorderGlow 1.5s linear infinite"
-                    : "blueBorderGlow 3s linear infinite",
-                }}
-              >
-                <div className="flex items-center rounded-xl bg-black overflow-hidden">
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onFocus={() => setFocused(true)}
-                    onBlur={() => setTimeout(() => setFocused(false), 200)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder="Search integrations... Facebook, Discord, GPT..."
-                    className="flex-1 bg-transparent px-4 py-2.5 text-sm outline-none"
-                    style={{ color: "#e0f7ff" }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSearch}
-                    className="px-4 py-2.5 flex items-center gap-1.5 text-xs font-bold transition-all duration-200"
-                    style={{
-                      background: "linear-gradient(135deg, #00c6ff, #0072ff)",
-                      color: "#fff",
-                      borderLeft: "1px solid rgba(0,198,255,0.3)",
-                      textShadow: "0 0 8px rgba(0,198,255,0.8)",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)",
-                    }}
-                  >
-                    <Search className="w-3.5 h-3.5" />
-                    Search
-                  </button>
-                </div>
-              </div>
-
-              {/* Logo dropdown */}
-              {focused && filtered.length > 0 && (
+            {/* ── Section 1: Claim Your ClawPro Handle ── */}
+            <div className="space-y-3">
+              {/* Claim header */}
+              <div className="flex items-center gap-2">
                 <div
-                  className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden z-50"
+                  className="w-7 h-7 rounded-full flex items-center justify-center"
                   style={{
-                    background: "rgba(0,8,20,0.97)",
-                    border: "1px solid rgba(0,198,255,0.35)",
-                    boxShadow:
-                      "0 8px 32px rgba(0,198,255,0.2), 0 4px 16px rgba(0,0,0,0.6)",
+                    background: "rgba(245,158,11,0.15)",
+                    border: "1px solid rgba(245,158,11,0.5)",
+                    boxShadow: "0 0 10px rgba(245,158,11,0.5)",
                   }}
                 >
-                  {filtered.map((platform) => (
-                    <button
-                      key={platform.id}
-                      type="button"
-                      onMouseDown={() => handleSelect(platform)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors duration-150"
-                      style={{ color: "#b0e8ff" }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background =
-                          "rgba(0,198,255,0.12)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background =
-                          "transparent";
-                      }}
-                    >
-                      <SearchPlatformIcon
-                        icon={platform.icon}
-                        iconBg={platform.iconBg}
-                        size={32}
-                      />
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span
-                            className="font-semibold text-sm leading-tight"
-                            style={{ color: "#e0f7ff" }}
-                          >
-                            {platform.name}
-                          </span>
-                          {/* Category badge */}
-                          <span
-                            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
-                            style={getCategoryStyle(platform.category)}
-                          >
-                            {platform.category}
-                          </span>
-                          {/* Popular badge */}
-                          {platform.popular && (
-                            <span
-                              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
-                              style={{
-                                background: "rgba(245,158,11,0.2)",
-                                color: "#fbbf24",
-                                border: "1px solid rgba(245,158,11,0.4)",
-                              }}
-                            >
-                              ★ Popular
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground truncate mt-0.5">
-                          {platform.desc}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+                  <AtSign className="w-3.5 h-3.5 text-amber-400" />
                 </div>
-              )}
+                <span
+                  className="text-sm font-semibold text-foreground/90"
+                  style={{ textShadow: "0 0 10px rgba(245,158,11,0.4)" }}
+                >
+                  {t.hero.claimHandle}
+                </span>
+                {saved && (
+                  <CheckCircle2
+                    className="w-4 h-4 text-emerald-400 ml-auto"
+                    style={{ filter: "drop-shadow(0 0 6px #34d399)" }}
+                  />
+                )}
+                {!identity && (
+                  <span className="ml-auto text-xs text-amber-500/70 flex items-center gap-1">
+                    <LogIn className="w-3 h-3" />
+                    {t.hero.loginToSave}
+                  </span>
+                )}
+              </div>
+
+              {/* Username field */}
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">
+                  {t.hero.usernameLabel}
+                </Label>
+                <div
+                  className="relative rounded-lg p-[1.5px]"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #00c6ff, #0072ff, #a855f7, #0072ff, #00c6ff)",
+                    backgroundSize: "300% 100%",
+                    animation: "fieldBorderGlow 2s linear infinite",
+                  }}
+                >
+                  <div className="flex items-center rounded-lg bg-black overflow-hidden">
+                    <span
+                      className="px-3 py-2 text-xs font-mono text-cyan/80 bg-cyan/5 border-r border-cyan/20 whitespace-nowrap flex-shrink-0"
+                      style={{ textShadow: "0 0 8px rgba(0,198,255,0.6)" }}
+                    >
+                      ClawPro.ai/
+                    </span>
+                    <input
+                      type="text"
+                      value={handle}
+                      onChange={(e) =>
+                        setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
+                      }
+                      placeholder="your-handle"
+                      className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
+                      autoComplete="username"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Full name field */}
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <User className="w-3 h-3" />
+                  {t.hero.fullNameLabel}
+                </Label>
+                <div
+                  className="relative rounded-lg p-[1.5px]"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #00c6ff, #0072ff, #a855f7, #0072ff, #00c6ff)",
+                    backgroundSize: "300% 100%",
+                    animation: "fieldBorderGlow 2s linear infinite",
+                  }}
+                >
+                  <div className="rounded-lg bg-black overflow-hidden">
+                    <Input
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Your real name"
+                      className="bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm h-9"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Save button */}
+              <Button
+                onClick={handleSave}
+                disabled={saveProfile.isPending || !handle.trim()}
+                size="sm"
+                className="w-full font-semibold h-10 text-sm relative overflow-hidden transition-all duration-300"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #00c6ff, #0072ff, #a855f7)",
+                  color: "#fff",
+                  border: "1px solid rgba(0,198,255,0.5)",
+                  boxShadow:
+                    "0 0 20px rgba(0,198,255,0.6), 0 0 40px rgba(0,114,255,0.3), 0 4px 16px rgba(0,0,0,0.5)",
+                  animation: "btnPulse 1.8s ease-in-out infinite",
+                  opacity: saveProfile.isPending || !handle.trim() ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.boxShadow =
+                    "0 0 35px rgba(0,198,255,0.9), 0 0 70px rgba(0,114,255,0.5), 0 6px 20px rgba(0,0,0,0.6)";
+                  el.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.boxShadow =
+                    "0 0 20px rgba(0,198,255,0.6), 0 0 40px rgba(0,114,255,0.3), 0 4px 16px rgba(0,0,0,0.5)";
+                  el.style.transform = "translateY(0)";
+                }}
+              >
+                <span
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background:
+                      "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%)",
+                    backgroundSize: "200% 100%",
+                    animation: "btnShine 2.5s ease infinite",
+                  }}
+                />
+                {saveProfile.isPending ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    {t.chatbot.saving}
+                  </>
+                ) : saved ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                    {t.hero.saved}
+                  </>
+                ) : !identity ? (
+                  <>
+                    <LogIn className="w-3.5 h-3.5 mr-1.5" />
+                    {t.hero.loginSaveHandle}
+                  </>
+                ) : (
+                  t.hero.saveHandle
+                )}
+              </Button>
             </div>
 
-            {/* Hint */}
-            <p
-              className="text-xs text-center"
-              style={{ color: "rgba(0,198,255,0.5)" }}
-            >
-              20+ integrations available — click a result to see details
-            </p>
+            {/* Divider */}
+            <div
+              className="w-full h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(0,198,255,0.4), transparent)",
+              }}
+            />
+
+            {/* ── Section 2: Search Works With Everything ── */}
+            <div className="space-y-3">
+              {/* Search header */}
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{
+                    background: "rgba(0,198,255,0.12)",
+                    border: "1px solid rgba(0,198,255,0.5)",
+                    boxShadow: "0 0 10px rgba(0,198,255,0.5)",
+                  }}
+                >
+                  <Search
+                    className="w-3.5 h-3.5"
+                    style={{ color: "#00c6ff" }}
+                  />
+                </div>
+                <span
+                  className="text-sm font-semibold"
+                  style={{
+                    color: "#e0f7ff",
+                    textShadow: "0 0 10px rgba(0,198,255,0.6)",
+                  }}
+                >
+                  Search Works With Everything
+                </span>
+              </div>
+
+              {/* Search input */}
+              <div className="relative">
+                <div
+                  className="relative rounded-xl p-[1.5px]"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #00c6ff, #0072ff, #a855f7, #0072ff, #00c6ff)",
+                    backgroundSize: "300% 100%",
+                    animation: focused
+                      ? "fieldBorderGlow 1.2s linear infinite"
+                      : "fieldBorderGlow 2.5s linear infinite",
+                  }}
+                >
+                  <div className="flex items-center rounded-xl bg-black overflow-hidden">
+                    <input
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onFocus={() => setFocused(true)}
+                      onBlur={() => setTimeout(() => setFocused(false), 200)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                      placeholder="Search integrations... Facebook, Discord, GPT..."
+                      className="flex-1 bg-transparent px-4 py-2.5 text-sm outline-none"
+                      style={{ color: "#e0f7ff" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSearch}
+                      className="px-4 py-2.5 flex items-center gap-1.5 text-xs font-bold transition-all duration-200"
+                      style={{
+                        background: "linear-gradient(135deg, #00c6ff, #0072ff)",
+                        color: "#fff",
+                        borderLeft: "1px solid rgba(0,198,255,0.3)",
+                        textShadow: "0 0 8px rgba(0,198,255,0.8)",
+                      }}
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      Search
+                    </button>
+                  </div>
+                </div>
+
+                {/* Dropdown results */}
+                {focused && filtered.length > 0 && (
+                  <div
+                    className="absolute left-0 right-0 mt-1 rounded-xl overflow-hidden z-50"
+                    style={{
+                      background: "rgba(0,8,20,0.97)",
+                      border: "1px solid rgba(0,198,255,0.35)",
+                      boxShadow:
+                        "0 8px 32px rgba(0,198,255,0.2), 0 4px 16px rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    {filtered.map((platform) => (
+                      <button
+                        key={platform.id}
+                        type="button"
+                        onMouseDown={() => handleSelectPlatform(platform)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors duration-150"
+                        style={{ color: "#b0e8ff" }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            "rgba(0,198,255,0.12)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            "transparent";
+                        }}
+                      >
+                        <SearchPlatformIcon
+                          icon={platform.icon}
+                          iconBg={platform.iconBg}
+                          size={32}
+                        />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span
+                              className="font-semibold text-sm leading-tight"
+                              style={{ color: "#e0f7ff" }}
+                            >
+                              {platform.name}
+                            </span>
+                            <span
+                              className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                              style={getCategoryStyle(platform.category)}
+                            >
+                              {platform.category}
+                            </span>
+                            {platform.popular && (
+                              <span
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none"
+                                style={{
+                                  background: "rgba(245,158,11,0.2)",
+                                  color: "#fbbf24",
+                                  border: "1px solid rgba(245,158,11,0.4)",
+                                }}
+                              >
+                                ★ Popular
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground truncate mt-0.5">
+                            {platform.desc}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <p
+                className="text-xs text-center"
+                style={{ color: "rgba(0,198,255,0.5)" }}
+              >
+                20+ integrations available — click a result to see details
+              </p>
+            </div>
           </div>
         </div>
 
         <style>{`
-          @keyframes blueBorderGlow {
+          @keyframes unifiedBorderGlow {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
+          }
+          @keyframes fieldBorderGlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+          }
+          @keyframes btnShine {
+            0% { background-position: -100% 0; }
+            60% { background-position: 200% 0; }
+            100% { background-position: 200% 0; }
+          }
+          @keyframes btnPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,198,255,0.6), 0 0 40px rgba(0,114,255,0.3), 0 4px 16px rgba(0,0,0,0.5); }
+            50% { box-shadow: 0 0 35px rgba(0,198,255,0.9), 0 0 70px rgba(0,114,255,0.5), 0 4px 16px rgba(0,0,0,0.5); }
           }
         `}</style>
       </div>
@@ -2213,15 +2063,9 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
           </div>
         </div>
 
-        {/* Handle Claim — full-width row below main columns */}
-        <div className="flex flex-col items-center gap-5 mt-8">
-          <HandleClaimCard onOpenCreateAccount={onOpenCreateAccount} />
-          <IntegrationSearchBar />
-        </div>
-
-        {/* World Map — full-width below claim section */}
-        <div className="w-full mt-6">
-          <WorldMapSVG />
+        {/* Unified Claim + Search box — full-width row below main columns */}
+        <div className="flex justify-center mt-8">
+          <UnifiedClaimSearchCard onOpenCreateAccount={onOpenCreateAccount} />
         </div>
       </div>
 

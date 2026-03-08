@@ -13,12 +13,12 @@ import { DotsBackground } from "../DotsBackground";
 // ── Changelog Glow Styles ───────────────────────────────────────────────────
 const CHANGELOG_STYLES = `
   @keyframes clGlowPulse {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50%       { opacity: 1;   transform: scale(1.15); }
+    0%, 100% { opacity: 0.45; transform: scale(1); }
+    50%       { opacity: 0.8;  transform: scale(1.08); }
   }
   @keyframes clCardGlow {
-    0%, 100% { box-shadow: 0 0 10px var(--cl-color), 0 0 0 1px var(--cl-color-dim); }
-    50%       { box-shadow: 0 0 20px var(--cl-color), 0 0 0 1px var(--cl-color-mid), 0 0 40px var(--cl-color-faint); }
+    0%, 100% { box-shadow: 0 0 6px var(--cl-color), 0 0 0 1px var(--cl-color-dim); }
+    50%       { box-shadow: 0 0 12px var(--cl-color), 0 0 0 1px var(--cl-color-mid), 0 0 22px var(--cl-color-faint); }
   }
 `;
 
@@ -96,25 +96,25 @@ const TYPE_GLOW: Record<
   { circleGlow: string; c1: string; c2: string; animName: string }
 > = {
   major: {
-    circleGlow: "0 0 12px #ef4444, 0 0 24px #ef444450",
+    circleGlow: "0 0 7px #ef4444, 0 0 14px #ef444430",
     c1: "#ef4444",
     c2: "#f87171",
     animName: "clGlowMajor",
   },
   minor: {
-    circleGlow: "0 0 12px #3b82f6, 0 0 24px #3b82f650",
+    circleGlow: "0 0 7px #3b82f6, 0 0 14px #3b82f630",
     c1: "#3b82f6",
     c2: "#60a5fa",
     animName: "clGlowMinor",
   },
   patch: {
-    circleGlow: "0 0 12px #22c55e, 0 0 24px #22c55e50",
+    circleGlow: "0 0 7px #22c55e, 0 0 14px #22c55e30",
     c1: "#22c55e",
     c2: "#4ade80",
     animName: "clGlowPatch",
   },
   latest: {
-    circleGlow: "0 0 16px #22d3ee, 0 0 32px #22d3ee60",
+    circleGlow: "0 0 9px #22d3ee, 0 0 18px #22d3ee40",
     c1: "#22d3ee",
     c2: "#67e8f9",
     animName: "clGlowLatest",
@@ -219,12 +219,12 @@ function ChangelogCard({
       <style>{`
         ${CHANGELOG_STYLES}
         @keyframes ${glowCfg.animName} {
-          0%, 100% { box-shadow: ${glowCfg.circleGlow}; opacity: 0.75; }
-          50%       { opacity: 1; }
+          0%, 100% { box-shadow: ${glowCfg.circleGlow}; opacity: 0.6; }
+          50%       { opacity: 0.9; }
         }
         @keyframes clCard${entry.changeType}${isLatest ? "L" : ""} {
-          0%, 100% { box-shadow: 0 0 8px ${glowCfg.c1}33, 0 0 0 1px ${glowCfg.c1}20; }
-          50%       { box-shadow: 0 0 16px ${glowCfg.c1}55, 0 0 0 1px ${glowCfg.c1}40, 0 0 32px ${glowCfg.c1}18; }
+          0%, 100% { box-shadow: 0 0 5px ${glowCfg.c1}22, 0 0 0 1px ${glowCfg.c1}15; }
+          50%       { box-shadow: 0 0 10px ${glowCfg.c1}38, 0 0 0 1px ${glowCfg.c1}28, 0 0 20px ${glowCfg.c1}12; }
         }
       `}</style>
       <div className="flex gap-4 sm:gap-6">

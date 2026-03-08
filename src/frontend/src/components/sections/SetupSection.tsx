@@ -234,48 +234,48 @@ export function SetupSection() {
     <section id="setup" className="py-24 relative overflow-hidden">
       <style>{`
         @keyframes osCorner_android {
-          0%, 100% { filter: drop-shadow(0 0 5px #00FF88) drop-shadow(0 0 10px #00CC44); opacity: 0.7; }
-          50% { filter: drop-shadow(0 0 10px #00CC44) drop-shadow(0 0 20px #00FF88); opacity: 1; }
+          0%, 100% { filter: drop-shadow(0 0 3px #00FF88) drop-shadow(0 0 6px #00CC44); opacity: 0.55; }
+          50% { filter: drop-shadow(0 0 6px #00CC44) drop-shadow(0 0 12px #00FF88); opacity: 0.85; }
         }
         @keyframes osCorner_windows {
-          0%, 100% { filter: drop-shadow(0 0 5px #0078FF) drop-shadow(0 0 10px #00BFFF); opacity: 0.7; }
-          50% { filter: drop-shadow(0 0 10px #00BFFF) drop-shadow(0 0 20px #0078FF); opacity: 1; }
+          0%, 100% { filter: drop-shadow(0 0 3px #0078FF) drop-shadow(0 0 6px #00BFFF); opacity: 0.55; }
+          50% { filter: drop-shadow(0 0 6px #00BFFF) drop-shadow(0 0 12px #0078FF); opacity: 0.85; }
         }
         @keyframes osCorner_macos {
-          0%, 100% { filter: drop-shadow(0 0 5px #B0C0D0) drop-shadow(0 0 10px #FFFFFF); opacity: 0.65; }
-          50% { filter: drop-shadow(0 0 10px #FFFFFF) drop-shadow(0 0 20px #E8E8E8); opacity: 1; }
+          0%, 100% { filter: drop-shadow(0 0 3px #B0C0D0) drop-shadow(0 0 6px #CCCCCC); opacity: 0.5; }
+          50% { filter: drop-shadow(0 0 6px #DDDDDD) drop-shadow(0 0 12px #E8E8E8); opacity: 0.8; }
         }
         @keyframes osCorner_linux {
-          0%, 100% { filter: drop-shadow(0 0 5px #FF6A00) drop-shadow(0 0 10px #FFD700); opacity: 0.7; }
-          50% { filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 20px #FF6A00); opacity: 1; }
+          0%, 100% { filter: drop-shadow(0 0 3px #FF6A00) drop-shadow(0 0 6px #FFD700); opacity: 0.55; }
+          50% { filter: drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 12px #FF6A00); opacity: 0.85; }
         }
         [data-ocid="setup.android.tab"][data-state="active"] {
           background: linear-gradient(135deg, #00FF88, #00CC44) !important;
           color: #000 !important;
-          box-shadow: 0 0 24px rgba(0,255,136,0.6), 0 4px 16px rgba(0,204,68,0.4) !important;
+          box-shadow: 0 0 14px rgba(0,255,136,0.4), 0 3px 10px rgba(0,204,68,0.25) !important;
           border-color: #00FF88 !important;
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
         [data-ocid="setup.windows.tab"][data-state="active"] {
           background: linear-gradient(135deg, #0078FF, #00BFFF) !important;
           color: #fff !important;
-          box-shadow: 0 0 24px rgba(0,120,255,0.6), 0 4px 16px rgba(0,191,255,0.4) !important;
+          box-shadow: 0 0 14px rgba(0,120,255,0.4), 0 3px 10px rgba(0,191,255,0.25) !important;
           border-color: #0078FF !important;
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
         [data-ocid="setup.macos.tab"][data-state="active"] {
           background: linear-gradient(135deg, #C8C8C8, #FFFFFF) !important;
           color: #000 !important;
-          box-shadow: 0 0 24px rgba(255,255,255,0.5), 0 4px 16px rgba(200,200,200,0.4) !important;
+          box-shadow: 0 0 14px rgba(220,220,220,0.35), 0 3px 10px rgba(200,200,200,0.25) !important;
           border-color: #E0E0E0 !important;
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
         [data-ocid="setup.linux.tab"][data-state="active"] {
           background: linear-gradient(135deg, #FF6A00, #FFD700) !important;
           color: #000 !important;
-          box-shadow: 0 0 24px rgba(255,106,0,0.6), 0 4px 16px rgba(255,215,0,0.4) !important;
+          box-shadow: 0 0 14px rgba(255,106,0,0.4), 0 3px 10px rgba(255,215,0,0.25) !important;
           border-color: #FF6A00 !important;
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
       `}</style>
       <DotsBackground />
