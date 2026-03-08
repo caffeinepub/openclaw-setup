@@ -38,6 +38,7 @@ import {
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { DotsBackground } from "../DotsBackground";
+import { WorldMapFlat } from "../WorldMapFlat";
 
 function RobotMascot() {
   return (
@@ -2216,6 +2217,11 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
         <div className="flex flex-col items-center gap-5 mt-8">
           <HandleClaimCard onOpenCreateAccount={onOpenCreateAccount} />
           <IntegrationSearchBar />
+        </div>
+
+        {/* World Map — full-width below claim section */}
+        <div className="w-full mt-6">
+          <WorldMapFlat />
         </div>
       </div>
 
