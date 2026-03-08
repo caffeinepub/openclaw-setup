@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { SiWhatsapp } from "react-icons/si";
+import { SiTelegram, SiWhatsapp } from "react-icons/si";
 import { toast } from "sonner";
 import {
   type ClaimedReward,
@@ -348,6 +348,15 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
           <div className="flex flex-1 overflow-hidden min-h-0">
             {/* ─── LEFT SIDEBAR ─── */}
             <aside className="w-[260px] flex-shrink-0 border-r border-[oklch(1_0_0_/_7%)] bg-[oklch(0.08_0.012_240)] flex flex-col overflow-hidden hidden md:flex">
+              {/* Gradient header stripe based on tier */}
+              <div
+                className="h-1.5 w-full flex-shrink-0"
+                style={{
+                  background: tierStyle
+                    ? `linear-gradient(90deg, transparent, ${tierStyle.color}, oklch(0.65 0.15 210), ${tierStyle.color}, transparent)`
+                    : "linear-gradient(90deg, transparent, oklch(0.65 0.15 210), oklch(0.55 0.18 290), transparent)",
+                }}
+              />
               <ScrollArea className="flex-1">
                 <div className="p-5 space-y-5">
                   {/* User Identity Card */}
@@ -656,97 +665,257 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                     <Separator className="bg-[oklch(1_0_0_/_6%)]" />
                   </div>
 
-                  {/* Integrations */}
+                  {/* Integrations — Rich API Panels */}
                   <div className="space-y-2.5">
                     <div className="flex items-center gap-1.5">
                       <Plug className="w-3.5 h-3.5 text-[oklch(0.55_0.08_210)]" />
                       <span className="text-[11px] font-semibold text-[oklch(0.50_0.04_210)] uppercase tracking-wider">
-                        Integrations
+                        API Integrations
                       </span>
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      {/* WhatsApp Bot */}
+                    <div className="flex flex-col gap-2">
+                      {/* WhatsApp Bot API */}
                       <button
                         type="button"
                         onClick={() => setActiveTab("chatbot")}
-                        className="flex items-center gap-2 p-2 rounded-lg border transition-all hover:brightness-110"
+                        className="group relative rounded-xl border overflow-hidden text-left transition-all hover:scale-[1.01] hover:brightness-110 active:scale-[0.99]"
                         style={{
                           background: hasWhatsapp
-                            ? "oklch(0.55 0.18 150 / 8%)"
-                            : "oklch(0.12 0.01 240)",
+                            ? "linear-gradient(135deg, oklch(0.12 0.04 150), oklch(0.10 0.02 240))"
+                            : "oklch(0.10 0.01 240)",
                           borderColor: hasWhatsapp
-                            ? "oklch(0.55 0.18 150 / 30%)"
+                            ? "oklch(0.55 0.18 150 / 35%)"
                             : "oklch(1 0 0 / 8%)",
+                          borderLeftColor: "oklch(0.55 0.18 150)",
+                          borderLeftWidth: "3px",
+                          boxShadow: hasWhatsapp
+                            ? "0 2px 12px oklch(0.55 0.18 150 / 15%)"
+                            : "none",
                         }}
                       >
-                        <SiWhatsapp
-                          className="w-4 h-4 flex-shrink-0"
-                          style={{
-                            color: hasWhatsapp
-                              ? "oklch(0.65 0.18 150)"
-                              : "oklch(0.40 0.02 210)",
-                          }}
-                        />
-                        <span className="text-[10px] text-[oklch(0.65_0.03_210)]">
-                          WhatsApp Bot
-                        </span>
-                        {hasWhatsapp && (
-                          <span className="ml-auto text-[8px] text-[oklch(0.65_0.18_150)] font-semibold bg-[oklch(0.55_0.18_150)/12%] px-1.5 py-0.5 rounded-full">
-                            ON
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2.5 p-2.5">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: "oklch(0.55 0.18 150 / 15%)",
+                              border: "1px solid oklch(0.55 0.18 150 / 30%)",
+                            }}
+                          >
+                            <SiWhatsapp
+                              className="w-4 h-4"
+                              style={{ color: "oklch(0.65 0.18 150)" }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-semibold text-[oklch(0.80_0.04_210)]">
+                                WhatsApp Bot
+                              </span>
+                              {hasWhatsapp && (
+                                <span className="flex items-center gap-0.5">
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full"
+                                    style={{
+                                      background: "oklch(0.65 0.18 150)",
+                                      boxShadow: "0 0 4px oklch(0.65 0.18 150)",
+                                    }}
+                                  />
+                                  <span className="text-[9px] text-[oklch(0.62_0.18_150)] font-bold">
+                                    ON
+                                  </span>
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] text-[oklch(0.45_0.03_210)] font-mono truncate block">
+                              {chatbotConfig?.phoneNumber
+                                ? chatbotConfig.phoneNumber
+                                : "BotFather API · Not set"}
+                            </span>
+                          </div>
+                          <Badge
+                            className="text-[8px] px-1 py-0 h-3.5 flex-shrink-0 border"
+                            style={{
+                              background: "oklch(0.55 0.18 150 / 10%)",
+                              color: "oklch(0.62 0.18 150)",
+                              borderColor: "oklch(0.55 0.18 150 / 25%)",
+                            }}
+                          >
+                            {hasWhatsapp ? "Connected" : "Setup"}
+                          </Badge>
+                        </div>
                       </button>
 
-                      {/* OpenAI */}
+                      {/* BotFather / Telegram Bot API */}
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab("chatbot")}
+                        className="group relative rounded-xl border overflow-hidden text-left transition-all hover:scale-[1.01] hover:brightness-110 active:scale-[0.99]"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, oklch(0.11 0.04 230), oklch(0.10 0.02 240))",
+                          borderColor: "oklch(0.55 0.15 230 / 25%)",
+                          borderLeftColor: "oklch(0.58 0.18 230)",
+                          borderLeftWidth: "3px",
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5 p-2.5">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: "oklch(0.55 0.15 230 / 15%)",
+                              border: "1px solid oklch(0.55 0.15 230 / 30%)",
+                            }}
+                          >
+                            <SiTelegram
+                              className="w-4 h-4"
+                              style={{ color: "oklch(0.68 0.18 230)" }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-semibold text-[oklch(0.80_0.04_210)]">
+                                Telegram Bot
+                              </span>
+                            </div>
+                            <span className="text-[9px] text-[oklch(0.45_0.03_210)] truncate block">
+                              BotFather API · Available
+                            </span>
+                          </div>
+                          <Badge
+                            className="text-[8px] px-1 py-0 h-3.5 flex-shrink-0 border"
+                            style={{
+                              background: "oklch(0.55 0.15 230 / 10%)",
+                              color: "oklch(0.65 0.18 230)",
+                              borderColor: "oklch(0.55 0.15 230 / 25%)",
+                            }}
+                          >
+                            Bot API
+                          </Badge>
+                        </div>
+                      </button>
+
+                      {/* OpenAI AI Assistant */}
                       <button
                         type="button"
                         onClick={() => setActiveTab("ai")}
-                        className="flex items-center gap-2 p-2 rounded-lg border transition-all hover:brightness-110"
+                        className="group relative rounded-xl border overflow-hidden text-left transition-all hover:scale-[1.01] hover:brightness-110 active:scale-[0.99]"
                         style={{
                           background: hasOpenAI
-                            ? "oklch(0.60 0.20 290 / 8%)"
-                            : "oklch(0.12 0.01 240)",
+                            ? "linear-gradient(135deg, oklch(0.12 0.05 290), oklch(0.10 0.02 240))"
+                            : "oklch(0.10 0.01 240)",
                           borderColor: hasOpenAI
-                            ? "oklch(0.60 0.20 290 / 30%)"
+                            ? "oklch(0.60 0.20 290 / 35%)"
                             : "oklch(1 0 0 / 8%)",
+                          borderLeftColor: "oklch(0.65 0.20 290)",
+                          borderLeftWidth: "3px",
+                          boxShadow: hasOpenAI
+                            ? "0 2px 12px oklch(0.60 0.20 290 / 15%)"
+                            : "none",
                         }}
                       >
-                        <Sparkles
-                          className="w-4 h-4 flex-shrink-0"
-                          style={{
-                            color: hasOpenAI
-                              ? "oklch(0.75 0.22 290)"
-                              : "oklch(0.40 0.02 210)",
-                          }}
-                        />
-                        <span className="text-[10px] text-[oklch(0.65_0.03_210)]">
-                          AI Assistant
-                        </span>
-                        {hasOpenAI && (
-                          <span className="ml-auto text-[8px] text-[oklch(0.75_0.22_290)] font-semibold bg-[oklch(0.60_0.20_290)/12%] px-1.5 py-0.5 rounded-full">
-                            ON
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2.5 p-2.5">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: "oklch(0.60 0.20 290 / 15%)",
+                              border: "1px solid oklch(0.60 0.20 290 / 30%)",
+                            }}
+                          >
+                            <Sparkles
+                              className="w-4 h-4"
+                              style={{ color: "oklch(0.75 0.22 290)" }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-semibold text-[oklch(0.80_0.04_210)]">
+                                AI Assistant
+                              </span>
+                              {hasOpenAI && (
+                                <span className="flex items-center gap-0.5">
+                                  <span
+                                    className="w-1.5 h-1.5 rounded-full"
+                                    style={{
+                                      background: "oklch(0.75 0.22 290)",
+                                      boxShadow: "0 0 4px oklch(0.75 0.22 290)",
+                                    }}
+                                  />
+                                  <span className="text-[9px] text-[oklch(0.72_0.22_290)] font-bold">
+                                    ON
+                                  </span>
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] text-[oklch(0.45_0.03_210)] font-mono truncate block">
+                              {hasOpenAI ? "sk-••••••••••" : "OpenAI · Not set"}
+                            </span>
+                          </div>
+                          <Badge
+                            className="text-[8px] px-1 py-0 h-3.5 flex-shrink-0 border"
+                            style={{
+                              background: "oklch(0.60 0.20 290 / 10%)",
+                              color: "oklch(0.72 0.22 290)",
+                              borderColor: "oklch(0.60 0.20 290 / 25%)",
+                            }}
+                          >
+                            AI API
+                          </Badge>
+                        </div>
                       </button>
 
-                      {/* OpenClaw API */}
+                      {/* OpenClaw REST API */}
                       <button
                         type="button"
                         onClick={() => setActiveTab("api")}
-                        className="flex items-center gap-2 p-2 rounded-lg border border-[oklch(1_0_0_/_8%)] bg-[oklch(0.12_0.01_240)] transition-all hover:brightness-110"
+                        className="group relative rounded-xl border overflow-hidden text-left transition-all hover:scale-[1.01] hover:brightness-110 active:scale-[0.99]"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, oklch(0.11 0.04 190), oklch(0.10 0.02 240))",
+                          borderColor: "oklch(0.62 0.18 190 / 25%)",
+                          borderLeftColor: "oklch(0.65 0.18 190)",
+                          borderLeftWidth: "3px",
+                        }}
                       >
-                        <Terminal className="w-4 h-4 flex-shrink-0 text-[oklch(0.65_0.15_200)]" />
-                        <span className="text-[10px] text-[oklch(0.65_0.03_210)]">
-                          API Explorer
-                        </span>
+                        <div className="flex items-center gap-2.5 p-2.5">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{
+                              background: "oklch(0.62 0.18 190 / 15%)",
+                              border: "1px solid oklch(0.62 0.18 190 / 30%)",
+                            }}
+                          >
+                            <Terminal
+                              className="w-4 h-4"
+                              style={{ color: "oklch(0.72 0.18 190)" }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[11px] font-semibold text-[oklch(0.80_0.04_210)] block">
+                              OpenClaw API
+                            </span>
+                            <span className="text-[9px] text-[oklch(0.45_0.03_210)] truncate block">
+                              REST API · Explorer Ready
+                            </span>
+                          </div>
+                          <Badge
+                            className="text-[8px] px-1 py-0 h-3.5 flex-shrink-0 border"
+                            style={{
+                              background: "oklch(0.62 0.18 190 / 10%)",
+                              color: "oklch(0.70 0.18 190)",
+                              borderColor: "oklch(0.62 0.18 190 / 25%)",
+                            }}
+                          >
+                            REST
+                          </Badge>
+                        </div>
                       </button>
 
                       {/* Add Integration */}
                       <button
                         type="button"
                         onClick={() => setActiveTab("profile")}
-                        className="flex items-center gap-2 p-2 rounded-lg border border-dashed border-[oklch(1_0_0_/_12%)] bg-transparent transition-all hover:border-[oklch(0.65_0.12_210)]/40 hover:bg-[oklch(0.65_0.12_210)]/5"
+                        className="flex items-center gap-2 p-2.5 rounded-xl border border-dashed border-[oklch(1_0_0_/_12%)] bg-transparent transition-all hover:border-[oklch(0.65_0.12_210)]/40 hover:bg-[oklch(0.65_0.12_210)]/5"
                       >
                         <Plus className="w-4 h-4 flex-shrink-0 text-[oklch(0.38_0.02_210)]" />
                         <span className="text-[10px] text-[oklch(0.38_0.02_210)]">
@@ -840,6 +1009,14 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                 boxShadow: "inset 0 1px 0 oklch(1 0 0 / 10%)",
               }}
             >
+              {/* Colorful gradient accent bar at top */}
+              <div
+                className="h-0.5 w-full flex-shrink-0"
+                style={{
+                  background:
+                    "linear-gradient(90deg, oklch(0.65 0.20 210), oklch(0.65 0.22 145), oklch(0.70 0.22 290), oklch(0.68 0.18 190), oklch(0.72 0.18 60), oklch(0.68 0.20 15))",
+                }}
+              />
               {/* Top bar with close button */}
               <div className="flex items-center justify-between px-5 py-3.5 border-b border-[oklch(1_0_0_/_7%)] bg-[oklch(0.10_0.012_240)] flex-shrink-0">
                 <div className="flex items-center gap-3">
@@ -891,74 +1068,155 @@ export function MemberDashboard({ onClose }: MemberDashboardProps) {
                 onValueChange={setActiveTab}
                 className="flex-1 flex flex-col overflow-hidden"
               >
+                {/* Colorful Card Tabs */}
                 <TabsList
-                  className="flex mx-4 mt-3 mb-0 bg-[oklch(0.08_0.01_240)] border border-[oklch(1_0_0_/_8%)] flex-shrink-0 h-auto p-1 gap-0.5 overflow-x-auto rounded-xl"
-                  style={{ boxShadow: "inset 0 1px 0 oklch(1 0 0 / 5%)" }}
+                  className="flex mx-4 mt-3 mb-0 bg-transparent border-none flex-shrink-0 h-auto p-0 gap-1.5 overflow-x-auto rounded-none"
+                  asChild={false}
                 >
                   {[
                     {
                       value: "profile",
-                      icon: <User className="w-3.5 h-3.5" />,
+                      icon: <User className="w-4 h-4" />,
                       label: "Profile",
-                      color: "oklch(0.75_0.12_210)",
+                      activeColor: "oklch(0.65 0.20 210)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.30 0.12 210), oklch(0.22 0.08 220))",
+                      activeShadow: "0 4px 16px oklch(0.65 0.20 210 / 40%)",
+                      inactiveBorder: "oklch(0.65 0.20 210 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 210)",
                     },
                     {
                       value: "configs",
-                      icon: <Settings className="w-3.5 h-3.5" />,
+                      icon: <Settings className="w-4 h-4" />,
                       label: "Configs",
-                      color: "oklch(0.75_0.12_210)",
+                      activeColor: "oklch(0.65 0.20 280)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.30 0.12 280), oklch(0.22 0.08 285))",
+                      activeShadow: "0 4px 16px oklch(0.65 0.20 280 / 40%)",
+                      inactiveBorder: "oklch(0.65 0.20 280 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 280)",
                     },
                     {
                       value: "chatbot",
-                      icon: <Bot className="w-3.5 h-3.5" />,
+                      icon: <Bot className="w-4 h-4" />,
                       label: "Bot",
-                      color: "oklch(0.65_0.18_150)",
+                      activeColor: "oklch(0.65 0.22 145)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.28 0.12 145), oklch(0.20 0.08 150))",
+                      activeShadow: "0 4px 16px oklch(0.65 0.22 145 / 40%)",
+                      inactiveBorder: "oklch(0.65 0.22 145 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 145)",
                     },
                     {
                       value: "ai",
-                      icon: <Sparkles className="w-3.5 h-3.5" />,
+                      icon: <Sparkles className="w-4 h-4" />,
                       label: "AI",
-                      color: "oklch(0.75_0.22_290)",
+                      activeColor: "oklch(0.70 0.22 290)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.30 0.14 290), oklch(0.22 0.10 295))",
+                      activeShadow: "0 4px 16px oklch(0.70 0.22 290 / 40%)",
+                      inactiveBorder: "oklch(0.70 0.22 290 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 290)",
                     },
                     {
                       value: "api",
-                      icon: <Terminal className="w-3.5 h-3.5" />,
+                      icon: <Terminal className="w-4 h-4" />,
                       label: "API",
-                      color: "oklch(0.75_0.18_200)",
+                      activeColor: "oklch(0.68 0.18 190)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.28 0.10 190), oklch(0.20 0.07 195))",
+                      activeShadow: "0 4px 16px oklch(0.68 0.18 190 / 40%)",
+                      inactiveBorder: "oklch(0.68 0.18 190 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 190)",
                     },
                     {
                       value: "transactions",
-                      icon: <Receipt className="w-3.5 h-3.5" />,
+                      icon: <Receipt className="w-4 h-4" />,
                       label: "Txns",
-                      color: "oklch(0.75_0.18_60)",
+                      activeColor: "oklch(0.72 0.18 60)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.30 0.12 60), oklch(0.22 0.08 55))",
+                      activeShadow: "0 4px 16px oklch(0.72 0.18 60 / 40%)",
+                      inactiveBorder: "oklch(0.72 0.18 60 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 60)",
                     },
                     {
                       value: "leaderboard",
-                      icon: <Trophy className="w-3.5 h-3.5" />,
+                      icon: <Trophy className="w-4 h-4" />,
                       label: "Rank",
-                      color: "oklch(0.75_0.20_55)",
+                      activeColor: "oklch(0.72 0.20 45)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.30 0.13 45), oklch(0.22 0.09 42))",
+                      activeShadow: "0 4px 16px oklch(0.72 0.20 45 / 40%)",
+                      inactiveBorder: "oklch(0.72 0.20 45 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 45)",
                     },
                     {
                       value: "notifications",
-                      icon: <BellIcon className="w-3.5 h-3.5" />,
+                      icon: <BellIcon className="w-4 h-4" />,
                       label: "Alerts",
-                      color: "oklch(0.75_0.15_30)",
+                      activeColor: "oklch(0.68 0.20 15)",
+                      activeBg:
+                        "linear-gradient(135deg, oklch(0.28 0.12 15), oklch(0.20 0.08 10))",
+                      activeShadow: "0 4px 16px oklch(0.68 0.20 15 / 40%)",
+                      inactiveBorder: "oklch(0.68 0.20 15 / 30%)",
+                      inactiveBg: "oklch(0.10 0.02 15)",
                     },
-                  ].map((tab) => (
-                    <TabsTrigger
-                      key={tab.value}
-                      value={tab.value}
-                      className="relative flex-1 py-2 px-2 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all data-[state=active]:bg-[oklch(0.65_0.15_210)/15%] data-[state=active]:text-[oklch(0.85_0.12_210)] data-[state=active]:shadow-[0_0_12px_oklch(0.65_0.15_210/30%)] text-[oklch(0.45_0.02_210)] hover:text-[oklch(0.65_0.08_210)] hover:bg-[oklch(1_0_0_/_4%)]"
-                    >
-                      {tab.icon}
-                      <span className="hidden sm:inline">{tab.label}</span>
-                      {tab.value === "notifications" && unreadCount > 0 && (
-                        <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 text-[8px] font-bold text-white flex items-center justify-center">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </TabsTrigger>
-                  ))}
+                  ].map((tab) => {
+                    const isActive = activeTab === tab.value;
+                    return (
+                      <TabsTrigger
+                        key={tab.value}
+                        value={tab.value}
+                        className="relative flex-1 flex flex-col items-center justify-center gap-1 rounded-xl border transition-all duration-200 min-w-0 p-0"
+                        style={{
+                          background: isActive ? tab.activeBg : tab.inactiveBg,
+                          borderColor: isActive
+                            ? tab.activeColor
+                            : tab.inactiveBorder,
+                          boxShadow: isActive ? tab.activeShadow : "none",
+                          color: isActive ? "white" : tab.activeColor,
+                          height: "52px",
+                          transform: isActive ? "scale(1.03)" : "scale(1)",
+                        }}
+                      >
+                        <div
+                          className="flex flex-col items-center gap-0.5 py-2 px-1"
+                          style={{ color: "inherit" }}
+                        >
+                          <span
+                            style={{
+                              color: isActive ? "white" : tab.activeColor,
+                              filter: isActive
+                                ? `drop-shadow(0 0 4px ${tab.activeColor})`
+                                : "none",
+                            }}
+                          >
+                            {tab.icon}
+                          </span>
+                          <span
+                            className="text-[9px] font-bold leading-none hidden sm:block"
+                            style={{
+                              color: isActive ? "white" : tab.activeColor,
+                            }}
+                          >
+                            {tab.label}
+                          </span>
+                        </div>
+                        {tab.value === "notifications" && unreadCount > 0 && (
+                          <span
+                            className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[8px] font-bold text-white flex items-center justify-center z-10"
+                            style={{
+                              background: "oklch(0.60 0.25 15)",
+                              boxShadow: "0 0 8px oklch(0.60 0.25 15)",
+                            }}
+                          >
+                            {unreadCount}
+                          </span>
+                        )}
+                      </TabsTrigger>
+                    );
+                  })}
                 </TabsList>
 
                 <ScrollArea className="flex-1 mt-3">

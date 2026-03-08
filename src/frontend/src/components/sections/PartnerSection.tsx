@@ -570,18 +570,49 @@ export function PartnerSection() {
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Main brand title */}
         <div className="mb-8">
-          <h2
-            className="text-4xl sm:text-5xl font-black tracking-tight mb-2"
+          <style>{`
+            @keyframes clawproPartnerShimmer {
+              0% { background-position: -200% center; }
+              100% { background-position: 200% center; }
+            }
+            @keyframes clawproPartnerFloat {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-6px); }
+            }
+            @keyframes clawproPartnerGlow {
+              0%, 100% { filter: drop-shadow(0 0 8px rgba(0,198,255,0.5)) drop-shadow(0 0 20px rgba(124,58,237,0.3)); }
+              50% { filter: drop-shadow(0 0 18px rgba(0,198,255,0.85)) drop-shadow(0 0 45px rgba(124,58,237,0.55)) drop-shadow(0 0 70px rgba(245,158,11,0.35)); }
+            }
+            @keyframes clawproSubtitleGlow {
+              0%, 100% { opacity: 0.45; letter-spacing: 0.12em; }
+              50% { opacity: 0.7; letter-spacing: 0.14em; }
+            }
+          `}</style>
+          <div
             style={{
-              background:
-                "linear-gradient(180deg, #ffffff 0%, #e0eaf4 40%, #a8bcc8 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
+              animation:
+                "clawproPartnerFloat 3s ease-in-out infinite, clawproPartnerGlow 3s ease-in-out infinite",
+              display: "inline-block",
             }}
           >
-            ClawPro.ai
-          </h2>
-          <p className="text-sm text-white/40 tracking-widest uppercase font-medium">
+            <h2
+              className="text-4xl sm:text-5xl font-black tracking-tight mb-2"
+              style={{
+                background:
+                  "linear-gradient(90deg, #a8bcc8 0%, #00c6ff 12%, #ffffff 28%, #f59e0b 44%, #7c3aed 60%, #00c6ff 76%, #ffffff 90%, #a8bcc8 100%)",
+                backgroundSize: "300% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                animation: "clawproPartnerShimmer 3s linear infinite",
+              }}
+            >
+              ClawPro.ai
+            </h2>
+          </div>
+          <p
+            className="text-sm text-white/40 tracking-widest uppercase font-medium"
+            style={{ animation: "clawproSubtitleGlow 3s ease-in-out infinite" }}
+          >
             Powered by the world's best
           </p>
         </div>

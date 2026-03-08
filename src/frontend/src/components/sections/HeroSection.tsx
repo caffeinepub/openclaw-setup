@@ -137,26 +137,26 @@ function ColorfulBackground() {
 
 function RobotMascot() {
   return (
-    <div className="relative flex items-center justify-center">
-      {/* Outer radial glow halo */}
+    <div className="relative flex items-center justify-center w-full">
+      {/* Outer radial glow halo -- red/gold theme */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(0,198,255,0.18) 0%, rgba(220,38,38,0.12) 40%, transparent 70%)",
+            "radial-gradient(ellipse 65% 75% at 50% 55%, rgba(220,38,38,0.22) 0%, rgba(255,215,0,0.14) 35%, rgba(180,0,0,0.08) 60%, transparent 80%)",
           animation: "mascotHalo 4s ease-in-out infinite alternate",
           borderRadius: "50%",
           zIndex: 5,
         }}
       />
-      {/* Pulsing ring effects */}
+      {/* Pulsing ring 1 -- crimson red */}
       <div
         className="absolute pointer-events-none"
         style={{
-          width: "300px",
-          height: "300px",
+          width: "min(300px, 80vw)",
+          height: "min(300px, 80vw)",
           borderRadius: "50%",
-          border: "2px solid rgba(0,198,255,0.2)",
+          border: "2px solid rgba(220,38,38,0.35)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
@@ -164,68 +164,90 @@ function RobotMascot() {
           zIndex: 4,
         }}
       />
+      {/* Pulsing ring 2 -- gold */}
       <div
         className="absolute pointer-events-none"
         style={{
-          width: "380px",
-          height: "380px",
+          width: "min(400px, 95vw)",
+          height: "min(400px, 95vw)",
           borderRadius: "50%",
-          border: "1px solid rgba(220,38,38,0.15)",
+          border: "1.5px solid rgba(255,215,0,0.2)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          animation: "mascotRing2 3s ease-in-out infinite 1s",
+          animation: "mascotRing2 3.5s ease-in-out infinite 0.8s",
+          zIndex: 4,
+        }}
+      />
+      {/* Pulsing ring 3 -- silver */}
+      <div
+        className="absolute pointer-events-none"
+        style={{
+          width: "min(480px, 110vw)",
+          height: "min(480px, 110vw)",
+          borderRadius: "50%",
+          border: "1px solid rgba(192,192,192,0.12)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          animation: "mascotRing3 5s ease-in-out infinite 1.5s",
           zIndex: 4,
         }}
       />
       {/* Ground shadow */}
       <div
-        className="absolute bottom-4 pointer-events-none"
+        className="absolute bottom-2 pointer-events-none"
         style={{
-          width: "220px",
-          height: "30px",
+          width: "min(220px, 60vw)",
+          height: "28px",
           borderRadius: "50%",
           background:
-            "radial-gradient(ellipse, rgba(0,198,255,0.25) 0%, transparent 70%)",
+            "radial-gradient(ellipse, rgba(220,38,38,0.35) 0%, rgba(255,215,0,0.2) 40%, transparent 70%)",
           animation: "mascotShadow 2.5s ease-in-out infinite alternate",
           zIndex: 4,
+          left: "50%",
+          transform: "translateX(-50%)",
         }}
       />
-      {/* Mascot image */}
+      {/* Mascot image -- shrimp claw */}
       <img
-        src="/assets/generated/clawpro-mascot-glowing-transparent.dim_600x700.png"
-        alt="ClawPro Robot Mascot"
+        src="/assets/generated/clawpro-shrimp-mascot-red-silver-gold-transparent.dim_700x800.png"
+        alt="ClawPro Shrimp Claw Mascot"
         className="relative z-10 w-auto"
         style={{
-          height: "420px",
-          maxHeight: "420px",
+          height: "clamp(260px, 42vw, 480px)",
+          maxHeight: "480px",
           objectFit: "contain",
-          animation: "mascotFloat 3s ease-in-out infinite",
+          animation: "mascotFloat 3.5s ease-in-out infinite",
           filter:
-            "drop-shadow(0 0 20px rgba(0,198,255,0.6)) drop-shadow(0 0 40px rgba(220,38,38,0.4)) drop-shadow(0 0 60px rgba(0,114,255,0.3))",
+            "drop-shadow(0 0 18px rgba(220,38,38,0.7)) drop-shadow(0 0 36px rgba(255,215,0,0.45)) drop-shadow(0 0 55px rgba(180,0,0,0.35))",
         }}
       />
       <style>{`
         @keyframes mascotFloat {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-12px) rotate(0.5deg); }
-          66% { transform: translateY(-6px) rotate(-0.5deg); }
+          30% { transform: translateY(-14px) rotate(0.6deg); }
+          65% { transform: translateY(-7px) rotate(-0.4deg); }
         }
         @keyframes mascotHalo {
-          0% { opacity: 0.6; transform: scale(1); }
-          100% { opacity: 1; transform: scale(1.08); }
+          0% { opacity: 0.55; transform: scale(1); }
+          100% { opacity: 1; transform: scale(1.1); }
         }
         @keyframes mascotRing1 {
           0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.08); }
+          50% { opacity: 0.85; transform: translate(-50%, -50%) scale(1.09); }
         }
         @keyframes mascotRing2 {
-          0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); }
-          50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.06); }
+          0%, 100% { opacity: 0.2; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.07); }
+        }
+        @keyframes mascotRing3 {
+          0%, 100% { opacity: 0.1; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 0.35; transform: translate(-50%, -50%) scale(1.05); }
         }
         @keyframes mascotShadow {
-          0% { opacity: 0.5; transform: scaleX(0.8); }
-          100% { opacity: 0.9; transform: scaleX(1.1); }
+          0% { opacity: 0.4; transform: translateX(-50%) scaleX(0.75); }
+          100% { opacity: 0.85; transform: translateX(-50%) scaleX(1.15); }
         }
       `}</style>
     </div>
@@ -2038,9 +2060,9 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
 
       {/* Content: two-column on lg+, stacked on mobile */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-0">
+        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-0">
           {/* Left: Text content */}
-          <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left">
+          <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left order-2 lg:order-1">
             {/* Version badge */}
             <div className="flex mb-6">
               <Badge
@@ -2132,19 +2154,9 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
             <ProfileDisplayCard />
           </div>
 
-          {/* Right: Robot mascot (desktop) */}
-          <div className="hidden lg:flex flex-1 items-center justify-center">
+          {/* Right: Shrimp Claw mascot -- shown on all screen sizes */}
+          <div className="flex flex-1 items-center justify-center w-full order-1 lg:order-2">
             <RobotMascot />
-          </div>
-
-          {/* Mobile: Robot below CTAs */}
-          <div className="flex lg:hidden items-center justify-center w-full">
-            <img
-              src="/assets/generated/clawpro-robot-mascot-transparent.dim_600x700.png"
-              alt="ClawPro Robot Mascot"
-              className="w-auto animate-float"
-              style={{ height: "240px", objectFit: "contain" }}
-            />
           </div>
         </div>
 

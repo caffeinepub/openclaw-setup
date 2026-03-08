@@ -7,6 +7,16 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export interface BlogPost {
+    id: bigint;
+    coverImageUrl: string;
+    title: string;
+    body: string;
+    createdAt: bigint;
+    tags: Array<string>;
+    authorName: string;
+    category: string;
+}
 export interface LeaderboardEntry {
     principal: Principal;
     displayName: string;
@@ -22,20 +32,6 @@ export interface FAQ {
     answer: string;
     category: string;
 }
-export interface MembershipRecord {
-    id: bigint;
-    owner: Principal;
-    tier: MembershipTier;
-    purchasedAt: bigint;
-}
-export interface TopReward {
-    title: string;
-    color: string;
-    rank: bigint;
-    description: string;
-    badge: string;
-    bonusTokens: bigint;
-}
 export interface ClaimedReward {
     title: string;
     rank: bigint;
@@ -43,9 +39,19 @@ export interface ClaimedReward {
     badge: string;
     bonusTokens: bigint;
 }
-export interface ChatbotConfig {
-    enabled: boolean;
-    phoneNumber: string;
+export interface ForumPost {
+    id: bigint;
+    body: string;
+    createdAt: bigint;
+    threadId: bigint;
+    authorHandle: string;
+    authorPrincipal: Principal;
+}
+export interface UserAccount {
+    fullName: string;
+    email: string;
+    handle: string;
+    phone: string;
 }
 export interface DownloadStats {
     windowsDownloads: bigint;
@@ -61,6 +67,52 @@ export interface SavedConfig {
     createdAt: bigint;
     configData: string;
 }
+export interface Changelog {
+    id: bigint;
+    title: string;
+    changeType: string;
+    description: string;
+    version: string;
+    releaseDate: string;
+    changesList: Array<string>;
+}
+export interface ForumThread {
+    id: bigint;
+    title: string;
+    createdAt: bigint;
+    replyCount: bigint;
+    lastActivityAt: bigint;
+    authorHandle: string;
+    authorPrincipal: Principal;
+    topicId: bigint;
+}
+export interface TopReward {
+    title: string;
+    color: string;
+    rank: bigint;
+    description: string;
+    badge: string;
+    bonusTokens: bigint;
+}
+export interface MembershipRecord {
+    id: bigint;
+    owner: Principal;
+    tier: MembershipTier;
+    purchasedAt: bigint;
+}
+export interface ForumNotification {
+    id: bigint;
+    createdAt: bigint;
+    read: boolean;
+    threadTitle: string;
+    threadId: bigint;
+    recipientPrincipal: Principal;
+    fromHandle: string;
+}
+export interface ChatbotConfig {
+    enabled: boolean;
+    phoneNumber: string;
+}
 export interface MembershipStats {
     totalGold: bigint;
     totalSilver: bigint;
@@ -71,14 +123,12 @@ export interface UserProfile {
     bio?: string;
     name: string;
 }
-export interface Changelog {
+export interface ForumTopic {
     id: bigint;
     title: string;
-    changeType: string;
+    createdAt: bigint;
     description: string;
-    version: string;
-    releaseDate: string;
-    changesList: Array<string>;
+    category: string;
 }
 export enum MembershipTier {
     gold = "gold",
@@ -91,37 +141,49 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
+    addBlogPost(title: string, body: string, authorName: string, category: string, tags: Array<string>, coverImageUrl: string): Promise<BlogPost>;
     addChangelog(version: string, releaseDate: string, title: string, description: string, changesList: Array<string>, changeType: string): Promise<void>;
     addFAQ(question: string, answer: string, category: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     claimTopReward(rank: bigint): Promise<ClaimedReward>;
+    createForumPost(threadId: bigint, body: string): Promise<ForumPost>;
+    createForumThread(topicId: bigint, title: string, body: string): Promise<ForumThread>;
     deleteChangelog(id: bigint): Promise<void>;
     deleteChatbotConfig(): Promise<void>;
     deleteConfig(id: bigint): Promise<void>;
     deleteFAQ(id: bigint): Promise<void>;
     getAllChangelog(): Promise<Array<Changelog>>;
     getAllFAQs(): Promise<Array<FAQ>>;
+    getBlogPosts(): Promise<Array<BlogPost>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChatbotConfig(): Promise<ChatbotConfig | null>;
     getDownloadsByOS(): Promise<DownloadStats>;
+    getForumPostsByThread(threadId: bigint): Promise<Array<ForumPost>>;
+    getForumThreadsByTopic(topicId: bigint): Promise<Array<ForumThread>>;
+    getForumTopics(): Promise<Array<ForumTopic>>;
     getLatestVersion(): Promise<string>;
     getLeaderboard(): Promise<Array<LeaderboardEntry>>;
     getMembershipStats(): Promise<MembershipStats>;
     getMyClaimedRewards(): Promise<Array<ClaimedReward>>;
     getMyConfigs(): Promise<Array<SavedConfig>>;
+    getMyForumNotifications(): Promise<Array<ForumNotification>>;
     getMyLeaderboardRank(): Promise<LeaderboardEntry | null>;
     getMyMembership(): Promise<MembershipRecord | null>;
+    getMyUserAccount(): Promise<UserAccount | null>;
     getTopRewards(): Promise<Array<TopReward>>;
     getTotalConfigsCount(): Promise<bigint>;
     getTotalDownloads(): Promise<bigint>;
     getTotalMembersCount(): Promise<bigint>;
+    getUserAccountByHandle(handle: string): Promise<UserAccount | null>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     hasClaimedReward(rank: bigint): Promise<boolean>;
     incrementDownload(os: string): Promise<void>;
     isCallerAdmin(): Promise<boolean>;
+    markForumNotificationRead(id: bigint): Promise<boolean>;
     purchaseMembership(tier: MembershipTier): Promise<bigint>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveChatbotConfig(phoneNumber: string, enabled: boolean): Promise<void>;
     saveConfig(name: string, os: string, configData: string): Promise<bigint>;
+    saveUserAccount(email: string, phone: string, fullName: string, handle: string): Promise<void>;
 }

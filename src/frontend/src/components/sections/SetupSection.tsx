@@ -1,7 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Apple, Check, Copy, Download, Monitor, Terminal } from "lucide-react";
+import {
+  Apple,
+  Check,
+  Copy,
+  Download,
+  Monitor,
+  Smartphone,
+  Terminal,
+} from "lucide-react";
 import { motion } from "motion/react";
 import type React from "react";
 import { useState } from "react";
@@ -12,9 +20,10 @@ import { DotsBackground } from "../DotsBackground";
 
 // ── OS Corner Glow ──
 type OSCornerPos = "tl" | "tr" | "bl" | "br";
-type OSType = "windows" | "macos" | "linux";
+type OSType = "android" | "windows" | "macos" | "linux";
 
 const OS_CORNER_COLORS: Record<OSType, { c1: string; c2: string }> = {
+  android: { c1: "#00FF88", c2: "#00CC44" },
   windows: { c1: "#0078FF", c2: "#00BFFF" },
   macos: { c1: "#E8E8E8", c2: "#FFFFFF" },
   linux: { c1: "#FF6A00", c2: "#FFD700" },
@@ -140,7 +149,13 @@ function InstallStep({
   );
 }
 
-const STEP_COMMANDS = {
+const STEP_COMMANDS: Record<OSType, { commands: string[] }[]> = {
+  android: [
+    { commands: [] },
+    { commands: ["adb install clawpro-latest.apk"] },
+    { commands: [] },
+    { commands: [] },
+  ],
   windows: [
     { commands: ["winget install OpenClaw.OpenClaw"] },
     { commands: [] },
@@ -166,17 +181,36 @@ const STEP_COMMANDS = {
   ],
 };
 
-const OS_ICONS = {
+const OS_ICONS: Record<OSType, React.ElementType> = {
+  android: Smartphone,
   windows: Monitor,
   macos: Apple,
   linux: Terminal,
 };
 
-const OS_LABELS = {
+const OS_LABELS: Record<OSType, string> = {
+  android: "Android",
   windows: "Windows",
   macos: "macOS",
   linux: "Linux",
 };
+
+// Android-specific steps (not in translation system)
+const ANDROID_STEPS = [
+  {
+    title: "Download from Google Play Store",
+    note: 'Search "ClawPro" on Google Play Store',
+  },
+  {
+    title: "Install APK (manual method)",
+    note: "Enable Unknown Sources in Settings → Security first",
+  },
+  {
+    title: "Open ClawPro and Sign In",
+    note: "Use your ClawPro account or ICP identity",
+  },
+  { title: "Configure and Start Automating", note: undefined },
+];
 
 export function SetupSection() {
   const { data: downloadStats } = useDownloadsByOS();
@@ -185,9 +219,7 @@ export function SetupSection() {
 
   const handleDownload = (os: string) => {
     incrementDownload.mutate(os);
-    toast.success(
-      `Initiating ${OS_LABELS[os as keyof typeof OS_LABELS]} download...`,
-    );
+    toast.success(`Initiating ${OS_LABELS[os as OSType] ?? os} download...`);
   };
 
   const getDownloadCount = (os: string) => {
@@ -201,6 +233,10 @@ export function SetupSection() {
   return (
     <section id="setup" className="py-24 relative overflow-hidden">
       <style>{`
+        @keyframes osCorner_android {
+          0%, 100% { filter: drop-shadow(0 0 5px #00FF88) drop-shadow(0 0 10px #00CC44); opacity: 0.7; }
+          50% { filter: drop-shadow(0 0 10px #00CC44) drop-shadow(0 0 20px #00FF88); opacity: 1; }
+        }
         @keyframes osCorner_windows {
           0%, 100% { filter: drop-shadow(0 0 5px #0078FF) drop-shadow(0 0 10px #00BFFF); opacity: 0.7; }
           50% { filter: drop-shadow(0 0 10px #00BFFF) drop-shadow(0 0 20px #0078FF); opacity: 1; }
@@ -212,6 +248,34 @@ export function SetupSection() {
         @keyframes osCorner_linux {
           0%, 100% { filter: drop-shadow(0 0 5px #FF6A00) drop-shadow(0 0 10px #FFD700); opacity: 0.7; }
           50% { filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 20px #FF6A00); opacity: 1; }
+        }
+        [data-ocid="setup.android.tab"][data-state="active"] {
+          background: linear-gradient(135deg, #00FF88, #00CC44) !important;
+          color: #000 !important;
+          box-shadow: 0 0 24px rgba(0,255,136,0.6), 0 4px 16px rgba(0,204,68,0.4) !important;
+          border-color: #00FF88 !important;
+          transform: translateY(-2px);
+        }
+        [data-ocid="setup.windows.tab"][data-state="active"] {
+          background: linear-gradient(135deg, #0078FF, #00BFFF) !important;
+          color: #fff !important;
+          box-shadow: 0 0 24px rgba(0,120,255,0.6), 0 4px 16px rgba(0,191,255,0.4) !important;
+          border-color: #0078FF !important;
+          transform: translateY(-2px);
+        }
+        [data-ocid="setup.macos.tab"][data-state="active"] {
+          background: linear-gradient(135deg, #C8C8C8, #FFFFFF) !important;
+          color: #000 !important;
+          box-shadow: 0 0 24px rgba(255,255,255,0.5), 0 4px 16px rgba(200,200,200,0.4) !important;
+          border-color: #E0E0E0 !important;
+          transform: translateY(-2px);
+        }
+        [data-ocid="setup.linux.tab"][data-state="active"] {
+          background: linear-gradient(135deg, #FF6A00, #FFD700) !important;
+          color: #000 !important;
+          box-shadow: 0 0 24px rgba(255,106,0,0.6), 0 4px 16px rgba(255,215,0,0.4) !important;
+          border-color: #FF6A00 !important;
+          transform: translateY(-2px);
         }
       `}</style>
       <DotsBackground />
@@ -247,15 +311,17 @@ export function SetupSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Tabs defaultValue="windows">
-            <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto mb-8 bg-card border border-border">
-              {(["windows", "macos", "linux"] as const).map((os) => {
+          <Tabs defaultValue="android">
+            {/* Pill-shaped glowing tab row */}
+            <TabsList className="flex flex-wrap gap-3 justify-center mb-8 bg-transparent border-0 p-0 h-auto">
+              {(["android", "windows", "macos", "linux"] as const).map((os) => {
                 const Icon = OS_ICONS[os];
                 return (
                   <TabsTrigger
                     key={os}
                     value={os}
-                    className="flex items-center gap-2 data-[state=active]:bg-cyan data-[state=active]:text-background data-[state=active]:shadow-glow-sm"
+                    data-ocid={`setup.${os}.tab`}
+                    className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold border transition-all duration-200 data-[state=inactive]:bg-black/40 data-[state=inactive]:text-white/60 data-[state=inactive]:border-white/15 data-[state=inactive]:shadow-none"
                   >
                     <Icon className="w-4 h-4" />
                     {OS_LABELS[os]}
@@ -264,9 +330,12 @@ export function SetupSection() {
               })}
             </TabsList>
 
-            {(["windows", "macos", "linux"] as const).map((os) => {
+            {(["android", "windows", "macos", "linux"] as const).map((os) => {
               const Icon = OS_ICONS[os];
-              const stepsData = t.setup[os].steps;
+              const stepsData =
+                os === "android"
+                  ? ANDROID_STEPS
+                  : t.setup[os as "windows" | "macos" | "linux"].steps;
               const cmdsData = STEP_COMMANDS[os];
               return (
                 <TabsContent key={os} value={os}>
@@ -322,7 +391,7 @@ export function SetupSection() {
                                 ? cmdsData[idx].commands
                                 : undefined
                             }
-                            note={step.note}
+                            note={step.note ?? undefined}
                             copiedLabel={t.setup.copiedToClipboard}
                           />
                         ))}

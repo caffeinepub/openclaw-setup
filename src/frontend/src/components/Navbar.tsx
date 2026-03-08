@@ -112,19 +112,19 @@ export function Navbar({
               onClick={() => handleNavClick("#hero")}
             >
               <img
-                src="/assets/generated/clawpro-logo-glowing-transparent.dim_600x150.png"
-                alt="ClawPro"
-                className="h-12 w-auto object-contain"
+                src="/assets/generated/clawpro-navbar-logo-claw-elegant-transparent.dim_500x120.png"
+                alt="ClawPro.ai"
+                className="h-10 w-auto object-contain"
                 style={{
                   filter:
-                    "drop-shadow(0 0 10px rgba(0, 198, 255, 0.7)) drop-shadow(0 0 20px rgba(220, 38, 38, 0.5)) drop-shadow(0 0 35px rgba(0, 114, 255, 0.4))",
+                    "drop-shadow(0 0 10px rgba(220, 38, 38, 0.75)) drop-shadow(0 0 22px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 38px rgba(180, 0, 0, 0.4))",
                   animation: "logoGlow 3s ease-in-out infinite alternate",
                 }}
               />
               <style>{`
                 @keyframes logoGlow {
-                  0% { filter: drop-shadow(0 0 8px rgba(0,198,255,0.6)) drop-shadow(0 0 16px rgba(220,38,38,0.4)); }
-                  100% { filter: drop-shadow(0 0 18px rgba(0,198,255,0.9)) drop-shadow(0 0 32px rgba(220,38,38,0.7)) drop-shadow(0 0 48px rgba(0,114,255,0.5)); }
+                  0% { filter: drop-shadow(0 0 8px rgba(220,38,38,0.65)) drop-shadow(0 0 16px rgba(255,215,0,0.4)); }
+                  100% { filter: drop-shadow(0 0 20px rgba(220,38,38,0.95)) drop-shadow(0 0 36px rgba(255,215,0,0.65)) drop-shadow(0 0 52px rgba(192,192,192,0.35)); }
                 }
               `}</style>
             </motion.div>

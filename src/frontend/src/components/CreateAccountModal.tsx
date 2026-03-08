@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiGoogle } from "react-icons/si";
 import { toast } from "sonner";
 import { useSaveUserAccount } from "../hooks/useForumQueries";
@@ -74,6 +74,69 @@ function GlowCorner({ position }: { position: "tl" | "tr" | "bl" | "br" }) {
   );
 }
 
+// Pre-computed confetti particle data - stable keys, no array index
+const CONFETTI_PARTICLES = [
+  { id: "cp-a", color: "#00c6ff", angle: 0, dist: 80, big: true },
+  { id: "cp-b", color: "#7c3aed", angle: 15, dist: 100, big: false },
+  { id: "cp-c", color: "#f59e0b", angle: 30, dist: 120, big: false },
+  { id: "cp-d", color: "#10b981", angle: 45, dist: 80, big: true },
+  { id: "cp-e", color: "#f43f5e", angle: 60, dist: 100, big: false },
+  { id: "cp-f", color: "#818cf8", angle: 75, dist: 100, big: false },
+  { id: "cp-g", color: "#22d3ee", angle: 90, dist: 80, big: true },
+  { id: "cp-h", color: "#fbbf24", angle: 105, dist: 120, big: false },
+  { id: "cp-i", color: "#00c6ff", angle: 120, dist: 100, big: false },
+  { id: "cp-j", color: "#7c3aed", angle: 135, dist: 80, big: true },
+  { id: "cp-k", color: "#f59e0b", angle: 150, dist: 100, big: false },
+  { id: "cp-l", color: "#10b981", angle: 165, dist: 120, big: false },
+  { id: "cp-m", color: "#f43f5e", angle: 180, dist: 80, big: true },
+  { id: "cp-n", color: "#818cf8", angle: 195, dist: 100, big: false },
+  { id: "cp-o", color: "#22d3ee", angle: 210, dist: 100, big: false },
+  { id: "cp-p", color: "#fbbf24", angle: 225, dist: 80, big: true },
+  { id: "cp-q", color: "#00c6ff", angle: 240, dist: 120, big: false },
+  { id: "cp-r", color: "#7c3aed", angle: 255, dist: 100, big: false },
+  { id: "cp-s", color: "#f59e0b", angle: 270, dist: 80, big: true },
+  { id: "cp-t", color: "#10b981", angle: 285, dist: 100, big: false },
+  { id: "cp-u", color: "#f43f5e", angle: 300, dist: 120, big: false },
+  { id: "cp-v", color: "#818cf8", angle: 315, dist: 80, big: true },
+  { id: "cp-w", color: "#22d3ee", angle: 330, dist: 100, big: false },
+  { id: "cp-x", color: "#fbbf24", angle: 345, dist: 100, big: false },
+] as const;
+
+const CONFETTI_KEYFRAMES = CONFETTI_PARTICLES.map((p, idx) => {
+  const rad = (p.angle * Math.PI) / 180;
+  const tx = Math.cos(rad) * p.dist;
+  const ty = Math.sin(rad) * p.dist;
+  return `@keyframes confettiP${idx} { 0%{transform:translate(-50%,-50%) scale(1.2);opacity:1} 100%{transform:translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0.2) rotate(${idx * 45}deg);opacity:0} }`;
+}).join("\n");
+
+function ConfettiBurst() {
+  return (
+    <div
+      className="absolute inset-0 pointer-events-none rounded-2xl"
+      style={{ zIndex: 50, overflow: "hidden" }}
+    >
+      {CONFETTI_PARTICLES.map((p, idx) => (
+        <div
+          key={p.id}
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "42%",
+            width: p.big ? 10 : 7,
+            height: p.big ? 10 : 7,
+            borderRadius: p.big ? "50%" : 2,
+            background: p.color,
+            transform: "translate(-50%, -50%)",
+            animation: `confettiP${idx} 1.2s ease-out forwards`,
+            boxShadow: `0 0 6px ${p.color}`,
+          }}
+        />
+      ))}
+      <style>{CONFETTI_KEYFRAMES}</style>
+    </div>
+  );
+}
+
 function FieldWrapper({ children }: { children: React.ReactNode }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -113,6 +176,25 @@ export function CreateAccountModal({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [confettiBurst, setConfettiBurst] = useState(false);
+  const prevMatchRef = useRef(false);
+
+  // Confetti burst when passwords match
+  useEffect(() => {
+    const nowMatch =
+      password === confirmPassword &&
+      confirmPassword.length >= 8 &&
+      password.length >= 8;
+    if (nowMatch && !prevMatchRef.current) {
+      setConfettiBurst(true);
+      const timer = setTimeout(() => setConfettiBurst(false), 1200);
+      prevMatchRef.current = true;
+      return () => clearTimeout(timer);
+    }
+    if (!nowMatch) {
+      prevMatchRef.current = false;
+    }
+  }, [password, confirmPassword]);
 
   // Sync prefill when modal opens or prefills change
   useEffect(() => {
@@ -203,23 +285,27 @@ export function CreateAccountModal({
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="relative w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              boxShadow:
+                "0 0 60px rgba(0,114,255,0.35), 0 0 120px rgba(124,58,237,0.2), 0 30px 80px rgba(0,0,0,0.7)",
+            }}
           >
             {/* Spinning gradient border */}
             <div
               className="absolute inset-0 rounded-2xl pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(135deg, #00c6ff, #0072ff, #7c3aed, #00c6ff)",
+                  "linear-gradient(135deg, #00c6ff, #0072ff, #7c3aed, #f59e0b, #00c6ff)",
                 backgroundSize: "300% 300%",
                 animation: "borderSpinAcc 3s ease infinite",
-                padding: "1.5px",
+                padding: "2px",
                 zIndex: -1,
               }}
             />
 
             {/* Modal card */}
             <div
-              className="relative rounded-2xl bg-[#030508] p-6 space-y-5"
+              className="relative rounded-2xl bg-[#030508] p-6 space-y-5 overflow-hidden"
               style={{
                 boxShadow:
                   "0 0 40px rgba(0,114,255,0.2), 0 0 80px rgba(124,58,237,0.12), 0 20px 60px rgba(0,0,0,0.6)",
@@ -232,9 +318,31 @@ export function CreateAccountModal({
               <GlowCorner position="bl" />
               <GlowCorner position="br" />
 
+              {/* Confetti burst overlay */}
+              {confettiBurst && <ConfettiBurst />}
+
               {/* Header */}
               <div className="flex items-center justify-between relative z-10">
                 <div>
+                  {/* ClawPro.ai glowing brand text */}
+                  <div className="flex items-center mb-1">
+                    <span
+                      style={{
+                        fontSize: "0.95rem",
+                        fontWeight: 900,
+                        letterSpacing: "0.06em",
+                        background:
+                          "linear-gradient(90deg, #00c6ff 0%, #0072ff 20%, #7c3aed 45%, #f59e0b 70%, #00c6ff 100%)",
+                        backgroundSize: "200% auto",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        animation: "clawproHeaderShimmer 2.5s linear infinite",
+                        display: "inline-block",
+                      }}
+                    >
+                      ClawPro.ai
+                    </span>
+                  </div>
                   <h2
                     className="text-xl font-black text-white"
                     style={{
@@ -484,11 +592,12 @@ export function CreateAccountModal({
                     </FieldWrapper>
                     {confirmPassword.length > 0 && (
                       <p
-                        className={`text-[10px] flex items-center gap-1 ${password === confirmPassword ? "text-emerald-400" : "text-red-400"}`}
+                        className={`text-[10px] flex items-center gap-1 transition-all duration-300 ${password === confirmPassword ? "text-emerald-400" : "text-red-400"}`}
                       >
                         {password === confirmPassword ? (
                           <>
                             <CheckCircle2 className="w-3 h-3" /> Passwords match
+                            ✨
                           </>
                         ) : (
                           <>
@@ -559,6 +668,10 @@ export function CreateAccountModal({
           </motion.div>
 
           <style>{`
+            @keyframes clawproHeaderShimmer {
+              0% { background-position: 0% center; }
+              100% { background-position: 200% center; }
+            }
             @keyframes borderSpinAcc {
               0% { background-position: 0% 50%; }
               50% { background-position: 100% 50%; }
