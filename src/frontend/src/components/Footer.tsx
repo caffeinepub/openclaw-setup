@@ -2,8 +2,8 @@ import {
   BookOpen,
   Bug,
   Github,
-  Heart,
   MessageCircle,
+  Sparkles,
   Twitter,
 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -11,9 +11,6 @@ import { DotsBackground } from "./DotsBackground";
 
 export function Footer() {
   const year = new Date().getFullYear();
-  const hostname =
-    typeof window !== "undefined" ? window.location.hostname : "";
-  const caffeineUrl = `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(hostname)}`;
   const { t } = useLanguage();
 
   return (
@@ -265,16 +262,40 @@ export function Footer() {
             © {year} {t.footer.copyright}
           </p>
           <p className="flex items-center gap-1.5">
+            <Sparkles
+              className="w-3.5 h-3.5 flex-shrink-0"
+              style={{
+                color: "#f59e0b",
+                filter: "drop-shadow(0 0 4px #f59e0b)",
+              }}
+            />
             {t.footer.builtWith}{" "}
-            <Heart className="w-3.5 h-3.5 text-cyan fill-cyan animate-glow-pulse" />{" "}
-            using{" "}
             <a
-              href={caffeineUrl}
+              href="https://andri.id"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-cyan hover:underline font-medium"
+              style={{
+                background:
+                  "linear-gradient(90deg, #00c6ff, #f59e0b, #a78bfa, #00c6ff)",
+                backgroundSize: "300% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "footerLogoShimmer 3s linear infinite",
+                fontWeight: 700,
+                letterSpacing: "0.01em",
+                textDecoration: "none",
+                transition: "filter 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.filter =
+                  "drop-shadow(0 0 8px rgba(0,198,255,0.7))";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.filter = "none";
+              }}
             >
-              caffeine.ai
+              andri.id
             </a>
           </p>
         </div>

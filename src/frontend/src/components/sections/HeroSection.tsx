@@ -385,6 +385,7 @@ function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
   const { identity, login } = useInternetIdentity();
   const { data: profile } = useCallerUserProfile();
   const saveProfile = useSaveCallerUserProfile();
+  const { t } = useLanguage();
 
   const [handle, setHandle] = useState("");
   const [fullName, setFullName] = useState("");
@@ -505,7 +506,7 @@ function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
                 textShadow: "0 0 10px rgba(245,158,11,0.4)",
               }}
             >
-              Claim your ClawPro handle
+              {t.hero.claimHandle}
             </span>
             {saved && (
               <CheckCircle2
@@ -516,14 +517,16 @@ function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
             {!identity && (
               <span className="ml-auto text-xs text-amber-500/70 flex items-center gap-1">
                 <LogIn className="w-3 h-3" />
-                Login to save
+                {t.hero.loginToSave}
               </span>
             )}
           </div>
 
           {/* Handle field */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Username</Label>
+            <Label className="text-xs text-muted-foreground">
+              {t.hero.usernameLabel}
+            </Label>
             <div
               className="relative rounded-lg p-[1px]"
               style={{
@@ -558,7 +561,7 @@ function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
               <User className="w-3 h-3" />
-              Full Name
+              {t.hero.fullNameLabel}
             </Label>
             <div
               className="relative rounded-lg p-[1px]"
@@ -622,20 +625,20 @@ function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
             {saveProfile.isPending ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                Saving...
+                {t.chatbot.saving}
               </>
             ) : saved ? (
               <>
                 <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                Saved!
+                {t.hero.saved}
               </>
             ) : !identity ? (
               <>
                 <LogIn className="w-3.5 h-3.5 mr-1.5" />
-                Login & Save Handle
+                {t.hero.loginSaveHandle}
               </>
             ) : (
-              "Save Handle"
+              t.hero.saveHandle
             )}
           </Button>
         </div>
@@ -673,6 +676,7 @@ function HandleClaimCard({ onOpenCreateAccount }: HandleClaimCardProps) {
 function ProfileDisplayCard() {
   const { identity } = useInternetIdentity();
   const { data: profile } = useCallerUserProfile();
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   if (!identity || !profile?.name) return null;
@@ -715,7 +719,7 @@ function ProfileDisplayCard() {
               <AtSign className="w-3 h-3 text-cyan" />
             </div>
             <span className="text-xs font-semibold text-foreground/70">
-              Your ClawPro Profile
+              {t.hero.yourProfile}
             </span>
           </div>
           <button
@@ -725,7 +729,7 @@ function ProfileDisplayCard() {
             title="View public profile"
           >
             <ExternalLink className="w-3 h-3" />
-            View
+            {t.hero.viewProfile}
           </button>
         </div>
 
@@ -757,7 +761,7 @@ function ProfileDisplayCard() {
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/30 bg-background/40">
           <User className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
           <span className="text-xs text-muted-foreground flex-shrink-0">
-            Full Name
+            {t.hero.fullNameLabel}
           </span>
           <span className="text-xs font-medium text-foreground/80 truncate ml-auto">
             {fullName}
@@ -768,7 +772,7 @@ function ProfileDisplayCard() {
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border/30 bg-background/40">
           <Fingerprint className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
           <span className="text-xs text-muted-foreground flex-shrink-0">
-            Username
+            {t.hero.usernameLabel}
           </span>
           <span
             className="text-xs font-mono text-foreground/60 truncate ml-auto"

@@ -66,6 +66,15 @@ export type TranslationKey = {
     downloads: string;
     downloadNow: string;
     viewDocs: string;
+    claimHandle: string;
+    loginToSave: string;
+    usernameLabel: string;
+    fullNameLabel: string;
+    saved: string;
+    loginSaveHandle: string;
+    saveHandle: string;
+    yourProfile: string;
+    viewProfile: string;
   };
   // Features
   features: {
@@ -323,6 +332,15 @@ const en: TranslationKey = {
     downloads: "Downloads",
     downloadNow: "Download Now",
     viewDocs: "View Docs",
+    claimHandle: "Claim your ClawPro handle",
+    loginToSave: "Login to save",
+    usernameLabel: "Username",
+    fullNameLabel: "Full Name",
+    saved: "Saved!",
+    loginSaveHandle: "Login & Save Handle",
+    saveHandle: "Save Handle",
+    yourProfile: "Your ClawPro Profile",
+    viewProfile: "View",
   },
   features: {
     sectionLabel: "Why ClawPro",
@@ -571,7 +589,7 @@ const en: TranslationKey = {
     pluginRegistry: "Plugin Registry",
     operational: "Operational",
     copyright: "ClawPro. Open source under MIT License.",
-    builtWith: "Built with",
+    builtWith: "Powered by",
   },
   workWith: {
     sectionLabel: "Integrations",
@@ -681,6 +699,15 @@ const id: TranslationKey = {
     downloads: "Unduhan",
     downloadNow: "Unduh Sekarang",
     viewDocs: "Lihat Dokumentasi",
+    claimHandle: "Klaim handle ClawPro kamu",
+    loginToSave: "Login untuk simpan",
+    usernameLabel: "Nama Pengguna",
+    fullNameLabel: "Nama Lengkap",
+    saved: "Tersimpan!",
+    loginSaveHandle: "Login & Simpan Handle",
+    saveHandle: "Simpan Handle",
+    yourProfile: "Profil ClawPro Kamu",
+    viewProfile: "Lihat",
   },
   features: {
     sectionLabel: "Mengapa ClawPro",
@@ -932,7 +959,7 @@ const id: TranslationKey = {
     pluginRegistry: "Registri Plugin",
     operational: "Beroperasi",
     copyright: "ClawPro. Sumber terbuka di bawah Lisensi MIT.",
-    builtWith: "Dibangun dengan",
+    builtWith: "Dipersembahkan oleh",
   },
   workWith: {
     sectionLabel: "Integrasi",
@@ -1042,6 +1069,15 @@ const ar: TranslationKey = {
     downloads: "التنزيلات",
     downloadNow: "تنزيل الآن",
     viewDocs: "عرض التوثيق",
+    claimHandle: "احجز اسمك على ClawPro",
+    loginToSave: "سجّل للحفظ",
+    usernameLabel: "اسم المستخدم",
+    fullNameLabel: "الاسم الكامل",
+    saved: "تم الحفظ!",
+    loginSaveHandle: "تسجيل وحفظ الاسم",
+    saveHandle: "حفظ الاسم",
+    yourProfile: "ملفك على ClawPro",
+    viewProfile: "عرض",
   },
   features: {
     sectionLabel: "لماذا ClawPro",
@@ -1288,7 +1324,7 @@ const ar: TranslationKey = {
     pluginRegistry: "سجل الإضافات",
     operational: "يعمل",
     copyright: "ClawPro. مفتوح المصدر تحت رخصة MIT.",
-    builtWith: "مبني بـ",
+    builtWith: "مدعوم من",
   },
   workWith: {
     sectionLabel: "التكاملات",
@@ -1396,6 +1432,15 @@ const ru: TranslationKey = {
     downloads: "Загрузки",
     downloadNow: "Скачать",
     viewDocs: "Документация",
+    claimHandle: "Займите своё имя на ClawPro",
+    loginToSave: "Войдите для сохранения",
+    usernameLabel: "Имя пользователя",
+    fullNameLabel: "Полное имя",
+    saved: "Сохранено!",
+    loginSaveHandle: "Войти и сохранить имя",
+    saveHandle: "Сохранить имя",
+    yourProfile: "Ваш профиль ClawPro",
+    viewProfile: "Просмотр",
   },
   features: {
     sectionLabel: "Почему ClawPro",
@@ -1645,7 +1690,7 @@ const ru: TranslationKey = {
     pluginRegistry: "Реестр плагинов",
     operational: "Работает",
     copyright: "ClawPro. Открытый исходный код под лицензией MIT.",
-    builtWith: "Создано с",
+    builtWith: "Создано при поддержке",
   },
   workWith: {
     sectionLabel: "Интеграции",
@@ -1755,6 +1800,15 @@ const zh: TranslationKey = {
     downloads: "下载量",
     downloadNow: "立即下载",
     viewDocs: "查看文档",
+    claimHandle: "注册您的 ClawPro 用户名",
+    loginToSave: "登录以保存",
+    usernameLabel: "用户名",
+    fullNameLabel: "全名",
+    saved: "已保存！",
+    loginSaveHandle: "登录并保存用户名",
+    saveHandle: "保存用户名",
+    yourProfile: "您的 ClawPro 个人资料",
+    viewProfile: "查看",
   },
   features: {
     sectionLabel: "为什么选择 ClawPro",
@@ -1999,7 +2053,7 @@ const zh: TranslationKey = {
     pluginRegistry: "插件注册表",
     operational: "运行正常",
     copyright: "ClawPro。MIT 许可证下的开源软件。",
-    builtWith: "构建于",
+    builtWith: "技术支持",
   },
   workWith: {
     sectionLabel: "集成",

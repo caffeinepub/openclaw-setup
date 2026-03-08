@@ -21,6 +21,7 @@ import {
   useMyConfigs,
   useSaveConfig,
 } from "../../hooks/useQueries";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const PLUGINS = [
   { id: "audio", label: "Audio Plugin" },
@@ -57,6 +58,7 @@ export function ConfigSection() {
   const saveConfigMut = useSaveConfig();
   const deleteConfigMut = useDeleteConfig();
   const { data: savedConfigs } = useMyConfigs();
+  const { t } = useLanguage();
 
   const jsonPreview = useMemo(
     () =>
@@ -145,14 +147,15 @@ export function ConfigSection() {
           className="text-center mb-14"
         >
           <span className="inline-block text-sm font-mono font-semibold text-cyan uppercase tracking-widest mb-4">
-            Configuration
+            {t.config.sectionLabel}
           </span>
           <h2 className="font-display font-black text-4xl sm:text-5xl mb-4">
-            Config <span className="text-cyan text-glow-cyan">Builder</span>
+            <span className="text-cyan text-glow-cyan">
+              {t.config.sectionTitle}
+            </span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Build your perfect OpenClaw configuration visually, then save it to
-            the blockchain or export as JSON.
+            {t.config.sectionDesc}
           </p>
         </motion.div>
 
