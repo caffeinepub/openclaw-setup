@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   BookOpen,
-  LayoutDashboard,
   LogIn,
   LogOut,
   Menu,
@@ -46,7 +45,6 @@ interface NavbarProps {
   isDark: boolean;
   toggleTheme: () => void;
   onAdminClick: () => void;
-  onDashboardClick: () => void;
   onBlogClick: () => void;
   onForumClick: () => void;
   onCreateAccountClick: () => void;
@@ -56,7 +54,6 @@ export function Navbar({
   isDark,
   toggleTheme,
   onAdminClick,
-  onDashboardClick,
   onBlogClick,
   onForumClick,
   onCreateAccountClick,
@@ -241,23 +238,6 @@ export function Navbar({
                     </Badge>
                   )}
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onDashboardClick}
-                    className={`flex items-center gap-1.5 font-medium ${
-                      myMembership
-                        ? myMembership.tier === MembershipTier.silver
-                          ? "text-slate-300 hover:text-slate-200 hover:bg-slate-500/10"
-                          : myMembership.tier === MembershipTier.gold
-                            ? "text-amber-300 hover:text-amber-200 hover:bg-amber-500/10"
-                            : "text-violet-300 hover:text-violet-200 hover:bg-violet-500/10"
-                        : "text-cyan hover:text-cyan hover:bg-cyan/10"
-                    }`}
-                  >
-                    <LayoutDashboard className="w-4 h-4" />
-                    {t.dashboard.navButton}
-                  </Button>
-                  <Button
                     variant="outline"
                     size="sm"
                     onClick={clear}
@@ -365,32 +345,9 @@ export function Navbar({
                     </Badge>
                   </div>
                 )}
-                {/* Language Switcher in mobile */}
                 <div className="px-1 pb-1">
                   <LanguageSwitcher />
                 </div>
-                {identity && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsMobileOpen(false);
-                      onDashboardClick();
-                    }}
-                    className={`w-full justify-start ${
-                      myMembership
-                        ? myMembership.tier === MembershipTier.silver
-                          ? "text-slate-300 hover:bg-slate-500/10"
-                          : myMembership.tier === MembershipTier.gold
-                            ? "text-amber-300 hover:bg-amber-500/10"
-                            : "text-violet-300 hover:bg-violet-500/10"
-                        : "text-cyan hover:bg-cyan/10"
-                    }`}
-                  >
-                    <LayoutDashboard className="w-4 h-4 mr-1.5" />
-                    {t.dashboard.navButton}
-                  </Button>
-                )}
                 <div className="flex items-center gap-2">
                   <button
                     type="button"

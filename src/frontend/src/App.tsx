@@ -6,7 +6,6 @@ import { CreateAccountModal } from "./components/CreateAccountModal";
 import { DotsBackground } from "./components/DotsBackground";
 import { Footer } from "./components/Footer";
 import { ForumPage } from "./components/ForumPage";
-import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
 import { PublicLeaderboardPage } from "./components/PublicLeaderboardPage";
 import { PublicProfilePage } from "./components/PublicProfilePage";
@@ -40,7 +39,6 @@ function isLeaderboardHash(hash: string): boolean {
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
-  const [showDashboard, setShowDashboard] = useState(false);
   const [showTierLanding, setShowTierLanding] = useState(false);
   const [tierLandingTier, setTierLandingTier] = useState<MembershipTier>(
     MembershipTier.silver,
@@ -104,21 +102,17 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
-      {/* Single global dots background - renders once for the whole page */}
       <DotsBackground fixed />
 
-      {/* Navbar */}
       <Navbar
         isDark={isDark}
         toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
-        onDashboardClick={() => setShowDashboard(true)}
         onBlogClick={() => setShowBlog(true)}
         onForumClick={() => setShowForum(true)}
         onCreateAccountClick={() => setShowCreateAccount(true)}
       />
 
-      {/* Main Content */}
       <main>
         <HeroSection
           onOpenCreateAccount={(h, n) => {
@@ -154,20 +148,12 @@ export default function App() {
         <PartnerSection />
       </main>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Admin Panel (modal) */}
       {showAdmin && isAdmin && (
         <AdminPanel onClose={() => setShowAdmin(false)} />
       )}
 
-      {/* Member Dashboard (modal) */}
-      {showDashboard && identity && (
-        <MemberDashboard onClose={() => setShowDashboard(false)} />
-      )}
-
-      {/* Tier Landing Page */}
       {showTierLanding && (
         <TierLandingPage
           tier={tierLandingTier}
