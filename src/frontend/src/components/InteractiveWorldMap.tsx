@@ -1,127 +1,128 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 
-// World topology from CDN (110m resolution — lightweight + accurate)
 const GEO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// ISO numeric -> alpha2 + region mapping (covers ~175 countries)
-const ISO_MAP: Record<string, { alpha2: string; region: string }> = {
-  "004": { alpha2: "af", region: "Asia" },
-  "008": { alpha2: "al", region: "Europe" },
-  "012": { alpha2: "dz", region: "Africa" },
-  "024": { alpha2: "ao", region: "Africa" },
-  "032": { alpha2: "ar", region: "Americas" },
-  "036": { alpha2: "au", region: "Oceania" },
-  "040": { alpha2: "at", region: "Europe" },
-  "050": { alpha2: "bd", region: "Asia" },
-  "056": { alpha2: "be", region: "Europe" },
-  "064": { alpha2: "bt", region: "Asia" },
-  "068": { alpha2: "bo", region: "Americas" },
-  "076": { alpha2: "br", region: "Americas" },
-  "100": { alpha2: "bg", region: "Europe" },
-  "104": { alpha2: "mm", region: "Asia" },
-  "116": { alpha2: "kh", region: "Asia" },
-  "120": { alpha2: "cm", region: "Africa" },
-  "124": { alpha2: "ca", region: "Americas" },
-  "140": { alpha2: "cf", region: "Africa" },
-  "144": { alpha2: "lk", region: "Asia" },
-  "152": { alpha2: "cl", region: "Americas" },
-  "156": { alpha2: "cn", region: "Asia" },
-  "170": { alpha2: "co", region: "Americas" },
-  "178": { alpha2: "cg", region: "Africa" },
-  "180": { alpha2: "cd", region: "Africa" },
-  "188": { alpha2: "cr", region: "Americas" },
-  "191": { alpha2: "hr", region: "Europe" },
-  "192": { alpha2: "cu", region: "Americas" },
-  "196": { alpha2: "cy", region: "Europe" },
-  "203": { alpha2: "cz", region: "Europe" },
-  "208": { alpha2: "dk", region: "Europe" },
-  "218": { alpha2: "ec", region: "Americas" },
-  "818": { alpha2: "eg", region: "Africa" },
-  "222": { alpha2: "sv", region: "Americas" },
-  "231": { alpha2: "et", region: "Africa" },
-  "246": { alpha2: "fi", region: "Europe" },
-  "250": { alpha2: "fr", region: "Europe" },
-  "266": { alpha2: "ga", region: "Africa" },
-  "276": { alpha2: "de", region: "Europe" },
-  "288": { alpha2: "gh", region: "Africa" },
-  "300": { alpha2: "gr", region: "Europe" },
-  "320": { alpha2: "gt", region: "Americas" },
-  "324": { alpha2: "gn", region: "Africa" },
-  "332": { alpha2: "ht", region: "Americas" },
-  "340": { alpha2: "hn", region: "Americas" },
-  "348": { alpha2: "hu", region: "Europe" },
-  "356": { alpha2: "in", region: "Asia" },
-  "360": { alpha2: "id", region: "Asia" },
-  "364": { alpha2: "ir", region: "Middle East" },
-  "368": { alpha2: "iq", region: "Middle East" },
-  "372": { alpha2: "ie", region: "Europe" },
-  "376": { alpha2: "il", region: "Middle East" },
-  "380": { alpha2: "it", region: "Europe" },
-  "388": { alpha2: "jm", region: "Americas" },
-  "392": { alpha2: "jp", region: "Asia" },
-  "400": { alpha2: "jo", region: "Middle East" },
-  "398": { alpha2: "kz", region: "Asia" },
-  "404": { alpha2: "ke", region: "Africa" },
-  "408": { alpha2: "kp", region: "Asia" },
-  "410": { alpha2: "kr", region: "Asia" },
-  "414": { alpha2: "kw", region: "Middle East" },
-  "418": { alpha2: "la", region: "Asia" },
-  "422": { alpha2: "lb", region: "Middle East" },
-  "434": { alpha2: "ly", region: "Africa" },
-  "458": { alpha2: "my", region: "Asia" },
-  "466": { alpha2: "ml", region: "Africa" },
-  "478": { alpha2: "mr", region: "Africa" },
-  "484": { alpha2: "mx", region: "Americas" },
-  "504": { alpha2: "ma", region: "Africa" },
-  "508": { alpha2: "mz", region: "Africa" },
-  "516": { alpha2: "na", region: "Africa" },
-  "524": { alpha2: "np", region: "Asia" },
-  "528": { alpha2: "nl", region: "Europe" },
-  "554": { alpha2: "nz", region: "Oceania" },
-  "558": { alpha2: "ni", region: "Americas" },
-  "562": { alpha2: "ne", region: "Africa" },
-  "566": { alpha2: "ng", region: "Africa" },
-  "578": { alpha2: "no", region: "Europe" },
-  "586": { alpha2: "pk", region: "Asia" },
-  "591": { alpha2: "pa", region: "Americas" },
-  "598": { alpha2: "pg", region: "Oceania" },
-  "600": { alpha2: "py", region: "Americas" },
-  "604": { alpha2: "pe", region: "Americas" },
-  "608": { alpha2: "ph", region: "Asia" },
-  "616": { alpha2: "pl", region: "Europe" },
-  "620": { alpha2: "pt", region: "Europe" },
-  "630": { alpha2: "pr", region: "Americas" },
-  "634": { alpha2: "qa", region: "Middle East" },
-  "642": { alpha2: "ro", region: "Europe" },
-  "643": { alpha2: "ru", region: "Europe" },
-  "646": { alpha2: "rw", region: "Africa" },
-  "682": { alpha2: "sa", region: "Middle East" },
-  "686": { alpha2: "sn", region: "Africa" },
-  "694": { alpha2: "sl", region: "Africa" },
-  "706": { alpha2: "so", region: "Africa" },
-  "710": { alpha2: "za", region: "Africa" },
-  "724": { alpha2: "es", region: "Europe" },
-  "729": { alpha2: "sd", region: "Africa" },
-  "752": { alpha2: "se", region: "Europe" },
-  "756": { alpha2: "ch", region: "Europe" },
-  "760": { alpha2: "sy", region: "Middle East" },
-  "764": { alpha2: "th", region: "Asia" },
-  "788": { alpha2: "tn", region: "Africa" },
-  "792": { alpha2: "tr", region: "Europe" },
-  "800": { alpha2: "ug", region: "Africa" },
-  "804": { alpha2: "ua", region: "Europe" },
-  "784": { alpha2: "ae", region: "Middle East" },
-  "826": { alpha2: "gb", region: "Europe" },
-  "840": { alpha2: "us", region: "Americas" },
-  "858": { alpha2: "uy", region: "Americas" },
-  "860": { alpha2: "uz", region: "Asia" },
-  "862": { alpha2: "ve", region: "Americas" },
-  "704": { alpha2: "vn", region: "Asia" },
-  "887": { alpha2: "ye", region: "Middle East" },
-  "894": { alpha2: "zm", region: "Africa" },
-  "716": { alpha2: "zw", region: "Africa" },
+const ISO_MAP: Record<
+  string,
+  { alpha2: string; region: string; name: string }
+> = {
+  "004": { alpha2: "af", region: "Asia", name: "Afghanistan" },
+  "008": { alpha2: "al", region: "Europe", name: "Albania" },
+  "012": { alpha2: "dz", region: "Africa", name: "Algeria" },
+  "024": { alpha2: "ao", region: "Africa", name: "Angola" },
+  "032": { alpha2: "ar", region: "Americas", name: "Argentina" },
+  "036": { alpha2: "au", region: "Oceania", name: "Australia" },
+  "040": { alpha2: "at", region: "Europe", name: "Austria" },
+  "050": { alpha2: "bd", region: "Asia", name: "Bangladesh" },
+  "056": { alpha2: "be", region: "Europe", name: "Belgium" },
+  "064": { alpha2: "bt", region: "Asia", name: "Bhutan" },
+  "068": { alpha2: "bo", region: "Americas", name: "Bolivia" },
+  "076": { alpha2: "br", region: "Americas", name: "Brazil" },
+  "100": { alpha2: "bg", region: "Europe", name: "Bulgaria" },
+  "104": { alpha2: "mm", region: "Asia", name: "Myanmar" },
+  "116": { alpha2: "kh", region: "Asia", name: "Cambodia" },
+  "120": { alpha2: "cm", region: "Africa", name: "Cameroon" },
+  "124": { alpha2: "ca", region: "Americas", name: "Canada" },
+  "140": { alpha2: "cf", region: "Africa", name: "Central African Republic" },
+  "144": { alpha2: "lk", region: "Asia", name: "Sri Lanka" },
+  "152": { alpha2: "cl", region: "Americas", name: "Chile" },
+  "156": { alpha2: "cn", region: "Asia", name: "China" },
+  "170": { alpha2: "co", region: "Americas", name: "Colombia" },
+  "178": { alpha2: "cg", region: "Africa", name: "Republic of the Congo" },
+  "180": { alpha2: "cd", region: "Africa", name: "DR Congo" },
+  "188": { alpha2: "cr", region: "Americas", name: "Costa Rica" },
+  "191": { alpha2: "hr", region: "Europe", name: "Croatia" },
+  "192": { alpha2: "cu", region: "Americas", name: "Cuba" },
+  "196": { alpha2: "cy", region: "Europe", name: "Cyprus" },
+  "203": { alpha2: "cz", region: "Europe", name: "Czech Republic" },
+  "208": { alpha2: "dk", region: "Europe", name: "Denmark" },
+  "218": { alpha2: "ec", region: "Americas", name: "Ecuador" },
+  "818": { alpha2: "eg", region: "Africa", name: "Egypt" },
+  "222": { alpha2: "sv", region: "Americas", name: "El Salvador" },
+  "231": { alpha2: "et", region: "Africa", name: "Ethiopia" },
+  "246": { alpha2: "fi", region: "Europe", name: "Finland" },
+  "250": { alpha2: "fr", region: "Europe", name: "France" },
+  "266": { alpha2: "ga", region: "Africa", name: "Gabon" },
+  "276": { alpha2: "de", region: "Europe", name: "Germany" },
+  "288": { alpha2: "gh", region: "Africa", name: "Ghana" },
+  "300": { alpha2: "gr", region: "Europe", name: "Greece" },
+  "320": { alpha2: "gt", region: "Americas", name: "Guatemala" },
+  "324": { alpha2: "gn", region: "Africa", name: "Guinea" },
+  "332": { alpha2: "ht", region: "Americas", name: "Haiti" },
+  "340": { alpha2: "hn", region: "Americas", name: "Honduras" },
+  "348": { alpha2: "hu", region: "Europe", name: "Hungary" },
+  "356": { alpha2: "in", region: "Asia", name: "India" },
+  "360": { alpha2: "id", region: "Asia", name: "Indonesia" },
+  "364": { alpha2: "ir", region: "Middle East", name: "Iran" },
+  "368": { alpha2: "iq", region: "Middle East", name: "Iraq" },
+  "372": { alpha2: "ie", region: "Europe", name: "Ireland" },
+  "376": { alpha2: "il", region: "Middle East", name: "Israel" },
+  "380": { alpha2: "it", region: "Europe", name: "Italy" },
+  "388": { alpha2: "jm", region: "Americas", name: "Jamaica" },
+  "392": { alpha2: "jp", region: "Asia", name: "Japan" },
+  "400": { alpha2: "jo", region: "Middle East", name: "Jordan" },
+  "398": { alpha2: "kz", region: "Asia", name: "Kazakhstan" },
+  "404": { alpha2: "ke", region: "Africa", name: "Kenya" },
+  "408": { alpha2: "kp", region: "Asia", name: "North Korea" },
+  "410": { alpha2: "kr", region: "Asia", name: "South Korea" },
+  "414": { alpha2: "kw", region: "Middle East", name: "Kuwait" },
+  "418": { alpha2: "la", region: "Asia", name: "Laos" },
+  "422": { alpha2: "lb", region: "Middle East", name: "Lebanon" },
+  "434": { alpha2: "ly", region: "Africa", name: "Libya" },
+  "458": { alpha2: "my", region: "Asia", name: "Malaysia" },
+  "466": { alpha2: "ml", region: "Africa", name: "Mali" },
+  "478": { alpha2: "mr", region: "Africa", name: "Mauritania" },
+  "484": { alpha2: "mx", region: "Americas", name: "Mexico" },
+  "504": { alpha2: "ma", region: "Africa", name: "Morocco" },
+  "508": { alpha2: "mz", region: "Africa", name: "Mozambique" },
+  "516": { alpha2: "na", region: "Africa", name: "Namibia" },
+  "524": { alpha2: "np", region: "Asia", name: "Nepal" },
+  "528": { alpha2: "nl", region: "Europe", name: "Netherlands" },
+  "554": { alpha2: "nz", region: "Oceania", name: "New Zealand" },
+  "558": { alpha2: "ni", region: "Americas", name: "Nicaragua" },
+  "562": { alpha2: "ne", region: "Africa", name: "Niger" },
+  "566": { alpha2: "ng", region: "Africa", name: "Nigeria" },
+  "578": { alpha2: "no", region: "Europe", name: "Norway" },
+  "586": { alpha2: "pk", region: "Asia", name: "Pakistan" },
+  "591": { alpha2: "pa", region: "Americas", name: "Panama" },
+  "598": { alpha2: "pg", region: "Oceania", name: "Papua New Guinea" },
+  "600": { alpha2: "py", region: "Americas", name: "Paraguay" },
+  "604": { alpha2: "pe", region: "Americas", name: "Peru" },
+  "608": { alpha2: "ph", region: "Asia", name: "Philippines" },
+  "616": { alpha2: "pl", region: "Europe", name: "Poland" },
+  "620": { alpha2: "pt", region: "Europe", name: "Portugal" },
+  "630": { alpha2: "pr", region: "Americas", name: "Puerto Rico" },
+  "634": { alpha2: "qa", region: "Middle East", name: "Qatar" },
+  "642": { alpha2: "ro", region: "Europe", name: "Romania" },
+  "643": { alpha2: "ru", region: "Europe", name: "Russia" },
+  "646": { alpha2: "rw", region: "Africa", name: "Rwanda" },
+  "682": { alpha2: "sa", region: "Middle East", name: "Saudi Arabia" },
+  "686": { alpha2: "sn", region: "Africa", name: "Senegal" },
+  "694": { alpha2: "sl", region: "Africa", name: "Sierra Leone" },
+  "706": { alpha2: "so", region: "Africa", name: "Somalia" },
+  "710": { alpha2: "za", region: "Africa", name: "South Africa" },
+  "724": { alpha2: "es", region: "Europe", name: "Spain" },
+  "729": { alpha2: "sd", region: "Africa", name: "Sudan" },
+  "752": { alpha2: "se", region: "Europe", name: "Sweden" },
+  "756": { alpha2: "ch", region: "Europe", name: "Switzerland" },
+  "760": { alpha2: "sy", region: "Middle East", name: "Syria" },
+  "764": { alpha2: "th", region: "Asia", name: "Thailand" },
+  "788": { alpha2: "tn", region: "Africa", name: "Tunisia" },
+  "792": { alpha2: "tr", region: "Europe", name: "Turkey" },
+  "800": { alpha2: "ug", region: "Africa", name: "Uganda" },
+  "804": { alpha2: "ua", region: "Europe", name: "Ukraine" },
+  "784": { alpha2: "ae", region: "Middle East", name: "UAE" },
+  "826": { alpha2: "gb", region: "Europe", name: "United Kingdom" },
+  "840": { alpha2: "us", region: "Americas", name: "United States" },
+  "858": { alpha2: "uy", region: "Americas", name: "Uruguay" },
+  "860": { alpha2: "uz", region: "Asia", name: "Uzbekistan" },
+  "862": { alpha2: "ve", region: "Americas", name: "Venezuela" },
+  "704": { alpha2: "vn", region: "Asia", name: "Vietnam" },
+  "887": { alpha2: "ye", region: "Middle East", name: "Yemen" },
+  "894": { alpha2: "zm", region: "Africa", name: "Zambia" },
+  "716": { alpha2: "zw", region: "Africa", name: "Zimbabwe" },
 };
 
 const REGION_COLORS: Record<string, string> = {
@@ -144,20 +145,11 @@ const REGIONS = [
 ];
 
 function getMemberCount(isoNum: string): number {
-  // Deterministic pseudo-count based on ISO code characters
   const n = Number(isoNum);
   return ((n * 37 + 13) % 190) + 5;
 }
 
-function getRegion(isoNum: string): string {
-  return ISO_MAP[isoNum]?.region ?? "Other";
-}
-
-function getAlpha2(isoNum: string): string {
-  return ISO_MAP[isoNum]?.alpha2 ?? "";
-}
-
-interface GeoProps {
+interface GeoItem {
   rsmKey: string;
   id: string | number;
   properties: { name?: string };
@@ -169,8 +161,14 @@ interface PopupInfo {
   alpha2: string;
   region: string;
   members: number;
-  mouseX: number;
-  mouseY: number;
+  xPct: number;
+  yPct: number;
+}
+
+interface LitCountry {
+  id: string;
+  name: string;
+  region: string;
 }
 
 export function InteractiveWorldMap() {
@@ -178,68 +176,73 @@ export function InteractiveWorldMap() {
     new Set(),
   );
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
-  const [litCountries, setLitCountries] = useState<
-    { id: string; name: string; region: string }[]
-  >([]);
+  const [litCountries, setLitCountries] = useState<LitCountry[]>([]);
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
-  // Keep a stable list of all known geo names for auto-glow
-  const [allGeos, setAllGeos] = useState<
-    { id: string; name: string; region: string }[]
-  >([]);
 
-  // Auto-light 2-3 countries every 1.2s
+  // Stable ref to all geo IDs so the interval doesn't re-register
+  const allGeosRef = useRef<LitCountry[]>([]);
+  const geosRegistered = useRef(false);
+
+  // Auto-glow: 2-3 random countries every 1.2s
   useEffect(() => {
-    if (allGeos.length === 0) return;
     const timer = setInterval(() => {
-      const pool =
-        selectedFilter === "All"
-          ? allGeos
-          : allGeos.filter((g) => g.region === selectedFilter);
-      if (pool.length === 0) return;
-      const count = 2 + Math.floor(Math.random() * 2); // 2 or 3
+      const pool = allGeosRef.current.filter(
+        (g) => selectedFilter === "All" || g.region === selectedFilter,
+      );
+      if (pool.length < 2) return;
+      const count = 2 + Math.floor(Math.random() * 2);
       const picks = [...pool].sort(() => Math.random() - 0.5).slice(0, count);
       setLitCountries(picks);
     }, 1200);
     return () => clearInterval(timer);
-  }, [allGeos, selectedFilter]);
+  }, [selectedFilter]);
 
   const litSet = useMemo(
     () => new Set(litCountries.map((c) => c.id)),
     [litCountries],
   );
 
-  const handleGeoClick = (geo: GeoProps, e: React.MouseEvent) => {
+  const handleGeoClick = useCallback((geo: GeoItem, e: React.MouseEvent) => {
+    e.stopPropagation();
     const isoNum = String(geo.id).padStart(3, "0");
-    const name = geo.properties.name ?? isoNum;
-    const alpha2 = getAlpha2(isoNum);
-    const region = getRegion(isoNum);
+    const isoEntry = ISO_MAP[isoNum];
+    const name =
+      isoEntry?.name ?? (geo.properties.name as string | undefined) ?? isoNum;
+    const alpha2 = isoEntry?.alpha2 ?? "";
+    const region = isoEntry?.region ?? "Other";
     const members = getMemberCount(isoNum);
-    const rect = (e.currentTarget as SVGElement)
-      .closest(".map-container")
-      ?.getBoundingClientRect();
-    const mouseX = rect ? ((e.clientX - rect.left) / rect.width) * 100 : 50;
-    const mouseY = rect ? ((e.clientY - rect.top) / rect.height) * 100 : 50;
+
+    // Calculate position relative to map container
+    const container = (e.currentTarget as Element).closest(".map-container");
+    const rect = container?.getBoundingClientRect();
+    const xPct = rect ? ((e.clientX - rect.left) / rect.width) * 100 : 50;
+    const yPct = rect ? ((e.clientY - rect.top) / rect.height) * 100 : 50;
+
     setSelectedCountries((prev) => {
       const next = new Set(prev);
       if (next.has(isoNum)) next.delete(isoNum);
       else next.add(isoNum);
       return next;
     });
-    setPopup({ name, isoNum, alpha2, region, members, mouseX, mouseY });
-  };
 
-  const topCountries = useMemo(() => {
-    return Object.entries(ISO_MAP)
-      .map(([isoNum, { alpha2, region }]) => ({
-        isoNum,
-        alpha2,
-        region,
-        members: getMemberCount(isoNum),
-      }))
-      .sort((a, b) => b.members - a.members)
-      .slice(0, 5);
+    setPopup({ name, isoNum, alpha2, region, members, xPct, yPct });
   }, []);
+
+  const topCountries = useMemo(
+    () =>
+      Object.entries(ISO_MAP)
+        .map(([isoNum, { alpha2, region, name }]) => ({
+          isoNum,
+          alpha2,
+          region,
+          name,
+          members: getMemberCount(isoNum),
+        }))
+        .sort((a, b) => b.members - a.members)
+        .slice(0, 5),
+    [],
+  );
 
   const countsByRegion = useMemo(
     () =>
@@ -274,20 +277,20 @@ export function InteractiveWorldMap() {
                 borderColor: isActive ? color : `${color}40`,
                 background: isActive ? `${color}20` : "transparent",
                 color: isActive ? color : "#64748b",
-                boxShadow: isActive ? `0 0 8px ${color}50` : "none",
+                boxShadow: isActive ? `0 0 10px ${color}50` : "none",
               }}
             >
               <span
-                className="w-1.5 h-1.5 rounded-full"
+                className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                 style={{
                   background: color,
                   boxShadow: isActive ? `0 0 6px ${color}` : "none",
                   animation: isActive
-                    ? "glow-pulse 1.5s ease-in-out infinite"
+                    ? "pulse 1.5s ease-in-out infinite"
                     : "none",
                 }}
               />
-              {region} <span className="opacity-60">({cnt})</span>
+              {region} <span style={{ opacity: 0.6 }}>({cnt})</span>
             </button>
           );
         })}
@@ -304,6 +307,7 @@ export function InteractiveWorldMap() {
               borderColor: "#f43f5e60",
               background: "#f43f5e15",
               color: "#f43f5e",
+              boxShadow: "0 0 8px #f43f5e30",
             }}
           >
             ✕ Reset ({selectedCountries.size})
@@ -311,22 +315,23 @@ export function InteractiveWorldMap() {
         )}
       </div>
 
-      {/* Map */}
+      {/* Map container */}
       <div
-        className="map-container relative w-full rounded-xl border border-border/30 bg-[oklch(0.08_0.012_240)] overflow-hidden"
+        className="map-container relative w-full rounded-xl overflow-hidden"
         style={{
+          background: "#050d1a",
+          border: "1px solid rgba(34,211,238,0.15)",
           boxShadow:
-            "0 0 40px oklch(0.68 0.22 195 / 0.10), inset 0 0 60px oklch(0.05 0.01 240)",
+            "0 0 40px rgba(34,211,238,0.06), 0 0 80px rgba(34,211,238,0.03), inset 0 0 60px rgba(0,0,0,0.8)",
           userSelect: "none",
           touchAction: "none",
         }}
+        role="presentation"
         onClick={() => setPopup(null)}
-        onKeyDown={(e) => e.key === "Escape" && setPopup(null)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setPopup(null);
+        }}
       >
-        <style>{`
-          @keyframes glow-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-        `}</style>
-
         <ComposableMap
           projection="geoMercator"
           projectionConfig={{ scale: 120, center: [10, 15] }}
@@ -334,34 +339,29 @@ export function InteractiveWorldMap() {
         >
           <Geographies geography={GEO_URL}>
             {({ geographies }) => {
-              // Register geos once
-              if (allGeos.length === 0 && geographies.length > 0) {
-                const geoList = geographies
-                  .map((geo) => {
-                    const isoNum = String(geo.id).padStart(3, "0");
-                    const region = getRegion(isoNum);
-                    return {
-                      id: isoNum,
-                      name:
-                        (geo.properties as { name?: string }).name ?? isoNum,
-                      region,
-                    };
-                  })
-                  .filter((g) => g.region !== "Other");
-                // Use setTimeout to avoid setState during render
-                setTimeout(() => setAllGeos(geoList), 0);
+              // Register geo list once into the ref (no setState during render)
+              if (!geosRegistered.current && geographies.length > 0) {
+                geosRegistered.current = true;
+                const list: LitCountry[] = [];
+                for (const geo of geographies) {
+                  const isoNum = String(geo.id).padStart(3, "0");
+                  const entry = ISO_MAP[isoNum];
+                  if (!entry) continue;
+                  list.push({
+                    id: isoNum,
+                    name: entry.name,
+                    region: entry.region,
+                  });
+                }
+                allGeosRef.current = list;
               }
 
               return geographies.map((geo) => {
                 const isoNum = String(geo.id).padStart(3, "0");
-                const region = getRegion(isoNum);
-                if (region === "Other") return null;
+                const entry = ISO_MAP[isoNum];
+                if (!entry) return null;
 
-                // Apply continent filter
-                if (selectedFilter !== "All" && region !== selectedFilter) {
-                  // Show dimmed but don't hide
-                }
-
+                const { region } = entry;
                 const isFiltered =
                   selectedFilter !== "All" && region !== selectedFilter;
                 const isSelected = selectedCountries.has(isoNum);
@@ -369,40 +369,46 @@ export function InteractiveWorldMap() {
                 const isHovered = hoveredCountry === isoNum;
                 const baseColor = REGION_COLORS[region] ?? "#94a3b8";
 
-                let fillColor: string;
+                let fill: string;
                 if (isFiltered) {
-                  fillColor = "#1e293b40";
+                  fill = "rgba(15,23,42,0.5)";
                 } else if (isSelected) {
-                  fillColor = baseColor;
+                  fill = baseColor;
                 } else if (isLit) {
-                  fillColor = `${baseColor}cc`;
+                  fill = `${baseColor}cc`;
                 } else if (isHovered) {
-                  fillColor = `${baseColor}90`;
+                  fill = `${baseColor}99`;
                 } else {
-                  fillColor = `${baseColor}35`;
+                  fill = `${baseColor}38`;
                 }
+
+                const stroke = isSelected || isLit ? baseColor : "#0a1628";
+                const strokeWidth = isSelected ? 1 : isLit ? 0.7 : 0.3;
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    data-ocid="map.country.map_marker"
-                    fill={fillColor}
-                    stroke={isSelected || isLit ? baseColor : "#0f172a"}
-                    strokeWidth={isSelected || isLit ? 0.8 : 0.3}
+                    fill={fill}
+                    stroke={stroke}
+                    strokeWidth={strokeWidth}
                     style={{
                       default: {
                         outline: "none",
-                        filter: isLit
-                          ? `drop-shadow(0 0 6px ${baseColor})`
-                          : "none",
-                        transition: "fill 0.4s, filter 0.4s",
+                        filter:
+                          isLit || isSelected
+                            ? `drop-shadow(0 0 5px ${baseColor})`
+                            : "none",
+                        transition: "fill 0.35s ease, filter 0.35s ease",
                       },
-                      hover: { outline: "none", cursor: "pointer" },
+                      hover: {
+                        outline: "none",
+                        cursor: "pointer",
+                      },
                       pressed: { outline: "none" },
                     }}
                     onClick={(e) =>
-                      handleGeoClick(geo as unknown as GeoProps, e)
+                      handleGeoClick(geo as unknown as GeoItem, e)
                     }
                     onMouseEnter={() => setHoveredCountry(isoNum)}
                     onMouseLeave={() => setHoveredCountry(null)}
@@ -413,84 +419,112 @@ export function InteractiveWorldMap() {
           </Geographies>
         </ComposableMap>
 
+        {/* Hover tooltip — bottom-left */}
+        {hoveredCountry &&
+          (() => {
+            const entry = ISO_MAP[hoveredCountry];
+            if (!entry) return null;
+            const color = REGION_COLORS[entry.region] ?? "#94a3b8";
+            return (
+              <div className="absolute bottom-3 left-3 pointer-events-none z-10">
+                <div
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold"
+                  style={{
+                    background: `${color}18`,
+                    border: `1px solid ${color}50`,
+                    color,
+                    backdropFilter: "blur(8px)",
+                    boxShadow: `0 0 12px ${color}30`,
+                  }}
+                >
+                  {entry.name}
+                </div>
+              </div>
+            );
+          })()}
+
         {/* Click popup */}
         {popup && (
           <div
-            className="absolute z-20 pointer-events-none"
+            className="absolute z-20"
             style={{
-              left: `${Math.min(popup.mouseX, 75)}%`,
-              top: `${Math.max(popup.mouseY - 18, 4)}%`,
+              left: `${Math.min(Math.max(popup.xPct, 5), 70)}%`,
+              top: `${Math.max(popup.yPct - 20, 3)}%`,
+              pointerEvents: "none",
             }}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
           >
-            <div className="bg-[oklch(0.14_0.02_240)] border border-border/50 rounded-xl px-3 py-2.5 shadow-xl min-w-[150px]">
-              <div className="flex items-center gap-2 mb-1">
+            <div
+              className="rounded-xl px-3 py-2.5 min-w-[160px]"
+              style={{
+                background: "rgba(8,15,30,0.95)",
+                border: `1px solid ${REGION_COLORS[popup.region] ?? "#22d3ee"}50`,
+                boxShadow: `0 0 20px ${REGION_COLORS[popup.region] ?? "#22d3ee"}30, 0 8px 32px rgba(0,0,0,0.6)`,
+                backdropFilter: "blur(12px)",
+              }}
+            >
+              <div className="flex items-center gap-2 mb-1.5">
                 {popup.alpha2 && (
                   <img
                     src={`https://flagcdn.com/24x18/${popup.alpha2}.png`}
-                    alt=""
-                    className="w-5 h-3.5 rounded-sm object-cover flex-shrink-0"
+                    alt={popup.name}
+                    width={24}
+                    height={18}
+                    className="rounded-sm object-cover flex-shrink-0"
+                    style={{ width: 22, height: 16 }}
                     onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
+                      (e.currentTarget as HTMLImageElement).style.display =
+                        "none";
                     }}
                   />
                 )}
-                <span className="text-xs font-bold text-foreground/90">
+                <span className="text-xs font-bold text-white/90">
                   {popup.name}
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-[9px] text-muted-foreground/50 uppercase">
+              <div className="flex items-center justify-between gap-3 mb-1.5">
+                <span
+                  className="text-[9px] uppercase tracking-wider"
+                  style={{
+                    color: REGION_COLORS[popup.region] ?? "#22d3ee",
+                    opacity: 0.7,
+                  }}
+                >
                   {popup.region}
                 </span>
                 <span
                   className="text-[10px] font-bold"
                   style={{ color: REGION_COLORS[popup.region] ?? "#22d3ee" }}
                 >
-                  {popup.members} members
+                  {popup.members.toLocaleString()} members
                 </span>
               </div>
-              <div className="mt-1.5 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[9px] text-emerald-400 font-medium">
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: "#4ade80" }}
+                />
+                <span
+                  className="text-[9px] font-medium"
+                  style={{ color: "#4ade80" }}
+                >
                   ClawPro Available
                 </span>
               </div>
             </div>
           </div>
         )}
-
-        {/* Hover tooltip */}
-        {hoveredCountry &&
-          !popup &&
-          (() => {
-            const geoEntry = allGeos.find((g) => g.id === hoveredCountry);
-            if (!geoEntry) return null;
-            const color = REGION_COLORS[geoEntry.region] ?? "#94a3b8";
-            return (
-              <div className="absolute bottom-3 left-3 pointer-events-none z-10">
-                <div
-                  className="px-2.5 py-1 rounded-lg text-xs font-semibold"
-                  style={{
-                    background: `${color}22`,
-                    border: `1px solid ${color}50`,
-                    color,
-                    backdropFilter: "blur(4px)",
-                  }}
-                >
-                  {geoEntry.name}
-                </div>
-              </div>
-            );
-          })()}
       </div>
 
-      {/* LIVE indicator + auto-lit country indicator labels */}
+      {/* LIVE indicator + auto-glow labels */}
       <div className="flex items-center gap-3 mt-3 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[10px] text-muted-foreground/50 font-mono">
+          <span
+            className="w-2 h-2 rounded-full animate-pulse"
+            style={{ background: "#4ade80", boxShadow: "0 0 6px #4ade80" }}
+          />
+          <span className="text-[10px] text-white/40 font-mono tracking-wider">
             LIVE — {Object.keys(ISO_MAP).length} countries
           </span>
         </div>
@@ -504,10 +538,11 @@ export function InteractiveWorldMap() {
                 borderColor: `${color}50`,
                 color,
                 background: `${color}18`,
+                boxShadow: `0 0 6px ${color}20`,
               }}
             >
               <span
-                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                className="w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0"
                 style={{ background: color }}
               />
               {c.name}
@@ -516,11 +551,11 @@ export function InteractiveWorldMap() {
         })}
       </div>
 
-      {/* Top Countries leaderboard */}
+      {/* Top 5 Countries leaderboard */}
       <div className="mt-4">
-        <div className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest mb-2">
+        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">
           Top Countries by Registrations
-        </div>
+        </p>
         <div className="flex flex-col gap-1.5">
           {topCountries.map((c, i) => {
             const color = REGION_COLORS[c.region] ?? "#94a3b8";
@@ -530,22 +565,31 @@ export function InteractiveWorldMap() {
                 key={c.isoNum}
                 data-ocid={`map.leaderboard.item.${i + 1}`}
                 className="flex items-center gap-2.5 px-3 py-2 rounded-lg border"
-                style={{ borderColor: `${color}25`, background: `${color}08` }}
+                style={{
+                  borderColor: `${color}25`,
+                  background: `${color}08`,
+                }}
               >
-                <span className="text-xs w-5 text-center">{medals[i]}</span>
+                <span className="text-xs w-5 text-center flex-shrink-0">
+                  {medals[i]}
+                </span>
                 <img
                   src={`https://flagcdn.com/24x18/${c.alpha2}.png`}
-                  alt=""
-                  className="w-5 h-3.5 rounded-sm object-cover"
+                  alt={c.name}
+                  width={24}
+                  height={18}
+                  className="rounded-sm object-cover flex-shrink-0"
+                  style={{ width: 20, height: 14 }}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
+                    (e.currentTarget as HTMLImageElement).style.display =
+                      "none";
                   }}
                 />
-                <span className="text-xs font-semibold text-foreground/80 flex-1">
-                  {c.alpha2.toUpperCase()}
+                <span className="text-xs font-semibold text-white/80 flex-1">
+                  {c.name}
                 </span>
                 <span className="text-[10px] font-bold" style={{ color }}>
-                  {c.members.toLocaleString()} members
+                  {c.members.toLocaleString()}
                 </span>
               </div>
             );
@@ -553,7 +597,7 @@ export function InteractiveWorldMap() {
         </div>
       </div>
 
-      {/* Region summary */}
+      {/* Region summary grid */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-3">
         {countsByRegion.map(({ region, count }) => {
           const color = REGION_COLORS[region] ?? "#94a3b8";
@@ -561,12 +605,15 @@ export function InteractiveWorldMap() {
             <div
               key={region}
               className="flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg border text-center"
-              style={{ borderColor: `${color}30`, background: `${color}10` }}
+              style={{
+                borderColor: `${color}30`,
+                background: `${color}10`,
+              }}
             >
               <span className="text-sm font-bold" style={{ color }}>
                 {count}
               </span>
-              <span className="text-[9px] text-muted-foreground/40 leading-none">
+              <span className="text-[9px] text-white/40 leading-none">
                 {region}
               </span>
             </div>
