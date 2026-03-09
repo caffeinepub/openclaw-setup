@@ -42,7 +42,6 @@ import {
   usePurchaseMembership,
 } from "../../hooks/useMembership";
 import { useLanguage } from "../../i18n/LanguageContext";
-import { DotsBackground } from "../DotsBackground";
 
 // ─── Spinning Glow Keyframes ─────────────────────────────────────────────────
 const PRICING_GLOW_STYLES = `
@@ -1723,7 +1722,6 @@ export function PricingSection({
 
   return (
     <section id="pricing" className="py-20 relative overflow-hidden">
-      <DotsBackground />
       {/* Background */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-500/3 to-transparent pointer-events-none" />

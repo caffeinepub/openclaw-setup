@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { MembershipTier } from "./backend.d";
 import { BlogPage } from "./components/BlogPage";
 import { CreateAccountModal } from "./components/CreateAccountModal";
+import { DotsBackground } from "./components/DotsBackground";
 import { Footer } from "./components/Footer";
 import { ForumPage } from "./components/ForumPage";
 import { MemberDashboard } from "./components/MemberDashboard";
@@ -52,7 +53,6 @@ export default function App() {
   const [showPublicLeaderboard, setShowPublicLeaderboard] = useState<boolean>(
     () => isLeaderboardHash(window.location.hash),
   );
-  // New feature states
   const [showBlog, setShowBlog] = useState(false);
   const [showForum, setShowForum] = useState(false);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
@@ -62,7 +62,6 @@ export default function App() {
   const { data: isAdmin } = useIsAdmin();
   const { identity } = useInternetIdentity();
 
-  // Hash-based routing for public profiles and leaderboard
   const handleHashChange = useCallback(() => {
     const hash = window.location.hash;
     const handle = extractPublicProfileHandle(hash);
@@ -85,7 +84,6 @@ export default function App() {
     setShowPublicLeaderboard(false);
   }, []);
 
-  // Apply dark mode class to html element
   useEffect(() => {
     const html = document.documentElement;
     if (isDark) {
@@ -97,7 +95,6 @@ export default function App() {
     }
   }, [isDark]);
 
-  // Default to dark mode on mount
   useEffect(() => {
     document.documentElement.classList.add("dark");
     document.documentElement.style.colorScheme = "dark";
@@ -106,7 +103,10 @@ export default function App() {
   const toggleTheme = () => setIsDark((prev) => !prev);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground relative">
+      {/* Single global dots background - renders once for the whole page */}
+      <DotsBackground fixed />
+
       {/* Navbar */}
       <Navbar
         isDark={isDark}
@@ -185,7 +185,6 @@ export default function App() {
         />
       )}
 
-      {/* Public Profile Page (hash-based overlay) */}
       {publicProfileHandle && (
         <PublicProfilePage
           handle={publicProfileHandle}
@@ -193,15 +192,12 @@ export default function App() {
         />
       )}
 
-      {/* Public Leaderboard Page (hash-based overlay, no login needed) */}
       {showPublicLeaderboard && (
         <PublicLeaderboardPage onClose={closePublicLeaderboard} />
       )}
 
-      {/* Blog Page */}
       {showBlog && <BlogPage onClose={() => setShowBlog(false)} />}
 
-      {/* Forum Page */}
       {showForum && (
         <ForumPage
           onClose={() => setShowForum(false)}
@@ -209,7 +205,6 @@ export default function App() {
         />
       )}
 
-      {/* Create Account Modal */}
       <CreateAccountModal
         open={showCreateAccount}
         onClose={() => setShowCreateAccount(false)}
@@ -217,7 +212,6 @@ export default function App() {
         prefillFullName={prefillFullName}
       />
 
-      {/* Toast notifications */}
       <Toaster
         position="bottom-right"
         toastOptions={{

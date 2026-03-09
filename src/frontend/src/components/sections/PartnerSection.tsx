@@ -1,4 +1,3 @@
-import { DotsBackground } from "@/components/DotsBackground";
 import { useLanguage } from "@/i18n/LanguageContext";
 // Pre-footer section: ClawPro.ai brand + partner logos + app download badges
 import React, { useEffect, useState } from "react";
@@ -770,7 +769,6 @@ export function PartnerSection() {
 
   return (
     <section className="relative py-16 overflow-hidden">
-      <DotsBackground />
       {/* Subtle background */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-muted/5 to-transparent pointer-events-none" />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />

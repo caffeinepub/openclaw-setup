@@ -7,7 +7,6 @@ import {
   Twitter,
 } from "lucide-react";
 import { useLanguage } from "../i18n/LanguageContext";
-import { DotsBackground } from "./DotsBackground";
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -15,7 +14,6 @@ export function Footer() {
 
   return (
     <footer className="relative border-t border-border bg-card/50 overflow-hidden">
-      <DotsBackground />
       {/* Top glow line */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/40 to-transparent" />
 

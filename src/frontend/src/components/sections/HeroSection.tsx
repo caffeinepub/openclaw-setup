@@ -37,7 +37,6 @@ import {
   useTotalDownloads,
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
-import { DotsBackground } from "../DotsBackground";
 function RobotMascot() {
   return (
     <div
@@ -1956,7 +1955,6 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
       className="relative min-h-screen flex items-center overflow-hidden bg-black"
     >
       {/* Moving dots background — same as other sections */}
-      <DotsBackground />
 
       {/* Subtle dark gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 z-[2] pointer-events-none" />

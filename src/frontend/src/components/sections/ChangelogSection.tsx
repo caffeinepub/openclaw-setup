@@ -8,7 +8,6 @@ import { useState } from "react";
 import type { Changelog } from "../../backend.d";
 import { useAllChangelog } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
-import { DotsBackground } from "../DotsBackground";
 
 // ── Changelog Glow Styles ───────────────────────────────────────────────────
 const CHANGELOG_STYLES = `
@@ -349,7 +348,6 @@ export function ChangelogSection() {
 
   return (
     <section id="changelog" className="py-24 relative overflow-hidden">
-      <DotsBackground />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
       <div className="absolute inset-0 hex-grid-bg opacity-15" />
 

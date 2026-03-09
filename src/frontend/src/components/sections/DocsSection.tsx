@@ -22,7 +22,6 @@ import { toast } from "sonner";
 import type { FAQ } from "../../backend.d";
 import { useAllFAQs } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
-import { DotsBackground } from "../DotsBackground";
 
 const CONFIG_OPTIONS = [
   { name: "sensitivity", type: "number", default: "65" },
@@ -172,7 +171,6 @@ export function DocsSection() {
 
   return (
     <section id="docs" className="py-24 relative overflow-hidden">
-      <DotsBackground />
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan/30 to-transparent" />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
