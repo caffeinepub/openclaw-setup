@@ -31,6 +31,13 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { SiTelegram, SiWhatsapp } from "react-icons/si";
+import {
+  Cell,
+  Pie,
+  PieChart,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { toast } from "sonner";
 import { MembershipTier } from "../backend.d";
 import {
@@ -478,6 +485,27 @@ function HomePanel({
       color: "#26a17b",
       change: 0.01,
     },
+    {
+      symbol: "SOL",
+      name: "Solana",
+      amount: "2.5",
+      color: "#9945ff",
+      change: 3.8,
+    },
+    {
+      symbol: "BNB",
+      name: "BNB",
+      amount: "1.2",
+      color: "#f0b90b",
+      change: 1.5,
+    },
+    {
+      symbol: "XRP",
+      name: "XRP",
+      amount: "500",
+      color: "#00aae4",
+      change: -0.8,
+    },
   ];
 
   const [portfolio, setPortfolio] = useState(() => {
@@ -733,6 +761,92 @@ function HomePanel({
                 ),
               )}
             </div>
+            {/* Donut Chart - Portfolio Distribution */}
+            {!editingPortfolio && totalPortfolio > 0 && (
+              <div className="mt-4 pt-3 border-t border-white/5">
+                <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 text-center">
+                  Distribution
+                </div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="relative flex-shrink-0"
+                    style={{ width: 90, height: 90 }}
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={getPortfolioWithValues()}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={28}
+                          outerRadius={42}
+                          paddingAngle={2}
+                          dataKey="value"
+                          stroke="none"
+                        >
+                          {getPortfolioWithValues().map(
+                            (coin: { symbol: string; color: string }) => (
+                              <Cell key={coin.symbol} fill={coin.color} />
+                            ),
+                          )}
+                        </Pie>
+                        <RechartsTooltip
+                          formatter={(val: number, name: string) => [
+                            `$${(val as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+                            name,
+                          ]}
+                          contentStyle={{
+                            background: "#0a0a0f",
+                            border: "1px solid rgba(6,182,212,0.3)",
+                            borderRadius: 8,
+                            fontSize: 11,
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                      <span className="text-[9px] text-muted-foreground">
+                        Total
+                      </span>
+                      <span className="text-[10px] font-bold text-cyan-300">
+                        ${(totalPortfolio / 1000).toFixed(1)}k
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1 grid grid-cols-2 gap-1">
+                    {getPortfolioWithValues().map(
+                      (coin: {
+                        symbol: string;
+                        value: number;
+                        color: string;
+                      }) => (
+                        <div
+                          key={coin.symbol}
+                          className="flex items-center gap-1"
+                        >
+                          <div
+                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{ background: coin.color }}
+                          />
+                          <span className="text-[10px] text-muted-foreground">
+                            {coin.symbol}
+                          </span>
+                          <span
+                            className="text-[10px] font-medium ml-auto"
+                            style={{ color: coin.color }}
+                          >
+                            {totalPortfolio > 0
+                              ? Math.round((coin.value / totalPortfolio) * 100)
+                              : 0}
+                            %
+                          </span>
+                        </div>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

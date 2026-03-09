@@ -164,12 +164,12 @@ const COUNTRIES: CountryPoint[] = [
 ];
 
 const REGION_COLORS: Record<string, string> = {
-  Americas: "#06b6d4",
+  Americas: "#f97316",
   Europe: "#8b5cf6",
-  Asia: "#10b981",
+  Asia: "#06b6d4",
   "Middle East": "#f59e0b",
-  Africa: "#ef4444",
-  Oceania: "#3b82f6",
+  Africa: "#22c55e",
+  Oceania: "#ec4899",
 };
 
 interface PopupInfo {

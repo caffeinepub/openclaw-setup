@@ -10,440 +10,444 @@ import { useLeaderboard } from "../../hooks/useQueries";
 const GEO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// Country name + ISO-3166-1 numeric -> alpha2 map (partial)
+// Map numeric ISO to alpha-2 and continent
 const COUNTRY_META: Record<
   string,
   { name: string; alpha2: string; continent: string }
 > = {
-  "840": { name: "United States", alpha2: "US", continent: "Americas" },
-  "124": { name: "Canada", alpha2: "CA", continent: "Americas" },
-  "484": { name: "Mexico", alpha2: "MX", continent: "Americas" },
-  "076": { name: "Brazil", alpha2: "BR", continent: "Americas" },
+  "004": { name: "Afghanistan", alpha2: "AF", continent: "Asia" },
+  "008": { name: "Albania", alpha2: "AL", continent: "Europe" },
+  "012": { name: "Algeria", alpha2: "DZ", continent: "Africa" },
+  "024": { name: "Angola", alpha2: "AO", continent: "Africa" },
   "032": { name: "Argentina", alpha2: "AR", continent: "Americas" },
-  "152": { name: "Chile", alpha2: "CL", continent: "Americas" },
-  "170": { name: "Colombia", alpha2: "CO", continent: "Americas" },
-  "604": { name: "Peru", alpha2: "PE", continent: "Americas" },
-  "858": { name: "Uruguay", alpha2: "UY", continent: "Americas" },
-  "068": { name: "Bolivia", alpha2: "BO", continent: "Americas" },
-  "218": { name: "Ecuador", alpha2: "EC", continent: "Americas" },
-  "862": { name: "Venezuela", alpha2: "VE", continent: "Americas" },
-  "320": { name: "Guatemala", alpha2: "GT", continent: "Americas" },
-  "192": { name: "Cuba", alpha2: "CU", continent: "Americas" },
-  "826": { name: "United Kingdom", alpha2: "GB", continent: "Europe" },
-  "250": { name: "France", alpha2: "FR", continent: "Europe" },
-  "276": { name: "Germany", alpha2: "DE", continent: "Europe" },
-  "724": { name: "Spain", alpha2: "ES", continent: "Europe" },
-  "380": { name: "Italy", alpha2: "IT", continent: "Europe" },
-  "528": { name: "Netherlands", alpha2: "NL", continent: "Europe" },
-  "056": { name: "Belgium", alpha2: "BE", continent: "Europe" },
+  "036": { name: "Australia", alpha2: "AU", continent: "Oceania" },
   "040": { name: "Austria", alpha2: "AT", continent: "Europe" },
-  "756": { name: "Switzerland", alpha2: "CH", continent: "Europe" },
-  "752": { name: "Sweden", alpha2: "SE", continent: "Europe" },
-  "578": { name: "Norway", alpha2: "NO", continent: "Europe" },
-  "208": { name: "Denmark", alpha2: "DK", continent: "Europe" },
-  "246": { name: "Finland", alpha2: "FI", continent: "Europe" },
-  "616": { name: "Poland", alpha2: "PL", continent: "Europe" },
-  "203": { name: "Czech Republic", alpha2: "CZ", continent: "Europe" },
-  "348": { name: "Hungary", alpha2: "HU", continent: "Europe" },
-  "620": { name: "Portugal", alpha2: "PT", continent: "Europe" },
-  "300": { name: "Greece", alpha2: "GR", continent: "Europe" },
-  "642": { name: "Romania", alpha2: "RO", continent: "Europe" },
-  "100": { name: "Bulgaria", alpha2: "BG", continent: "Europe" },
-  "191": { name: "Croatia", alpha2: "HR", continent: "Europe" },
-  "688": { name: "Serbia", alpha2: "RS", continent: "Europe" },
-  "804": { name: "Ukraine", alpha2: "UA", continent: "Europe" },
-  "643": { name: "Russia", alpha2: "RU", continent: "Europe" },
-  "792": { name: "Turkey", alpha2: "TR", continent: "Middle East" },
-  "364": { name: "Iran", alpha2: "IR", continent: "Middle East" },
-  "682": { name: "Saudi Arabia", alpha2: "SA", continent: "Middle East" },
-  "784": { name: "UAE", alpha2: "AE", continent: "Middle East" },
-  "368": { name: "Iraq", alpha2: "IQ", continent: "Middle East" },
-  "400": { name: "Jordan", alpha2: "JO", continent: "Middle East" },
-  "376": { name: "Israel", alpha2: "IL", continent: "Middle East" },
-  "422": { name: "Lebanon", alpha2: "LB", continent: "Middle East" },
-  "512": { name: "Oman", alpha2: "OM", continent: "Middle East" },
-  "634": { name: "Qatar", alpha2: "QA", continent: "Middle East" },
-  "887": { name: "Yemen", alpha2: "YE", continent: "Middle East" },
-  "760": { name: "Syria", alpha2: "SY", continent: "Middle East" },
   "050": { name: "Bangladesh", alpha2: "BD", continent: "Asia" },
-  "356": { name: "India", alpha2: "IN", continent: "Asia" },
-  "586": { name: "Pakistan", alpha2: "PK", continent: "Asia" },
-  "156": { name: "China", alpha2: "CN", continent: "Asia" },
-  "392": { name: "Japan", alpha2: "JP", continent: "Asia" },
-  "410": { name: "South Korea", alpha2: "KR", continent: "Asia" },
-  "360": { name: "Indonesia", alpha2: "ID", continent: "Asia" },
-  "458": { name: "Malaysia", alpha2: "MY", continent: "Asia" },
-  "764": { name: "Thailand", alpha2: "TH", continent: "Asia" },
-  "704": { name: "Vietnam", alpha2: "VN", continent: "Asia" },
-  "608": { name: "Philippines", alpha2: "PH", continent: "Asia" },
-  "702": { name: "Singapore", alpha2: "SG", continent: "Asia" },
-  "144": { name: "Sri Lanka", alpha2: "LK", continent: "Asia" },
-  "524": { name: "Nepal", alpha2: "NP", continent: "Asia" },
+  "056": { name: "Belgium", alpha2: "BE", continent: "Europe" },
+  "064": { name: "Bhutan", alpha2: "BT", continent: "Asia" },
+  "068": { name: "Bolivia", alpha2: "BO", continent: "Americas" },
+  "076": { name: "Brazil", alpha2: "BR", continent: "Americas" },
+  "100": { name: "Bulgaria", alpha2: "BG", continent: "Europe" },
   "104": { name: "Myanmar", alpha2: "MM", continent: "Asia" },
   "116": { name: "Cambodia", alpha2: "KH", continent: "Asia" },
-  "418": { name: "Laos", alpha2: "LA", continent: "Asia" },
-  "496": { name: "Mongolia", alpha2: "MN", continent: "Asia" },
-  "398": { name: "Kazakhstan", alpha2: "KZ", continent: "Asia" },
-  "860": { name: "Uzbekistan", alpha2: "UZ", continent: "Asia" },
-  "004": { name: "Afghanistan", alpha2: "AF", continent: "Asia" },
-  "012": { name: "Algeria", alpha2: "DZ", continent: "Africa" },
+  "120": { name: "Cameroon", alpha2: "CM", continent: "Africa" },
+  "124": { name: "Canada", alpha2: "CA", continent: "Americas" },
+  "152": { name: "Chile", alpha2: "CL", continent: "Americas" },
+  "156": { name: "China", alpha2: "CN", continent: "Asia" },
+  "170": { name: "Colombia", alpha2: "CO", continent: "Americas" },
+  "180": { name: "DR Congo", alpha2: "CD", continent: "Africa" },
+  "188": { name: "Costa Rica", alpha2: "CR", continent: "Americas" },
+  "192": { name: "Cuba", alpha2: "CU", continent: "Americas" },
+  "203": { name: "Czech Republic", alpha2: "CZ", continent: "Europe" },
+  "208": { name: "Denmark", alpha2: "DK", continent: "Europe" },
+  "218": { name: "Ecuador", alpha2: "EC", continent: "Americas" },
   "818": { name: "Egypt", alpha2: "EG", continent: "Africa" },
-  "504": { name: "Morocco", alpha2: "MA", continent: "Africa" },
-  "788": { name: "Tunisia", alpha2: "TN", continent: "Africa" },
-  "434": { name: "Libya", alpha2: "LY", continent: "Africa" },
-  "706": { name: "Somalia", alpha2: "SO", continent: "Africa" },
   "231": { name: "Ethiopia", alpha2: "ET", continent: "Africa" },
-  "404": { name: "Kenya", alpha2: "KE", continent: "Africa" },
-  "800": { name: "Uganda", alpha2: "UG", continent: "Africa" },
-  "834": { name: "Tanzania", alpha2: "TZ", continent: "Africa" },
-  "710": { name: "South Africa", alpha2: "ZA", continent: "Africa" },
-  "566": { name: "Nigeria", alpha2: "NG", continent: "Africa" },
+  "246": { name: "Finland", alpha2: "FI", continent: "Europe" },
+  "250": { name: "France", alpha2: "FR", continent: "Europe" },
+  "276": { name: "Germany", alpha2: "DE", continent: "Europe" },
   "288": { name: "Ghana", alpha2: "GH", continent: "Africa" },
-  "384": { name: "Ivory Coast", alpha2: "CI", continent: "Africa" },
+  "300": { name: "Greece", alpha2: "GR", continent: "Europe" },
+  "320": { name: "Guatemala", alpha2: "GT", continent: "Americas" },
+  "324": { name: "Guinea", alpha2: "GN", continent: "Africa" },
+  "332": { name: "Haiti", alpha2: "HT", continent: "Americas" },
+  "340": { name: "Honduras", alpha2: "HN", continent: "Americas" },
+  "348": { name: "Hungary", alpha2: "HU", continent: "Europe" },
+  "356": { name: "India", alpha2: "IN", continent: "Asia" },
+  "360": { name: "Indonesia", alpha2: "ID", continent: "Asia" },
+  "364": { name: "Iran", alpha2: "IR", continent: "Asia" },
+  "368": { name: "Iraq", alpha2: "IQ", continent: "Asia" },
+  "372": { name: "Ireland", alpha2: "IE", continent: "Europe" },
+  "376": { name: "Israel", alpha2: "IL", continent: "Asia" },
+  "380": { name: "Italy", alpha2: "IT", continent: "Europe" },
+  "388": { name: "Jamaica", alpha2: "JM", continent: "Americas" },
+  "392": { name: "Japan", alpha2: "JP", continent: "Asia" },
+  "400": { name: "Jordan", alpha2: "JO", continent: "Asia" },
+  "398": { name: "Kazakhstan", alpha2: "KZ", continent: "Asia" },
+  "404": { name: "Kenya", alpha2: "KE", continent: "Africa" },
+  "408": { name: "North Korea", alpha2: "KP", continent: "Asia" },
+  "410": { name: "South Korea", alpha2: "KR", continent: "Asia" },
+  "414": { name: "Kuwait", alpha2: "KW", continent: "Asia" },
+  "418": { name: "Laos", alpha2: "LA", continent: "Asia" },
+  "422": { name: "Lebanon", alpha2: "LB", continent: "Asia" },
+  "426": { name: "Lesotho", alpha2: "LS", continent: "Africa" },
   "430": { name: "Liberia", alpha2: "LR", continent: "Africa" },
-  "180": { name: "Dem. Rep. Congo", alpha2: "CD", continent: "Africa" },
-  "024": { name: "Angola", alpha2: "AO", continent: "Africa" },
+  "434": { name: "Libya", alpha2: "LY", continent: "Africa" },
+  "484": { name: "Mexico", alpha2: "MX", continent: "Americas" },
+  "496": { name: "Mongolia", alpha2: "MN", continent: "Asia" },
+  "504": { name: "Morocco", alpha2: "MA", continent: "Africa" },
   "508": { name: "Mozambique", alpha2: "MZ", continent: "Africa" },
-  "716": { name: "Zimbabwe", alpha2: "ZW", continent: "Africa" },
   "516": { name: "Namibia", alpha2: "NA", continent: "Africa" },
-  "036": { name: "Australia", alpha2: "AU", continent: "Oceania" },
+  "524": { name: "Nepal", alpha2: "NP", continent: "Asia" },
+  "528": { name: "Netherlands", alpha2: "NL", continent: "Europe" },
   "554": { name: "New Zealand", alpha2: "NZ", continent: "Oceania" },
+  "558": { name: "Nicaragua", alpha2: "NI", continent: "Americas" },
+  "562": { name: "Niger", alpha2: "NE", continent: "Africa" },
+  "566": { name: "Nigeria", alpha2: "NG", continent: "Africa" },
+  "578": { name: "Norway", alpha2: "NO", continent: "Europe" },
+  "586": { name: "Pakistan", alpha2: "PK", continent: "Asia" },
+  "591": { name: "Panama", alpha2: "PA", continent: "Americas" },
   "598": { name: "Papua New Guinea", alpha2: "PG", continent: "Oceania" },
-  "242": { name: "Fiji", alpha2: "FJ", continent: "Oceania" },
+  "600": { name: "Paraguay", alpha2: "PY", continent: "Americas" },
+  "604": { name: "Peru", alpha2: "PE", continent: "Americas" },
+  "608": { name: "Philippines", alpha2: "PH", continent: "Asia" },
+  "616": { name: "Poland", alpha2: "PL", continent: "Europe" },
+  "620": { name: "Portugal", alpha2: "PT", continent: "Europe" },
+  "630": { name: "Puerto Rico", alpha2: "PR", continent: "Americas" },
+  "634": { name: "Qatar", alpha2: "QA", continent: "Asia" },
+  "642": { name: "Romania", alpha2: "RO", continent: "Europe" },
+  "643": { name: "Russia", alpha2: "RU", continent: "Europe" },
+  "682": { name: "Saudi Arabia", alpha2: "SA", continent: "Asia" },
+  "686": { name: "Senegal", alpha2: "SN", continent: "Africa" },
+  "694": { name: "Sierra Leone", alpha2: "SL", continent: "Africa" },
+  "706": { name: "Somalia", alpha2: "SO", continent: "Africa" },
+  "710": { name: "South Africa", alpha2: "ZA", continent: "Africa" },
+  "724": { name: "Spain", alpha2: "ES", continent: "Europe" },
+  "144": { name: "Sri Lanka", alpha2: "LK", continent: "Asia" },
+  "729": { name: "Sudan", alpha2: "SD", continent: "Africa" },
+  "752": { name: "Sweden", alpha2: "SE", continent: "Europe" },
+  "756": { name: "Switzerland", alpha2: "CH", continent: "Europe" },
+  "760": { name: "Syria", alpha2: "SY", continent: "Asia" },
+  "158": { name: "Taiwan", alpha2: "TW", continent: "Asia" },
+  "764": { name: "Thailand", alpha2: "TH", continent: "Asia" },
+  "768": { name: "Togo", alpha2: "TG", continent: "Africa" },
+  "780": { name: "Trinidad and Tobago", alpha2: "TT", continent: "Americas" },
+  "788": { name: "Tunisia", alpha2: "TN", continent: "Africa" },
+  "792": { name: "Turkey", alpha2: "TR", continent: "Europe" },
+  "800": { name: "Uganda", alpha2: "UG", continent: "Africa" },
+  "804": { name: "Ukraine", alpha2: "UA", continent: "Europe" },
+  "784": { name: "UAE", alpha2: "AE", continent: "Asia" },
+  "826": { name: "United Kingdom", alpha2: "GB", continent: "Europe" },
+  "840": { name: "United States", alpha2: "US", continent: "Americas" },
+  "858": { name: "Uruguay", alpha2: "UY", continent: "Americas" },
+  "860": { name: "Uzbekistan", alpha2: "UZ", continent: "Asia" },
+  "862": { name: "Venezuela", alpha2: "VE", continent: "Americas" },
+  "704": { name: "Vietnam", alpha2: "VN", continent: "Asia" },
+  "887": { name: "Yemen", alpha2: "YE", continent: "Asia" },
+  "894": { name: "Zambia", alpha2: "ZM", continent: "Africa" },
+  "716": { name: "Zimbabwe", alpha2: "ZW", continent: "Africa" },
 };
 
-const CONTINENT_CONFIG: Array<{
-  name: string;
-  color: string;
-  glowColor: string;
-  label: string;
-}> = [
-  {
-    name: "All",
-    color: "#06b6d4",
-    glowColor: "rgba(6,182,212,0.6)",
-    label: "🌍 All",
-  },
-  {
-    name: "Asia",
-    color: "#f59e0b",
-    glowColor: "rgba(245,158,11,0.6)",
-    label: "🌏 Asia",
-  },
-  {
-    name: "Europe",
-    color: "#3b82f6",
-    glowColor: "rgba(59,130,246,0.6)",
-    label: "🌍 Europe",
-  },
-  {
-    name: "Americas",
-    color: "#22c55e",
-    glowColor: "rgba(34,197,94,0.6)",
-    label: "🌎 Americas",
-  },
-  {
-    name: "Africa",
-    color: "#f97316",
-    glowColor: "rgba(249,115,22,0.6)",
-    label: "🌍 Africa",
-  },
-  {
-    name: "Oceania",
-    color: "#a855f7",
-    glowColor: "rgba(168,85,247,0.6)",
-    label: "🌏 Oceania",
-  },
-  {
-    name: "Middle East",
-    color: "#ec4899",
-    glowColor: "rgba(236,72,153,0.6)",
-    label: "🕌 Middle East",
-  },
-];
+const CONTINENT_COLORS: Record<string, string> = {
+  Americas: "#f97316",
+  Europe: "#6366f1",
+  Asia: "#06b6d4",
+  Africa: "#22c55e",
+  Oceania: "#ec4899",
+  "Middle East": "#f59e0b",
+};
 
-const CONTINENT_COUNTRY_COUNTS: Record<string, number> = {
-  Asia: 48,
-  Europe: 44,
+const CONTINENTS = ["All", "Americas", "Europe", "Asia", "Africa", "Oceania"];
+
+const CONTINENT_COUNTRY_COUNT: Record<string, number> = {
   Americas: 35,
+  Europe: 44,
+  Asia: 48,
   Africa: 54,
   Oceania: 14,
-  "Middle East": 18,
 };
 
-function getCountryColor(
-  numericId: string,
-  selected: Set<string>,
-  glowing: Set<string>,
-  activeContinent: string,
-) {
-  const meta = COUNTRY_META[numericId];
-  const continent = meta?.continent ?? "Other";
-  if (selected.has(numericId)) return "#facc15";
-  if (glowing.has(numericId)) {
-    const cfg = CONTINENT_CONFIG.find((c) => c.name === continent);
-    return cfg?.color ?? "#06b6d4";
-  }
-  if (activeContinent !== "All" && continent !== activeContinent)
-    return "#1e293b";
-  const cfg = CONTINENT_CONFIG.find((c) => c.name === continent);
-  return cfg ? `${cfg.color}55` : "#1e3a5f";
-}
-
-interface CountryPopup {
-  numericId: string;
-  name: string;
-  alpha2: string;
-  continent: string;
-  registrations: number;
+function getFlag(alpha2: string) {
+  return alpha2
+    .toUpperCase()
+    .replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)));
 }
 
 export function AvailableWorldwideSection() {
   const [selectedCountries, setSelectedCountries] = useState<Set<string>>(
     new Set(),
   );
-  const [glowingCountries, setGlowingCountries] = useState<Set<string>>(
-    new Set(),
-  );
-  const [glowingMeta, setGlowingMeta] = useState<
-    Array<{ id: string; name: string; continent: string }>
-  >([]);
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [activeContinent, setActiveContinent] = useState("All");
-  const [tooltip, setTooltip] = useState<{
+  const [glowingCountries, setGlowingCountries] = useState<string[]>([]);
+  const [popup, setPopup] = useState<{
+    id: string;
     x: number;
     y: number;
-    name: string;
   } | null>(null);
-  const [popup, setPopup] = useState<CountryPopup | null>(null);
-  const [totalLive] = useState(195);
+  const [tooltip, setTooltip] = useState<{
+    text: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const { data: leaderboardData } = useLeaderboard();
-  const glowingRef = useRef<Set<string>>(new Set());
-  const glowingMetaRef = useRef<
-    Array<{ id: string; name: string; continent: string }>
-  >([]);
 
-  // Build registration map from leaderboard
-  const registrationMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    if (leaderboardData) {
-      for (const m of leaderboardData) {
-        const alpha2 = (m as { country?: string }).country ?? "";
-        if (alpha2) {
-          map[alpha2] = (map[alpha2] ?? 0) + 1;
-        }
-      }
-    }
-    // fallback demo data
-    const demo: Record<string, number> = {
-      US: 1420,
-      ID: 980,
-      IN: 870,
-      BR: 650,
-      DE: 540,
-      GB: 510,
-      JP: 480,
-      KR: 430,
-      FR: 390,
-      AU: 310,
-      CA: 290,
-      MY: 260,
-      SG: 240,
-      PH: 220,
-      NG: 190,
-    };
-    return { ...demo, ...map };
-  }, [leaderboardData]);
-
-  // Top countries for leaderboard display
-  const topCountries = useMemo(() => {
-    return Object.entries(registrationMap)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10)
-      .map(([alpha2, count]) => {
-        const meta = Object.values(COUNTRY_META).find(
-          (m) => m.alpha2 === alpha2,
-        );
-        return { alpha2, name: meta?.name ?? alpha2, count };
-      });
-  }, [registrationMap]);
-
-  // Animate 2-3 random countries glowing every second
+  // Simulate 2-3 countries glowing every second
   useEffect(() => {
-    const numericIds = Object.keys(COUNTRY_META);
+    const countryIds = Object.keys(COUNTRY_META);
     const interval = setInterval(() => {
       const count = 2 + Math.floor(Math.random() * 2);
-      const chosen: string[] = [];
-      const shuffled = [...numericIds].sort(() => Math.random() - 0.5);
-      for (let i = 0; i < count && i < shuffled.length; i++) {
-        chosen.push(shuffled[i]);
+      const picked: string[] = [];
+      for (let i = 0; i < count; i++) {
+        picked.push(countryIds[Math.floor(Math.random() * countryIds.length)]);
       }
-      const meta = chosen.map((id) => ({
-        id,
-        name: COUNTRY_META[id]?.name ?? id,
-        continent: COUNTRY_META[id]?.continent ?? "Other",
-      }));
-      const newSet = new Set(chosen);
-      glowingRef.current = newSet;
-      glowingMetaRef.current = meta;
-      setGlowingCountries(newSet);
-      setGlowingMeta(meta);
-    }, 1000);
+      setGlowingCountries(picked);
+    }, 1200);
     return () => clearInterval(interval);
   }, []);
 
-  const handleCountryClick = (numericId: string) => {
-    const meta = COUNTRY_META[numericId];
-    if (!meta) return;
-    const alpha2 = meta.alpha2;
-    const regs = registrationMap[alpha2] ?? 0;
-    setPopup({
-      numericId,
-      name: meta.name,
-      alpha2,
-      continent: meta.continent,
-      registrations: regs,
-    });
-    setSelectedCountries((prev) => {
-      const next = new Set(prev);
-      if (next.has(numericId)) next.delete(numericId);
-      else next.add(numericId);
-      return next;
-    });
+  const getCountryColor = (
+    geoId: string,
+    isSelected: boolean,
+    isHovered: boolean,
+    isGlowing: boolean,
+  ) => {
+    const meta = COUNTRY_META[geoId];
+    const continent = meta?.continent ?? "Asia";
+    const base = CONTINENT_COLORS[continent] ?? "#6366f1";
+    if (isSelected) return base;
+    if (isGlowing) return base;
+    if (isHovered) return `${base}cc`;
+    return "#1e2433";
   };
 
-  const displayedCount =
-    activeContinent === "All"
-      ? totalLive
-      : (CONTINENT_COUNTRY_COUNTS[activeContinent] ?? 0);
+  const getCountryOpacity = (
+    geoId: string,
+    isSelected: boolean,
+    isHovered: boolean,
+    isGlowing: boolean,
+  ) => {
+    if (isSelected) return 1;
+    if (isGlowing) return 0.9;
+    if (isHovered) return 0.85;
+    const meta = COUNTRY_META[geoId];
+    if (activeContinent !== "All" && meta?.continent !== activeContinent)
+      return 0.15;
+    return 0.45;
+  };
 
-  const activeCfg = CONTINENT_CONFIG.find((c) => c.name === activeContinent)!;
+  const handleCountryClick = (geoId: string, evt: React.MouseEvent) => {
+    setSelectedCountries((prev) => {
+      const next = new Set(prev);
+      if (next.has(geoId)) next.delete(geoId);
+      else next.add(geoId);
+      return next;
+    });
+    const rect = (evt.target as SVGElement)
+      .closest("svg")
+      ?.getBoundingClientRect();
+    if (rect) {
+      setPopup({
+        id: geoId,
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top,
+      });
+      setTimeout(() => setPopup(null), 3000);
+    }
+  };
+
+  const registrationsByCountry = useMemo(() => {
+    const map: Record<string, number> = {};
+    if (leaderboardData) {
+      for (const entry of leaderboardData) {
+        const country = (entry as { country?: string }).country ?? "US";
+        map[country] = (map[country] ?? 0) + 1;
+      }
+    }
+    // Seed some demo data
+    const seeds: Record<string, number> = {
+      US: 2840,
+      IN: 1920,
+      GB: 1540,
+      DE: 1210,
+      BR: 1080,
+      ID: 980,
+      PH: 870,
+      NG: 760,
+      JP: 650,
+      AU: 540,
+    };
+    for (const [k, v] of Object.entries(seeds)) map[k] = (map[k] ?? 0) + v;
+    return map;
+  }, [leaderboardData]);
+
+  const topCountries = useMemo(() => {
+    const alpha2Map: Record<string, string> = {};
+    for (const [id, meta] of Object.entries(COUNTRY_META))
+      alpha2Map[meta.alpha2] = id;
+    return Object.entries(registrationsByCountry)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([alpha2, count]) => ({
+        ...COUNTRY_META[alpha2Map[alpha2] ?? ""],
+        alpha2,
+        count,
+      }));
+  }, [registrationsByCountry]);
+
+  const glowingMeta = glowingCountries
+    .map((id) => COUNTRY_META[id])
+    .filter(Boolean);
+
+  const totalCountries =
+    activeContinent === "All"
+      ? Object.keys(COUNTRY_META).length
+      : (CONTINENT_COUNTRY_COUNT[activeContinent] ?? 0);
 
   return (
-    <section id="worldwide" className="relative py-16 px-4">
+    <section className="py-16 px-4 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
         {/* Title */}
         <div className="text-center mb-8">
-          <h2
-            className="text-3xl sm:text-4xl font-extrabold mb-2"
-            style={{
-              background: "linear-gradient(90deg, #06b6d4, #a855f7, #f59e0b)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
+          <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">
             ClawPro Available Worldwide
           </h2>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            Click any country to see details. Hover to see the name.
+          <p className="text-muted-foreground text-sm">
+            Interactive map — click any country to highlight
           </p>
         </div>
 
         {/* Continent filter buttons */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {CONTINENT_CONFIG.map((cfg) => {
+          {CONTINENTS.map((c) => {
+            const active = activeContinent === c;
+            const color = CONTINENT_COLORS[c] ?? "#06b6d4";
             const count =
-              cfg.name === "All"
-                ? totalLive
-                : (CONTINENT_COUNTRY_COUNTS[cfg.name] ?? 0);
-            const isActive = activeContinent === cfg.name;
+              c === "All"
+                ? Object.keys(COUNTRY_META).length
+                : CONTINENT_COUNTRY_COUNT[c];
             return (
               <button
-                key={cfg.name}
                 type="button"
-                onClick={() => setActiveContinent(cfg.name)}
-                className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                key={c}
+                onClick={() => setActiveContinent(c)}
+                data-ocid="map.continent.button"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border"
                 style={{
-                  background: isActive ? cfg.color : `${cfg.color}22`,
-                  border: `1.5px solid ${cfg.color}`,
-                  color: isActive ? "#fff" : cfg.color,
-                  boxShadow: isActive ? `0 0 14px ${cfg.glowColor}` : "none",
+                  borderColor: active ? color : `${color}40`,
+                  background: active ? `${color}25` : "transparent",
+                  color: active ? color : "#888",
+                  boxShadow: active ? `0 0 12px ${color}50` : "none",
                 }}
-                data-ocid="worldwide.continent.button"
               >
-                {/* LED indicator */}
                 <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  className="w-2 h-2 rounded-full"
                   style={{
-                    background: cfg.color,
-                    boxShadow: isActive ? `0 0 8px ${cfg.glowColor}` : "none",
-                    animation: isActive ? "pulse 1.2s infinite" : "none",
+                    background: active ? color : `${color}60`,
+                    boxShadow: active ? `0 0 6px ${color}` : "none",
+                    animation: active ? "pulse 1.5s infinite" : "none",
                   }}
                 />
-                {cfg.label}
-                <span
-                  className="ml-0.5 text-[10px] font-bold opacity-80"
-                  style={{ color: isActive ? "#fff" : cfg.color }}
-                >
-                  {count}
-                </span>
+                {c}{" "}
+                {c !== "All" && <span className="opacity-60">({count})</span>}
               </button>
             );
           })}
+          {selectedCountries.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelectedCountries(new Set())}
+              data-ocid="map.reset.button"
+              className="px-3 py-1.5 rounded-full text-xs font-medium border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-all"
+            >
+              Reset ({selectedCountries.size})
+            </button>
+          )}
         </div>
 
         {/* Map container */}
         <div
           className="relative rounded-2xl overflow-hidden"
           style={{
-            background: "oklch(0.06 0.015 240)",
-            border: `1.5px solid ${activeCfg.color}55`,
-            boxShadow: `0 0 40px ${activeCfg.glowColor}40, inset 0 0 80px rgba(0,0,0,0.5)`,
-            animation: "borderGlowRotate 3s linear infinite",
+            background: "oklch(0.07 0.015 240)",
+            boxShadow:
+              "0 0 0 2px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.08)",
+            animation: "mapGlow 3s ease-in-out infinite alternate",
+          }}
+          onMouseLeave={() => {
+            setHoveredCountry(null);
+            setTooltip(null);
           }}
         >
+          <style>{`
+            @keyframes mapGlow {
+              from { box-shadow: 0 0 0 2px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.08); }
+              to { box-shadow: 0 0 0 2px rgba(99,102,241,0.25), 0 0 60px rgba(99,102,241,0.12); }
+            }
+            @keyframes pulse {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.6; transform: scale(0.85); }
+            }
+          `}</style>
+
           <ComposableMap
-            projectionConfig={{ scale: 147 }}
+            projectionConfig={{ scale: 145 }}
+            width={800}
+            height={400}
             style={{ width: "100%", height: "auto" }}
           >
-            <ZoomableGroup>
+            <ZoomableGroup center={[0, 0]} zoom={1}>
               <Geographies geography={GEO_URL}>
                 {({ geographies }) =>
                   geographies.map((geo) => {
-                    const numId = geo.id?.toString().padStart(3, "0") ?? "";
-                    const isGlowing = glowingCountries.has(numId);
-                    const isSelected = selectedCountries.has(numId);
+                    const geoId = String(geo.id).padStart(3, "0");
+                    const meta = COUNTRY_META[geoId];
+                    const isSelected = selectedCountries.has(geoId);
+                    const isHovered = hoveredCountry === geoId;
+                    const isGlowing = glowingCountries.includes(geoId);
                     const fill = getCountryColor(
-                      numId,
-                      selectedCountries,
-                      glowingCountries,
-                      activeContinent,
+                      geoId,
+                      isSelected,
+                      isHovered,
+                      isGlowing,
                     );
+                    const opacity = getCountryOpacity(
+                      geoId,
+                      isSelected,
+                      isHovered,
+                      isGlowing,
+                    );
+
                     return (
                       <Geography
                         key={geo.rsmKey}
                         geography={geo}
                         fill={fill}
-                        stroke="#0f172a"
-                        strokeWidth={0.3}
+                        fillOpacity={opacity}
+                        stroke="#0d1117"
+                        strokeWidth={0.5}
                         style={{
                           default: {
                             outline: "none",
-                            filter: isGlowing
-                              ? `drop-shadow(0 0 6px ${fill})`
-                              : "none",
-                            transition: "fill 0.3s",
+                            cursor: meta ? "pointer" : "default",
                           },
-                          hover: {
-                            outline: "none",
-                            fill: isSelected ? "#facc15" : activeCfg.color,
-                            filter: `drop-shadow(0 0 8px ${activeCfg.glowColor})`,
-                            cursor: "pointer",
-                          },
+                          hover: { outline: "none" },
                           pressed: { outline: "none" },
                         }}
-                        onMouseEnter={(e) => {
-                          const meta = COUNTRY_META[numId];
+                        onMouseEnter={(evt) => {
                           if (meta) {
-                            setTooltip({
-                              x: e.clientX,
-                              y: e.clientY,
-                              name: meta.name,
-                            });
+                            setHoveredCountry(geoId);
+                            const rect = (evt.target as SVGElement)
+                              .closest("svg")
+                              ?.getBoundingClientRect();
+                            if (rect)
+                              setTooltip({
+                                text: meta.name,
+                                x: evt.clientX - rect.left,
+                                y: evt.clientY - rect.top - 10,
+                              });
                           }
                         }}
-                        onMouseLeave={() => setTooltip(null)}
-                        onClick={() => handleCountryClick(numId)}
-                        data-ocid="worldwide.map_marker"
+                        onMouseMove={(evt) => {
+                          if (meta) {
+                            const rect = (evt.target as SVGElement)
+                              .closest("svg")
+                              ?.getBoundingClientRect();
+                            if (rect)
+                              setTooltip({
+                                text: meta.name,
+                                x: evt.clientX - rect.left,
+                                y: evt.clientY - rect.top - 10,
+                              });
+                          }
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredCountry(null);
+                          setTooltip(null);
+                        }}
+                        onClick={(evt) => {
+                          if (meta) handleCountryClick(geoId, evt);
+                        }}
                       />
                     );
                   })
@@ -452,209 +456,146 @@ export function AvailableWorldwideSection() {
             </ZoomableGroup>
           </ComposableMap>
 
-          {/* Tooltip */}
+          {/* Hover tooltip */}
           {tooltip && (
             <div
-              className="fixed z-50 pointer-events-none px-2.5 py-1.5 rounded-lg text-xs font-semibold"
+              className="absolute pointer-events-none px-2 py-1 rounded text-xs font-medium text-white z-20"
               style={{
-                left: tooltip.x + 12,
-                top: tooltip.y - 36,
-                background: "oklch(0.12 0.03 250)",
-                border: `1px solid ${activeCfg.color}`,
-                color: activeCfg.color,
-                boxShadow: `0 0 12px ${activeCfg.glowColor}`,
+                left: tooltip.x,
+                top: tooltip.y,
+                transform: "translate(-50%, -100%)",
+                background: "rgba(6,182,212,0.9)",
+                backdropFilter: "blur(4px)",
+                whiteSpace: "nowrap",
               }}
             >
-              {tooltip.name}
+              {tooltip.text}
+            </div>
+          )}
+
+          {/* Click popup */}
+          {popup && COUNTRY_META[popup.id] && (
+            <div
+              className="absolute z-30 rounded-xl p-3 min-w-[160px] pointer-events-none"
+              style={{
+                left: Math.min(popup.x, 640),
+                top: Math.max(popup.y - 90, 10),
+                background: "oklch(0.1 0.02 240)",
+                border: `1px solid ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#06b6d4"}60`,
+                boxShadow: `0 0 20px ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#06b6d4"}30`,
+              }}
+            >
+              <div className="text-2xl mb-1">
+                {getFlag(COUNTRY_META[popup.id].alpha2)}
+              </div>
+              <div className="text-sm font-bold text-white">
+                {COUNTRY_META[popup.id].name}
+              </div>
+              <div className="text-xs text-cyan-400 mb-1">
+                {COUNTRY_META[popup.id].continent}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                {registrationsByCountry[
+                  COUNTRY_META[popup.id].alpha2
+                ]?.toLocaleString() ?? "0"}{" "}
+                registered users
+              </div>
+              <div className="text-[10px] text-green-400 flex items-center gap-1 mt-1">
+                <span
+                  className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"
+                  style={{ boxShadow: "0 0 6px #22c55e" }}
+                />
+                ClawPro Available Here
+              </div>
             </div>
           )}
         </div>
 
-        {/* Glowing country indicators */}
-        <div className="mt-4 flex flex-wrap gap-2 justify-center">
-          {glowingMeta.map((m) => {
-            const cfg = CONTINENT_CONFIG.find((c) => c.name === m.continent);
-            return (
-              <div
-                key={m.id}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                style={{
-                  background: `${cfg?.color ?? "#06b6d4"}18`,
-                  border: `1px solid ${cfg?.color ?? "#06b6d4"}60`,
-                  color: cfg?.color ?? "#06b6d4",
-                }}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+        {/* Glowing countries indicator */}
+        {glowingMeta.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-3 mt-4">
+            {glowingMeta.map((meta, idx) => {
+              const color = CONTINENT_COLORS[meta.continent] ?? "#06b6d4";
+              return (
+                <div
+                  key={meta.alpha2 ?? idx}
+                  className="flex items-center gap-2 px-3 py-1 rounded-full text-xs"
                   style={{
-                    background: cfg?.color ?? "#06b6d4",
-                    boxShadow: `0 0 8px ${cfg?.glowColor ?? "rgba(6,182,212,0.6)"}`,
+                    background: `${color}15`,
+                    border: `1px solid ${color}40`,
                   }}
-                />
-                {m.name}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* LIVE indicator */}
-        <div className="mt-4 flex items-center justify-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span
-              className="w-2.5 h-2.5 rounded-full animate-pulse"
-              style={{
-                background: "#22c55e",
-                boxShadow: "0 0 10px rgba(34,197,94,0.8)",
-              }}
-            />
-            <span className="text-xs font-bold text-green-400 uppercase tracking-wider">
-              LIVE
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground">
-            Available in{" "}
-            <span className="font-bold" style={{ color: activeCfg.color }}>
-              {displayedCount}
-            </span>{" "}
-            countries
-          </span>
-          {selectedCountries.size > 0 && (
-            <>
-              <span className="text-muted-foreground/40">·</span>
-              <span className="text-xs text-yellow-400">
-                {selectedCountries.size} selected
-              </span>
-              <button
-                type="button"
-                onClick={() => setSelectedCountries(new Set())}
-                className="text-xs text-red-400 hover:text-red-300 underline"
-                data-ocid="worldwide.reset.button"
-              >
-                Reset
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Top Countries by Registrations */}
-        <div className="mt-8">
-          <h3 className="text-sm font-semibold text-center text-muted-foreground uppercase tracking-wider mb-4">
-            Top Countries by Registrations
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {topCountries.map((c, i) => (
-              <div
-                key={c.alpha2}
-                className="flex items-center gap-2 p-2.5 rounded-xl"
-                style={{
-                  background: "oklch(0.09 0.015 240)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                }}
-              >
-                <span className="text-base">#{i + 1}</span>
-                <img
-                  src={`https://flagcdn.com/24x18/${c.alpha2.toLowerCase()}.png`}
-                  alt={c.name}
-                  className="rounded"
-                  width={24}
-                  height={18}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold truncate">{c.name}</p>
-                  <p className="text-[10px] text-cyan-400">
-                    {c.count.toLocaleString()} users
-                  </p>
+                >
+                  <span
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      background: color,
+                      boxShadow: `0 0 8px ${color}`,
+                      animation: "pulse 1s infinite",
+                    }}
+                  />
+                  <span className="text-white/80">{getFlag(meta.alpha2)}</span>
+                  <span style={{ color }}>{meta.name}</span>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        </div>
+        )}
 
-        {/* Country popup */}
-        {popup && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        {/* Live indicator */}
+        <div className="flex items-center justify-center gap-2 mt-3">
+          <span
+            className="w-2 h-2 rounded-full bg-green-400"
             style={{
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(6px)",
+              boxShadow: "0 0 8px #22c55e",
+              animation: "pulse 1.5s infinite",
             }}
-            onClick={() => setPopup(null)}
-            onKeyDown={(e) => e.key === "Escape" && setPopup(null)}
-          >
-            <div
-              className="rounded-2xl p-6 max-w-xs w-full"
-              style={{
-                background: "oklch(0.1 0.025 250)",
-                border: `1.5px solid ${activeCfg.color}`,
-                boxShadow: `0 0 40px ${activeCfg.glowColor}`,
-              }}
-              onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <img
-                  src={`https://flagcdn.com/48x36/${popup.alpha2.toLowerCase()}.png`}
-                  alt={popup.name}
-                  className="rounded shadow-lg"
-                  width={48}
-                  height={36}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <div>
-                  <h3
-                    className="text-lg font-bold"
-                    style={{ color: activeCfg.color }}
+          />
+          <span className="text-xs text-muted-foreground">
+            <span className="text-green-400 font-semibold">LIVE</span> ·{" "}
+            {totalCountries} countries available
+            {selectedCountries.size > 0 &&
+              ` · ${selectedCountries.size} selected`}
+          </span>
+        </div>
+
+        {/* Top Countries Leaderboard */}
+        {topCountries.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
+              Top Countries by Registrations
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {topCountries.slice(0, 10).map((c, idx) => {
+                const color =
+                  CONTINENT_COLORS[c?.continent ?? "Asia"] ?? "#06b6d4";
+                return (
+                  <div
+                    key={c?.alpha2 ?? idx}
+                    className="flex items-center gap-2 p-2 rounded-lg"
+                    style={{
+                      background: `${color}10`,
+                      border: `1px solid ${color}30`,
+                    }}
                   >
-                    {popup.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    {popup.continent}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div
-                  className="flex items-center justify-between p-2 rounded-lg"
-                  style={{ background: "rgba(255,255,255,0.05)" }}
-                >
-                  <span className="text-xs text-muted-foreground">
-                    ClawPro Status
-                  </span>
-                  <span className="text-xs font-semibold text-green-400 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                    Available
-                  </span>
-                </div>
-                <div
-                  className="flex items-center justify-between p-2 rounded-lg"
-                  style={{ background: "rgba(255,255,255,0.05)" }}
-                >
-                  <span className="text-xs text-muted-foreground">
-                    Registered Users
-                  </span>
-                  <span className="text-xs font-bold text-cyan-300">
-                    {popup.registrations.toLocaleString()}
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPopup(null)}
-                className="mt-4 w-full py-2 rounded-lg text-sm font-semibold transition-all"
-                style={{
-                  background: `${activeCfg.color}22`,
-                  border: `1px solid ${activeCfg.color}`,
-                  color: activeCfg.color,
-                }}
-                data-ocid="worldwide.popup.close_button"
-              >
-                Close
-              </button>
+                    <span className="text-base">
+                      {c?.alpha2 ? getFlag(c.alpha2) : ""}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium truncate">
+                        {c?.name ?? ""}
+                      </div>
+                      <div className="text-[10px]" style={{ color }}>
+                        {c.count.toLocaleString()} users
+                      </div>
+                    </div>
+                    {idx < 3 && (
+                      <span className="text-xs ml-auto">
+                        {["🥇", "🥈", "🥉"][idx]}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
