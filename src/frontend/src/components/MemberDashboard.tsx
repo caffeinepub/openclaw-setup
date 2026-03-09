@@ -3,7 +3,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -652,7 +651,10 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
           <Separator className="mx-4 opacity-20" />
 
           {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-3">
+          <div
+            className="flex-1 px-3 py-3"
+            style={{ overflowY: "auto", minHeight: 0 }}
+          >
             <nav className="space-y-1">
               {NAV_ITEMS.map((item) => {
                 const isActive = active === item.id;
@@ -695,7 +697,7 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
                 );
               })}
             </nav>
-          </ScrollArea>
+          </div>
 
           {/* Footer */}
           <div className="p-4 border-t border-white/10">
@@ -1742,7 +1744,6 @@ function ClawBotPanel({ handle }: { handle: string }) {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
   }, []);
 
   const sendMessage = async () => {
@@ -2237,7 +2238,6 @@ function ChatGPTPanel() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-    // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
   }, []);
 
   const send = async () => {
