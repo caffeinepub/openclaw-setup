@@ -1,4 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ComposableMap,
+  Geographies,
+  Geography,
+  ZoomableGroup,
+} from "react-simple-maps";
 import { useLeaderboard } from "../../hooks/useQueries";
 
 const GEO_URL =
@@ -129,253 +135,11 @@ function getFlag(alpha2: string) {
     .replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)));
 }
 
-// WorldMapCanvas: renders world map using canvas + topojson fetched from CDN
-interface WorldMapCanvasProps {
-  geoUrl: string;
-  countryMeta: Record<
-    string,
-    { name: string; alpha2: string; continent: string }
-  >;
-  continentColors: Record<string, string>;
-  selectedCountries: Set<string>;
-  glowingCountries: string[];
-  activeContinent: string;
-  onCountryClick: (geoId: string) => void;
-  onCountryHover: (geoId: string | null, evt: React.MouseEvent | null) => void;
-  onCountryMove: (geoId: string, evt: React.MouseEvent) => void;
-}
-
-function WorldMapCanvas({
-  geoUrl,
-  countryMeta,
-  continentColors,
-  selectedCountries,
-  glowingCountries,
-  activeContinent,
-  onCountryClick,
-  onCountryHover,
-  onCountryMove,
-}: WorldMapCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [geoData, setGeoData] = useState<any>(null);
-  const [paths, setPaths] = useState<Map<string, Path2D>>(new Map());
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch(geoUrl)
-      .then((r) => r.json())
-      .then((data) => setGeoData(data))
-      .catch(() => {});
-  }, [geoUrl]);
-
-  // Build paths when data loads
-  useEffect(() => {
-    if (!geoData || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const W = canvas.width;
-    const H = canvas.height;
-
-    // Simple equirectangular projection
-    const project = (lon: number, lat: number): [number, number] => {
-      const x = ((lon + 180) / 360) * W;
-      const y = ((90 - lat) / 180) * H;
-      return [x, y];
-    };
-
-    const buildPath = (coords: number[][][]): Path2D => {
-      const p = new Path2D();
-      for (const ring of coords) {
-        let first = true;
-        for (const [lon, lat] of ring) {
-          const [x, y] = project(lon, lat);
-          if (first) {
-            p.moveTo(x, y);
-            first = false;
-          } else p.lineTo(x, y);
-        }
-        p.closePath();
-      }
-      return p;
-    };
-
-    const newPaths = new Map<string, Path2D>();
-
-    // Handle TopoJSON
-    if (geoData.type === "Topology") {
-      // decode topojson manually
-      const land = geoData.objects?.countries;
-      if (land?.geometries) {
-        const transform = geoData.transform;
-        const scale = transform?.scale ?? [1, 1];
-        const translate = transform?.translate ?? [0, 0];
-
-        const decodeArc = (arc: number[][]): number[][] => {
-          let x = 0;
-          let y = 0;
-          return arc.map(([dx, dy]) => {
-            x += dx;
-            y += dy;
-            const lon = x * scale[0] + translate[0];
-            const lat = y * scale[1] + translate[1];
-            return [lon, lat];
-          });
-        };
-
-        const getCoords = (arcs: any): number[][][] => {
-          if (typeof arcs[0] === "number" || arcs.length === 0) {
-            // ring of arc indices
-            const ring: number[][] = [];
-            for (const idx of arcs as number[]) {
-              const arc =
-                idx < 0 ? [...geoData.arcs[~idx]].reverse() : geoData.arcs[idx];
-              ring.push(...decodeArc(arc));
-            }
-            return [ring];
-          }
-          return (arcs as any[][]).flatMap(getCoords);
-        };
-
-        for (const geo of land.geometries) {
-          const id = String(geo.id).padStart(3, "0");
-          let coords: number[][][] = [];
-          if (geo.type === "Polygon") coords = getCoords(geo.arcs);
-          else if (geo.type === "MultiPolygon")
-            coords = geo.arcs.flatMap(getCoords);
-          if (coords.length) newPaths.set(id, buildPath(coords));
-        }
-      }
-    }
-
-    setPaths(newPaths);
-  }, [geoData]);
-
-  // Draw on canvas
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    paths.forEach((path, geoId) => {
-      const meta = countryMeta[geoId];
-      const continent = meta?.continent ?? "Asia";
-      const color = continentColors[continent] ?? "#818cf8";
-      const isSelected = selectedCountries.has(geoId);
-      const isGlowing = glowingCountries.includes(geoId);
-      const isHovered = hoveredId === geoId;
-      const dimmed = activeContinent !== "All" && continent !== activeContinent;
-
-      ctx.save();
-      if (isSelected || isHovered) {
-        ctx.fillStyle = color;
-        ctx.globalAlpha = 1;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 8;
-      } else if (isGlowing) {
-        ctx.fillStyle = color;
-        ctx.globalAlpha = 0.85;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = 6;
-      } else if (dimmed) {
-        ctx.fillStyle = "#1e293b";
-        ctx.globalAlpha = 0.2;
-      } else {
-        ctx.fillStyle = "#1e293b";
-        ctx.globalAlpha = 0.6;
-      }
-      ctx.fill(path);
-      ctx.strokeStyle = "#0f172a";
-      ctx.lineWidth = 0.4;
-      ctx.globalAlpha = Math.max(ctx.globalAlpha, 0.3);
-      ctx.stroke(path);
-      ctx.restore();
-    });
-  }, [
-    paths,
-    selectedCountries,
-    glowingCountries,
-    hoveredId,
-    activeContinent,
-    countryMeta,
-    continentColors,
-  ]);
-
-  const getIdAtPoint = (x: number, y: number): string | null => {
-    if (!canvasRef.current) return null;
-    const ctx = canvasRef.current.getContext("2d");
-    if (!ctx) return null;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = canvasRef.current.width / rect.width;
-    const scaleY = canvasRef.current.height / rect.height;
-    const cx = x * scaleX;
-    const cy = y * scaleY;
-    for (const [id, path] of paths) {
-      if (ctx.isPointInPath(path, cx, cy)) return id;
-    }
-    return null;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const id = getIdAtPoint(e.clientX - rect.left, e.clientY - rect.top);
-    setHoveredId(id);
-    if (id) onCountryMove(id, e);
-    else onCountryHover(null, null);
-  };
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const id = getIdAtPoint(e.clientX - rect.left, e.clientY - rect.top);
-    if (id) {
-      setHoveredId(id);
-      onCountryHover(id, e);
-    }
-  };
-
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const id = getIdAtPoint(e.clientX - rect.left, e.clientY - rect.top);
-    if (id) onCountryClick(id);
-  };
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={800}
-      height={400}
-      style={{
-        width: "100%",
-        height: "auto",
-        cursor: "crosshair",
-        display: "block",
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={() => {
-        setHoveredId(null);
-        onCountryHover(null, null);
-      }}
-      onClick={handleClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter")
-          handleClick(e as unknown as React.MouseEvent<HTMLCanvasElement>);
-      }}
-      tabIndex={0}
-      aria-label="Interactive world map - click countries to highlight"
-      data-ocid="map.canvas_target"
-    />
-  );
-}
-
 export function AvailableWorldwideSection() {
   const [selectedCountries, setSelectedCountries] = useState<Set<string>>(
     new Set(),
   );
-  const [, setHoveredCountry] = useState<string | null>(null);
+  const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [activeContinent, setActiveContinent] = useState("All");
   const [glowingCountries, setGlowingCountries] = useState<string[]>([]);
   const [tooltip, setTooltip] = useState<{
@@ -458,37 +222,36 @@ export function AvailableWorldwideSection() {
     });
   };
 
-  const handleMouseEnter = (geoId: string, evt: React.MouseEvent) => {
-    setHoveredCountry(geoId);
+  const getCountryFill = (geoId: string): string => {
     const meta = COUNTRY_META[geoId];
-    if (!meta) return;
-    const rect = mapRef.current?.getBoundingClientRect();
-    if (rect) {
-      setTooltip({
-        text: meta.name,
-        flag: getFlag(meta.alpha2),
-        count: registrationsByCountry[meta.alpha2] ?? 0,
-        x: evt.clientX - rect.left,
-        y: evt.clientY - rect.top,
-      });
-    }
+    const continent = meta?.continent ?? "Asia";
+    const color = CONTINENT_COLORS[continent] ?? "#818cf8";
+    if (selectedCountries.has(geoId)) return color;
+    if (glowingCountries.includes(geoId)) return color;
+    if (hoveredCountry === geoId) return color;
+    if (activeContinent !== "All" && continent !== activeContinent)
+      return "#1e293b";
+    return "#1e293b";
   };
 
-  const handleMouseMove = (geoId: string, evt: React.MouseEvent) => {
+  const getCountryOpacity = (geoId: string): number => {
     const meta = COUNTRY_META[geoId];
-    if (!meta) return;
-    const rect = mapRef.current?.getBoundingClientRect();
-    if (rect) {
-      setTooltip((prev) =>
-        prev
-          ? { ...prev, x: evt.clientX - rect.left, y: evt.clientY - rect.top }
-          : null,
-      );
-    }
+    const continent = meta?.continent ?? "Asia";
+    if (selectedCountries.has(geoId)) return 1;
+    if (glowingCountries.includes(geoId)) return 0.85;
+    if (hoveredCountry === geoId) return 0.9;
+    if (activeContinent !== "All" && continent !== activeContinent) return 0.15;
+    return 0.5;
   };
 
   return (
     <section className="py-16 px-4 relative overflow-hidden">
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(0.85); }
+        }
+      `}</style>
       <div className="max-w-6xl mx-auto">
         {/* Title */}
         <div className="text-center mb-8">
@@ -569,39 +332,100 @@ export function AvailableWorldwideSection() {
             boxShadow:
               "0 0 0 2px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.08)",
           }}
-          onMouseLeave={() => {
-            setHoveredCountry(null);
-            setTooltip(null);
-          }}
         >
-          <style>{`
-            @keyframes pulse {
-              0%, 100% { opacity: 1; transform: scale(1); }
-              50% { opacity: 0.6; transform: scale(0.85); }
-            }
-            @keyframes geoGlow {
-              0%, 100% { opacity: 0.85; }
-              50% { opacity: 1; }
-            }
-          `}</style>
-
-          <WorldMapCanvas
-            geoUrl={GEO_URL}
-            countryMeta={COUNTRY_META}
-            continentColors={CONTINENT_COLORS}
-            selectedCountries={selectedCountries}
-            glowingCountries={glowingCountries}
-            activeContinent={activeContinent}
-            onCountryClick={handleGeoClick}
-            onCountryHover={(geoId, evt) => {
-              if (geoId) handleMouseEnter(geoId, evt!);
-              else {
-                setHoveredCountry(null);
-                setTooltip(null);
-              }
-            }}
-            onCountryMove={(geoId, evt) => handleMouseMove(geoId, evt)}
-          />
+          <ComposableMap
+            projection="geoEqualEarth"
+            projectionConfig={{ scale: 160 }}
+            style={{ width: "100%", height: "auto" }}
+            data-ocid="map.canvas_target"
+          >
+            <ZoomableGroup
+              zoom={1}
+              center={[0, 0]}
+              disableZooming
+              disablePanning
+            >
+              <Geographies geography={GEO_URL}>
+                {({ geographies }) =>
+                  geographies.map((geo) => {
+                    const geoId = String(geo.id).padStart(3, "0");
+                    const meta = COUNTRY_META[geoId];
+                    const continent = meta?.continent ?? "Asia";
+                    const color = CONTINENT_COLORS[continent] ?? "#818cf8";
+                    const isSelected = selectedCountries.has(geoId);
+                    const isGlowing = glowingCountries.includes(geoId);
+                    const isHovered = hoveredCountry === geoId;
+                    const fill = getCountryFill(geoId);
+                    const opacity = getCountryOpacity(geoId);
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        fill={fill}
+                        stroke="#0f172a"
+                        strokeWidth={0.4}
+                        style={{
+                          default: {
+                            opacity,
+                            filter:
+                              isSelected || isGlowing || isHovered
+                                ? `drop-shadow(0 0 4px ${color})`
+                                : "none",
+                            outline: "none",
+                          },
+                          hover: {
+                            fill: color,
+                            opacity: 0.9,
+                            filter: `drop-shadow(0 0 6px ${color})`,
+                            outline: "none",
+                            cursor: "pointer",
+                          },
+                          pressed: {
+                            fill: color,
+                            opacity: 1,
+                            outline: "none",
+                          },
+                        }}
+                        onClick={() => handleGeoClick(geoId)}
+                        onMouseEnter={(evt) => {
+                          setHoveredCountry(geoId);
+                          if (!meta) return;
+                          const rect = mapRef.current?.getBoundingClientRect();
+                          if (rect) {
+                            setTooltip({
+                              text: meta.name,
+                              flag: getFlag(meta.alpha2),
+                              count: registrationsByCountry[meta.alpha2] ?? 0,
+                              x: evt.clientX - rect.left,
+                              y: evt.clientY - rect.top,
+                            });
+                          }
+                        }}
+                        onMouseMove={(evt) => {
+                          const rect = mapRef.current?.getBoundingClientRect();
+                          if (rect) {
+                            setTooltip((prev) =>
+                              prev
+                                ? {
+                                    ...prev,
+                                    x: evt.clientX - rect.left,
+                                    y: evt.clientY - rect.top,
+                                  }
+                                : null,
+                            );
+                          }
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredCountry(null);
+                          setTooltip(null);
+                        }}
+                      />
+                    );
+                  })
+                }
+              </Geographies>
+            </ZoomableGroup>
+          </ComposableMap>
 
           {/* Hover tooltip */}
           {tooltip && (
