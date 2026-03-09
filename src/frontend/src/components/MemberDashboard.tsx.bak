@@ -7,15 +7,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
-  Activity,
-  BarChart3,
   Bell,
   Bot,
-  CheckSquare2,
   ChevronRight,
-  Circle,
   Coins,
-  Cpu,
   Home,
   Key,
   Loader2,
@@ -73,11 +68,7 @@ type SidebarItem =
   | "telegram"
   | "chatgpt"
   | "pricealerts"
-  | "settings"
-  | "activity"
-  | "stats"
-  | "tasks"
-  | "status";
+  | "settings";
 
 interface ChatMessage {
   id: string;
@@ -178,48 +169,12 @@ const NAV_ITEMS: {
     color: "text-violet-400",
     glow: "border-violet-500/60",
   },
-  {
-    id: "activity",
-    label: "Activity Feed",
-    icon: <Activity className="w-4 h-4" />,
-    color: "text-pink-400",
-    glow: "border-pink-500/60",
-  },
-  {
-    id: "stats",
-    label: "Stats",
-    icon: <BarChart3 className="w-4 h-4" />,
-    color: "text-indigo-400",
-    glow: "border-indigo-500/60",
-  },
-  {
-    id: "tasks",
-    label: "Tasks",
-    icon: <CheckSquare2 className="w-4 h-4" />,
-    color: "text-teal-400",
-    glow: "border-teal-500/60",
-  },
-  {
-    id: "status",
-    label: "System Status",
-    icon: <Cpu className="w-4 h-4" />,
-    color: "text-orange-400",
-    glow: "border-orange-500/60",
-  },
 ];
 
 // ---- Main Dashboard ----
 export function MemberDashboard({ onClose }: { onClose: () => void }) {
   const [active, setActive] = useState<SidebarItem>("home");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [glowingId, setGlowingId] = useState<string | null>(null);
-
-  const handleNavClick = (id: SidebarItem) => {
-    setActive(id);
-    setMobileSidebarOpen(false);
-    setGlowingId(id);
-    setTimeout(() => setGlowingId(null), 800);
-  };
   const { identity } = useInternetIdentity();
   const { data: membership } = useMyMembership();
   const { data: userAccount } = useMyUserAccount();
@@ -468,329 +423,317 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <>
-      <style>{`
-      @keyframes glowRingPulse {
-        0%   { box-shadow: 0 0 0 0px var(--glow-col, rgba(6,182,212,0.9)); }
-        60%  { box-shadow: 0 0 0 10px rgba(0,0,0,0); }
-        100% { box-shadow: 0 0 0 0px rgba(0,0,0,0); }
-      }
-      .nav-glow-ring { animation: glowRingPulse 0.7s ease-out forwards; }
-    `}</style>
-      <div
-        className="fixed inset-0 z-50 flex"
-        style={{ background: "oklch(0.07 0.015 240)" }}
+    <div
+      className="fixed inset-0 z-50 flex"
+      style={{ background: "oklch(0.07 0.015 240)" }}
+    >
+      {/* Mobile overlay */}
+      {mobileSidebarOpen && (
+        <div
+          role="button"
+          tabIndex={0}
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+          onKeyDown={(e) => e.key === "Escape" && setMobileSidebarOpen(false)}
+          aria-label="Close sidebar"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={[
+          "fixed md:relative z-50 md:z-auto",
+          "w-64 h-full flex flex-col",
+          "border-r border-white/10",
+          "transition-transform duration-300",
+          mobileSidebarOpen
+            ? "translate-x-0"
+            : "-translate-x-full md:translate-x-0",
+        ].join(" ")}
+        style={{ background: "oklch(0.1 0.015 240)" }}
       >
-        {/* Mobile overlay */}
-        {mobileSidebarOpen && (
-          <div
-            role="button"
-            tabIndex={0}
-            className="fixed inset-0 bg-black/60 z-40 md:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-            onKeyDown={(e) => e.key === "Escape" && setMobileSidebarOpen(false)}
-            aria-label="Close sidebar"
-          />
-        )}
-
-        {/* Sidebar */}
-        <aside
-          className={[
-            "fixed md:relative z-50 md:z-auto",
-            "w-64 h-full flex flex-col",
-            "border-r border-white/10",
-            "transition-transform duration-300",
-            mobileSidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full md:translate-x-0",
-          ].join(" ")}
-          style={{ background: "oklch(0.1 0.015 240)" }}
-        >
-          {/* Profile Header */}
-          <div className="p-5 pb-4">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-semibold text-cyan-400/70 uppercase tracking-wider">
-                ClawPro.ai
-              </span>
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
-                aria-label="Close dashboard"
-                data-ocid="dashboard.close.button"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Avatar + Info - UserClaw Picker */}
-            <div className="flex flex-col items-center text-center gap-2">
-              <div className="relative">
-                {/* Avatar display */}
-                <div
-                  className="w-16 h-16 rounded-full border-2 overflow-hidden flex items-center justify-center relative"
-                  style={{
-                    borderColor: tierStyle.color,
-                    boxShadow: tierStyle.glow,
-                    background: `${tierStyle.color}20`,
-                  }}
-                >
-                  {avatarPhoto ? (
-                    <img
-                      src={avatarPhoto}
-                      alt="avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    renderClawSVG(clawStyle)
-                  )}
-                </div>
-                {/* Ambient glow ring */}
-                <div
-                  className="absolute -inset-1 rounded-full -z-10 blur-sm"
-                  style={{ background: `${tierStyle.color}30` }}
-                />
-                {/* Camera upload button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-800 border border-white/20 flex items-center justify-center hover:bg-gray-700 transition-colors"
-                  title="Upload photo"
-                  data-ocid="dashboard.avatar.upload_button"
-                >
-                  <svg
-                    role="img"
-                    aria-label="Upload photo"
-                    viewBox="0 0 16 16"
-                    width="10"
-                    height="10"
-                    fill="currentColor"
-                    className="text-cyan-400"
-                  >
-                    <title>Upload photo</title>
-                    <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z" />
-                    <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
-                  </svg>
-                </button>
-                {/* Remove photo button */}
-                {avatarPhoto && (
-                  <button
-                    type="button"
-                    onClick={handleRemovePhoto}
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-white/20 flex items-center justify-center hover:bg-red-500 transition-colors"
-                    title="Remove photo"
-                    data-ocid="dashboard.avatar.delete_button"
-                  >
-                    <X className="w-2.5 h-2.5 text-white" />
-                  </button>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  ref={fileInputRef}
-                  onChange={handlePhotoUpload}
-                />
-              </div>
-              {/* Claw style selector (hidden when photo uploaded) */}
-              {!avatarPhoto && (
-                <div className="flex gap-1.5 mt-1">
-                  {CLAW_COLORS.map((color, idx) => (
-                    <button
-                      key={CLAW_LABELS[idx]}
-                      type="button"
-                      onClick={() => selectClawStyle(idx)}
-                      title={CLAW_LABELS[idx]}
-                      data-ocid="dashboard.claw.toggle"
-                      className="w-5 h-5 rounded-full flex items-center justify-center transition-all"
-                      style={{
-                        background: `${color}30`,
-                        border:
-                          clawStyle === idx
-                            ? `2px solid ${color}`
-                            : "2px solid transparent",
-                        boxShadow:
-                          clawStyle === idx ? `0 0 8px ${color}80` : "none",
-                      }}
-                    >
-                      <span
-                        className="w-2 h-2 rounded-full block"
-                        style={{ background: color }}
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-              <div>
-                <p className="font-semibold text-sm text-foreground">
-                  {fullName}
-                </p>
-                <p className="text-xs text-muted-foreground">@{handle}</p>
-              </div>
-              <Badge
-                className={`border text-[10px] px-2 py-0.5 ${tierStyle.badgeCls}`}
-              >
-                {tierStyle.label}
-              </Badge>
-            </div>
-
-            {/* Token balance */}
-            <div
-              className="mt-4 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 border border-amber-500/30"
-              style={{
-                background: "oklch(0.12 0.02 60)",
-                boxShadow: "0 0 12px rgba(251,191,36,0.25)",
-              }}
-            >
-              <Coins className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs text-amber-300 font-medium">
-                2,450 tokens
-              </span>
-            </div>
-          </div>
-
-          <Separator className="mx-4 opacity-20" />
-
-          {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-3">
-            <nav className="space-y-1">
-              {NAV_ITEMS.map((item) => {
-                const isActive = active === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    data-ocid={`dashboard.${item.id}.tab`}
-                    onClick={() => handleNavClick(item.id)}
-                    className={[
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
-                      "transition-all duration-200 relative border-l-2",
-                      isActive
-                        ? `${item.color} ${item.glow}`
-                        : "text-muted-foreground hover:text-foreground border-transparent",
-                      glowingId === item.id ? "nav-glow-ring" : "",
-                    ].join(" ")}
-                    style={
-                      isActive
-                        ? {
-                            background: "rgba(255,255,255,0.06)",
-                            boxShadow: "inset 0 0 12px rgba(6,182,212,0.08)",
-                          }
-                        : {}
-                    }
-                  >
-                    <span className={isActive ? item.color : ""}>
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
-                    {item.id === "settings" && unreadCount > 0 && (
-                      <span className="ml-auto flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white">
-                        {unreadCount}
-                      </span>
-                    )}
-                    {isActive && (
-                      <ChevronRight className="ml-auto w-3 h-3 opacity-60" />
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </ScrollArea>
-
-          {/* Footer */}
-          <div className="p-4 border-t border-white/10">
-            <p className="text-[10px] text-muted-foreground text-center">
-              Powered by{" "}
-              <a
-                href="https://andri.id"
-                className="text-cyan-400 hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                andri.id
-              </a>
-            </p>
-          </div>
-        </aside>
-
-        {/* Main content */}
-        <div className="flex-1 flex flex-col min-w-0 h-full">
-          {/* Top bar */}
-          <div
-            className="flex items-center gap-3 px-4 py-3 border-b border-white/10"
-            style={{ background: "oklch(0.09 0.015 240)" }}
-          >
+        {/* Profile Header */}
+        <div className="p-5 pb-4">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-xs font-semibold text-cyan-400/70 uppercase tracking-wider">
+              ClawPro.ai
+            </span>
             <button
               type="button"
-              className="md:hidden p-1.5 rounded text-muted-foreground hover:text-foreground"
-              onClick={() => setMobileSidebarOpen(true)}
+              onClick={onClose}
+              className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+              aria-label="Close dashboard"
+              data-ocid="dashboard.close.button"
             >
-              <Menu className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
-            <div className="flex items-center gap-2">
-              <span className={NAV_ITEMS.find((i) => i.id === active)?.color}>
-                {NAV_ITEMS.find((i) => i.id === active)?.icon}
-              </span>
-              <h1 className="font-semibold text-sm">
-                {NAV_ITEMS.find((i) => i.id === active)?.label}
-              </h1>
-            </div>
-            <div className="ml-auto flex items-center gap-2">
-              {unreadCount > 0 && (
-                <button
-                  type="button"
-                  className="relative p-1.5 text-muted-foreground hover:text-foreground"
-                >
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] flex items-center justify-center text-white">
-                    {unreadCount}
-                  </span>
-                </button>
-              )}
-            </div>
           </div>
 
-          {/* Panel content */}
-          <div className="flex-1 overflow-auto">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={active}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="h-full"
+          {/* Avatar + Info - UserClaw Picker */}
+          <div className="flex flex-col items-center text-center gap-2">
+            <div className="relative">
+              {/* Avatar display */}
+              <div
+                className="w-16 h-16 rounded-full border-2 overflow-hidden flex items-center justify-center relative"
+                style={{
+                  borderColor: tierStyle.color,
+                  boxShadow: tierStyle.glow,
+                  background: `${tierStyle.color}20`,
+                }}
               >
-                {active === "home" && (
-                  <HomePanel
-                    handle={handle}
-                    fullName={fullName}
-                    tier={tier}
-                    tierStyle={tierStyle}
+                {avatarPhoto ? (
+                  <img
+                    src={avatarPhoto}
+                    alt="avatar"
+                    className="w-full h-full object-cover"
                   />
+                ) : (
+                  renderClawSVG(clawStyle)
                 )}
-                {active === "clawbot" && <ClawBotPanel handle={handle} />}
-                {active === "whatsapp" && <WhatsAppPanel />}
-                {active === "telegram" && <TelegramPanel />}
-                {active === "chatgpt" && <ChatGPTPanel />}
-                {active === "pricealerts" && <PriceAlertsPanel />}
-                {active === "activity" && <ActivityPanel handle={handle} />}
-                {active === "stats" && <StatsPanel />}
-                {active === "tasks" && <TasksPanel />}
-                {active === "status" && <StatusPanel />}
-                {active === "settings" && (
-                  <SettingsPanel
-                    handle={handle}
-                    fullName={fullName}
-                    userAccount={userAccount}
-                  />
-                )}
-              </motion.div>
-            </AnimatePresence>
+              </div>
+              {/* Ambient glow ring */}
+              <div
+                className="absolute -inset-1 rounded-full -z-10 blur-sm"
+                style={{ background: `${tierStyle.color}30` }}
+              />
+              {/* Camera upload button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-800 border border-white/20 flex items-center justify-center hover:bg-gray-700 transition-colors"
+                title="Upload photo"
+                data-ocid="dashboard.avatar.upload_button"
+              >
+                <svg
+                  role="img"
+                  aria-label="Upload photo"
+                  viewBox="0 0 16 16"
+                  width="10"
+                  height="10"
+                  fill="currentColor"
+                  className="text-cyan-400"
+                >
+                  <title>Upload photo</title>
+                  <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z" />
+                  <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                </svg>
+              </button>
+              {/* Remove photo button */}
+              {avatarPhoto && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-white/20 flex items-center justify-center hover:bg-red-500 transition-colors"
+                  title="Remove photo"
+                  data-ocid="dashboard.avatar.delete_button"
+                >
+                  <X className="w-2.5 h-2.5 text-white" />
+                </button>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handlePhotoUpload}
+              />
+            </div>
+            {/* Claw style selector (hidden when photo uploaded) */}
+            {!avatarPhoto && (
+              <div className="flex gap-1.5 mt-1">
+                {CLAW_COLORS.map((color, idx) => (
+                  <button
+                    key={CLAW_LABELS[idx]}
+                    type="button"
+                    onClick={() => selectClawStyle(idx)}
+                    title={CLAW_LABELS[idx]}
+                    data-ocid="dashboard.claw.toggle"
+                    className="w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: `${color}30`,
+                      border:
+                        clawStyle === idx
+                          ? `2px solid ${color}`
+                          : "2px solid transparent",
+                      boxShadow:
+                        clawStyle === idx ? `0 0 8px ${color}80` : "none",
+                    }}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full block"
+                      style={{ background: color }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+            <div>
+              <p className="font-semibold text-sm text-foreground">
+                {fullName}
+              </p>
+              <p className="text-xs text-muted-foreground">@{handle}</p>
+            </div>
+            <Badge
+              className={`border text-[10px] px-2 py-0.5 ${tierStyle.badgeCls}`}
+            >
+              {tierStyle.label}
+            </Badge>
+          </div>
+
+          {/* Token balance */}
+          <div
+            className="mt-4 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 border border-amber-500/30"
+            style={{
+              background: "oklch(0.12 0.02 60)",
+              boxShadow: "0 0 12px rgba(251,191,36,0.25)",
+            }}
+          >
+            <Coins className="w-3.5 h-3.5 text-amber-400" />
+            <span className="text-xs text-amber-300 font-medium">
+              2,450 tokens
+            </span>
           </div>
         </div>
+
+        <Separator className="mx-4 opacity-20" />
+
+        {/* Navigation */}
+        <ScrollArea className="flex-1 px-3 py-3">
+          <nav className="space-y-1">
+            {NAV_ITEMS.map((item) => {
+              const isActive = active === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  data-ocid={`dashboard.${item.id}.tab`}
+                  onClick={() => {
+                    setActive(item.id);
+                    setMobileSidebarOpen(false);
+                  }}
+                  className={[
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
+                    "transition-all duration-200 relative border-l-2",
+                    isActive
+                      ? `${item.color} ${item.glow}`
+                      : "text-muted-foreground hover:text-foreground border-transparent",
+                  ].join(" ")}
+                  style={
+                    isActive
+                      ? {
+                          background: "rgba(255,255,255,0.06)",
+                          boxShadow: "inset 0 0 12px rgba(6,182,212,0.08)",
+                        }
+                      : {}
+                  }
+                >
+                  <span className={isActive ? item.color : ""}>
+                    {item.icon}
+                  </span>
+                  <span>{item.label}</span>
+                  {item.id === "settings" && unreadCount > 0 && (
+                    <span className="ml-auto flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white">
+                      {unreadCount}
+                    </span>
+                  )}
+                  {isActive && (
+                    <ChevronRight className="ml-auto w-3 h-3 opacity-60" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </ScrollArea>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-white/10">
+          <p className="text-[10px] text-muted-foreground text-center">
+            Powered by{" "}
+            <a
+              href="https://andri.id"
+              className="text-cyan-400 hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              andri.id
+            </a>
+          </p>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0 h-full">
+        {/* Top bar */}
+        <div
+          className="flex items-center gap-3 px-4 py-3 border-b border-white/10"
+          style={{ background: "oklch(0.09 0.015 240)" }}
+        >
+          <button
+            type="button"
+            className="md:hidden p-1.5 rounded text-muted-foreground hover:text-foreground"
+            onClick={() => setMobileSidebarOpen(true)}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <span className={NAV_ITEMS.find((i) => i.id === active)?.color}>
+              {NAV_ITEMS.find((i) => i.id === active)?.icon}
+            </span>
+            <h1 className="font-semibold text-sm">
+              {NAV_ITEMS.find((i) => i.id === active)?.label}
+            </h1>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            {unreadCount > 0 && (
+              <button
+                type="button"
+                className="relative p-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] flex items-center justify-center text-white">
+                  {unreadCount}
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Panel content */}
+        <div className="flex-1 overflow-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="h-full"
+            >
+              {active === "home" && (
+                <HomePanel
+                  handle={handle}
+                  fullName={fullName}
+                  tier={tier}
+                  tierStyle={tierStyle}
+                />
+              )}
+              {active === "clawbot" && <ClawBotPanel handle={handle} />}
+              {active === "whatsapp" && <WhatsAppPanel />}
+              {active === "telegram" && <TelegramPanel />}
+              {active === "chatgpt" && <ChatGPTPanel />}
+              {active === "pricealerts" && <PriceAlertsPanel />}
+              {active === "settings" && (
+                <SettingsPanel
+                  handle={handle}
+                  fullName={fullName}
+                  userAccount={userAccount}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -2565,694 +2508,6 @@ function SettingsPanel({
             data-ocid="settings.autosave.switch"
           />
         </div>
-      </div>
-    </div>
-  );
-}
-
-// ---- Activity Feed Panel ----
-function ActivityPanel({ handle }: { handle: string }) {
-  const ACTIVITY_ITEMS = [
-    {
-      id: 1,
-      icon: "🔐",
-      type: "auth",
-      text: `${handle} logged in`,
-      time: "2 min ago",
-      color: "#06b6d4",
-    },
-    {
-      id: 2,
-      icon: "🪙",
-      type: "token",
-      text: "Earned 150 tokens from bot usage",
-      time: "18 min ago",
-      color: "#f59e0b",
-    },
-    {
-      id: 3,
-      icon: "🤖",
-      type: "bot",
-      text: "ClawBot processed 12 messages",
-      time: "1 hr ago",
-      color: "#ef4444",
-    },
-    {
-      id: 4,
-      icon: "🚨",
-      type: "alert",
-      text: "BTC price alert triggered at $98,500",
-      time: "2 hr ago",
-      color: "#f97316",
-    },
-    {
-      id: 5,
-      icon: "💬",
-      type: "chat",
-      text: "ChatGPT session: 8 exchanges",
-      time: "3 hr ago",
-      color: "#10b981",
-    },
-    {
-      id: 6,
-      icon: "📊",
-      type: "portfolio",
-      text: "Portfolio updated: +$234.50 today",
-      time: "5 hr ago",
-      color: "#8b5cf6",
-    },
-    {
-      id: 7,
-      icon: "🌍",
-      type: "map",
-      text: "Profile viewed from Indonesia",
-      time: "6 hr ago",
-      color: "#3b82f6",
-    },
-    {
-      id: 8,
-      icon: "✅",
-      type: "task",
-      text: "Completed: Set up Telegram bot",
-      time: "1 day ago",
-      color: "#22c55e",
-    },
-  ];
-
-  return (
-    <div className="p-6 space-y-4">
-      <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background: "oklch(0.14 0.04 340)",
-            boxShadow: "0 0 16px rgba(236,72,153,0.3)",
-          }}
-        >
-          <Activity className="w-5 h-5 text-pink-400" />
-        </div>
-        <div>
-          <h2 className="font-semibold">Activity Feed</h2>
-          <p className="text-xs text-muted-foreground">Your recent actions</p>
-        </div>
-      </div>
-      <div className="space-y-2">
-        {ACTIVITY_ITEMS.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-start gap-3 p-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors"
-            style={{
-              background: "oklch(0.09 0.012 240)",
-              borderLeft: `3px solid ${item.color}`,
-            }}
-            data-ocid={`activity.item.${item.id}`}
-          >
-            <span className="text-lg flex-shrink-0">{item.icon}</span>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground">{item.text}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {item.time}
-              </p>
-            </div>
-            <div
-              className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
-              style={{
-                background: item.color,
-                boxShadow: `0 0 6px ${item.color}`,
-              }}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ---- Stats Panel ----
-function StatsPanel() {
-  const stats = [
-    {
-      label: "Total Sessions",
-      value: 142,
-      icon: "📡",
-      color: "#06b6d4",
-      glow: "rgba(6,182,212,0.25)",
-    },
-    {
-      label: "Tokens Earned",
-      value: 8750,
-      icon: "🪙",
-      color: "#f59e0b",
-      glow: "rgba(245,158,11,0.25)",
-    },
-    {
-      label: "Alerts Triggered",
-      value: 23,
-      icon: "🚨",
-      color: "#ef4444",
-      glow: "rgba(239,68,68,0.25)",
-    },
-    {
-      label: "Bot Chats",
-      value: 316,
-      icon: "💬",
-      color: "#10b981",
-      glow: "rgba(16,185,129,0.25)",
-    },
-    {
-      label: "API Calls",
-      value: 1204,
-      icon: "⚡",
-      color: "#8b5cf6",
-      glow: "rgba(139,92,246,0.25)",
-    },
-    {
-      label: "Uptime Days",
-      value: 47,
-      icon: "📅",
-      color: "#3b82f6",
-      glow: "rgba(59,130,246,0.25)",
-    },
-  ];
-
-  return (
-    <div className="p-6 space-y-5">
-      <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background: "oklch(0.13 0.04 270)",
-            boxShadow: "0 0 16px rgba(99,102,241,0.3)",
-          }}
-        >
-          <BarChart3 className="w-5 h-5 text-indigo-400" />
-        </div>
-        <div>
-          <h2 className="font-semibold">Your Stats</h2>
-          <p className="text-xs text-muted-foreground">Performance overview</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {stats.map((s, i) => (
-          <AnimatedStatCard key={s.label} stat={s} delay={i * 80} />
-        ))}
-      </div>
-      <div
-        className="rounded-xl p-4 border border-indigo-500/20 space-y-3"
-        style={{
-          background: "oklch(0.09 0.015 270)",
-          boxShadow: "0 0 20px rgba(99,102,241,0.08)",
-        }}
-      >
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Weekly Activity
-        </h3>
-        <div className="flex items-end gap-1 h-16">
-          {[
-            { v: 40, d: "Mon" },
-            { v: 65, d: "Tue" },
-            { v: 30, d: "Wed" },
-            { v: 80, d: "Thu" },
-            { v: 55, d: "Fri" },
-            { v: 90, d: "Sat" },
-            { v: 70, d: "Sun" },
-          ].map(({ v: h, d }) => (
-            <div key={d} className="flex-1 flex flex-col items-center gap-1">
-              <div
-                className="w-full rounded-sm transition-all"
-                style={{
-                  height: `${h}%`,
-                  background: "linear-gradient(180deg, #818cf8, #4f46e5)",
-                  boxShadow: "0 0 4px rgba(129,140,248,0.4)",
-                }}
-              />
-              <span className="text-[9px] text-muted-foreground">{d[0]}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AnimatedStatCard({
-  stat,
-  delay,
-}: {
-  stat: {
-    label: string;
-    value: number;
-    icon: string;
-    color: string;
-    glow: string;
-  };
-  delay: number;
-}) {
-  const [displayed, setDisplayed] = useState(0);
-  useEffect(() => {
-    const start = Date.now();
-    const duration = 900;
-    const tick = () => {
-      const elapsed = Date.now() - start - delay;
-      if (elapsed < 0) {
-        requestAnimationFrame(tick);
-        return;
-      }
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - (1 - progress) ** 3;
-      setDisplayed(Math.round(stat.value * eased));
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    const raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [stat.value, delay]);
-
-  return (
-    <div
-      className="rounded-xl p-4 border border-white/10 text-center"
-      style={{
-        background: "oklch(0.09 0.015 240)",
-        boxShadow: `0 0 16px ${stat.glow}`,
-      }}
-      data-ocid={`stats.${stat.label.toLowerCase().replace(/ /g, "_")}.card`}
-    >
-      <div className="text-2xl mb-1">{stat.icon}</div>
-      <div
-        className="text-xl font-bold"
-        style={{ color: stat.color, textShadow: `0 0 10px ${stat.color}80` }}
-      >
-        {displayed.toLocaleString()}
-      </div>
-      <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
-    </div>
-  );
-}
-
-// ---- Tasks Panel ----
-const TASKS_KEY = "clawpro_tasks";
-interface Task {
-  id: string;
-  text: string;
-  done: boolean;
-  createdAt: number;
-}
-
-function TasksPanel() {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem(TASKS_KEY) ?? "[]");
-    } catch {
-      return [];
-    }
-  });
-  const [input, setInput] = useState("");
-
-  const save = (updated: Task[]) => {
-    setTasks(updated);
-    localStorage.setItem(TASKS_KEY, JSON.stringify(updated));
-  };
-
-  const addTask = () => {
-    if (!input.trim()) return;
-    save([
-      ...tasks,
-      {
-        id: Date.now().toString(),
-        text: input.trim(),
-        done: false,
-        createdAt: Date.now(),
-      },
-    ]);
-    setInput("");
-    toast.success("Task added!");
-  };
-
-  const toggle = (id: string) =>
-    save(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)));
-  const remove = (id: string) => save(tasks.filter((t) => t.id !== id));
-
-  const pending = tasks.filter((t) => !t.done);
-  const done = tasks.filter((t) => t.done);
-
-  return (
-    <div className="p-6 space-y-5">
-      <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{
-            background: "oklch(0.12 0.04 180)",
-            boxShadow: "0 0 16px rgba(20,184,166,0.3)",
-          }}
-        >
-          <CheckSquare2 className="w-5 h-5 text-teal-400" />
-        </div>
-        <div>
-          <h2 className="font-semibold">Task Manager</h2>
-          <p className="text-xs text-muted-foreground">
-            {pending.length} pending · {done.length} done
-          </p>
-        </div>
-      </div>
-
-      <div
-        className="flex gap-2 p-3 rounded-xl border border-teal-500/20"
-        style={{ background: "oklch(0.09 0.015 180)" }}
-      >
-        <input
-          type="text"
-          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-          placeholder="Add a new task..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addTask()}
-          data-ocid="tasks.input"
-        />
-        <button
-          type="button"
-          onClick={addTask}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium text-teal-900 transition-all"
-          style={{
-            background: "linear-gradient(135deg, #2dd4bf, #0d9488)",
-            boxShadow: "0 0 12px rgba(20,184,166,0.4)",
-          }}
-          data-ocid="tasks.add_button"
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
-      </div>
-
-      {tasks.length === 0 && (
-        <div
-          className="text-center py-8 text-muted-foreground text-sm"
-          data-ocid="tasks.empty_state"
-        >
-          No tasks yet. Add one above!
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <AnimatePresence>
-          {pending.map((task, i) => (
-            <motion.div
-              key={task.id}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 16 }}
-              transition={{ duration: 0.15 }}
-              className="flex items-center gap-3 p-3 rounded-xl border border-teal-500/15 hover:border-teal-500/30 transition-colors"
-              style={{ background: "oklch(0.09 0.012 240)" }}
-              data-ocid={`tasks.item.${i + 1}`}
-            >
-              <button
-                type="button"
-                onClick={() => toggle(task.id)}
-                className="w-5 h-5 rounded border-2 border-teal-500/50 hover:border-teal-400 transition-colors flex items-center justify-center flex-shrink-0"
-                data-ocid={`tasks.checkbox.${i + 1}`}
-              >
-                {task.done && (
-                  <Circle className="w-2 h-2 fill-teal-400 text-teal-400" />
-                )}
-              </button>
-              <span className="flex-1 text-sm">{task.text}</span>
-              <button
-                type="button"
-                onClick={() => remove(task.id)}
-                className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
-                data-ocid={`tasks.delete_button.${i + 1}`}
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {done.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-            Completed
-          </p>
-          <AnimatePresence>
-            {done.map((task, i) => (
-              <motion.div
-                key={task.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-3 p-3 rounded-xl border border-white/5 opacity-60"
-                style={{ background: "oklch(0.08 0.008 240)" }}
-                data-ocid={`tasks.done.item.${i + 1}`}
-              >
-                <div className="w-5 h-5 rounded border-2 border-teal-400/40 flex items-center justify-center flex-shrink-0">
-                  <Circle className="w-2 h-2 fill-teal-400 text-teal-400" />
-                </div>
-                <span className="flex-1 text-sm line-through text-muted-foreground">
-                  {task.text}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => remove(task.id)}
-                  className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ---- System Status Panel ----
-function StatusPanel() {
-  const [statuses, setStatuses] = useState([
-    {
-      name: "OpenClaw.ai",
-      url: "https://openclaw.ai",
-      status: "checking" as "online" | "offline" | "slow" | "checking",
-      latency: 0,
-      color: "#ef4444",
-    },
-    {
-      name: "ChatGPT / OpenAI",
-      url: "https://status.openai.com",
-      status: "checking" as "online" | "offline" | "slow" | "checking",
-      latency: 0,
-      color: "#10b981",
-    },
-    {
-      name: "Gemini AI",
-      url: "https://ai.google.dev",
-      status: "checking" as "online" | "offline" | "slow" | "checking",
-      latency: 0,
-      color: "#3b82f6",
-    },
-    {
-      name: "CoinGecko API",
-      url: "https://api.coingecko.com/api/v3/ping",
-      status: "checking" as "online" | "offline" | "slow" | "checking",
-      latency: 0,
-      color: "#f59e0b",
-    },
-    {
-      name: "GitHub API",
-      url: "https://api.github.com",
-      status: "checking" as "online" | "offline" | "slow" | "checking",
-      latency: 0,
-      color: "#8b5cf6",
-    },
-    {
-      name: "ICP Network",
-      url: "https://ic0.app",
-      status: "online" as "online" | "offline" | "slow" | "checking",
-      latency: 12,
-      color: "#06b6d4",
-    },
-  ]);
-  const [lastChecked, setLastChecked] = useState<Date | null>(null);
-  const [checking, setChecking] = useState(false);
-
-  const checkAll = async () => {
-    setChecking(true);
-    const results = await Promise.all(
-      statuses.map(async (s) => {
-        const start = Date.now();
-        try {
-          await fetch(s.url, {
-            method: "HEAD",
-            mode: "no-cors",
-            signal: AbortSignal.timeout(4000),
-          });
-          const lat = Date.now() - start;
-          return {
-            ...s,
-            status: lat > 2000 ? "slow" : ("online" as "online" | "slow"),
-            latency: lat,
-          };
-        } catch {
-          return { ...s, status: "offline" as const, latency: 0 };
-        }
-      }),
-    );
-    setStatuses(results);
-    setLastChecked(new Date());
-    setChecking(false);
-  };
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional
-  useEffect(() => {
-    checkAll();
-  }, []);
-
-  const dotColor = (s: string) =>
-    s === "online"
-      ? "#22c55e"
-      : s === "slow"
-        ? "#f59e0b"
-        : s === "offline"
-          ? "#ef4444"
-          : "#94a3b8";
-  const dotLabel = (s: string) =>
-    s === "online"
-      ? "Online"
-      : s === "slow"
-        ? "Slow"
-        : s === "offline"
-          ? "Offline"
-          : "Checking...";
-
-  const allOnline = statuses.every((s) => s.status === "online");
-
-  return (
-    <div className="p-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{
-              background: "oklch(0.13 0.04 50)",
-              boxShadow: "0 0 16px rgba(249,115,22,0.3)",
-            }}
-          >
-            <Cpu className="w-5 h-5 text-orange-400" />
-          </div>
-          <div>
-            <h2 className="font-semibold">System Status</h2>
-            <p className="text-xs text-muted-foreground">
-              {lastChecked
-                ? `Last checked: ${lastChecked.toLocaleTimeString()}`
-                : "Checking..."}
-            </p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={checkAll}
-          disabled={checking}
-          className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1 transition-colors"
-          data-ocid="status.refresh.button"
-        >
-          {checking ? (
-            <Loader2 className="w-3 h-3 animate-spin" />
-          ) : (
-            <Zap className="w-3 h-3" />
-          )}
-          {checking ? "Checking..." : "Recheck"}
-        </button>
-      </div>
-
-      <div
-        className="rounded-xl p-3 border flex items-center gap-2"
-        style={{
-          background: allOnline
-            ? "oklch(0.11 0.03 140)"
-            : "oklch(0.11 0.03 30)",
-          borderColor: allOnline
-            ? "rgba(34,197,94,0.3)"
-            : "rgba(239,68,68,0.3)",
-          boxShadow: allOnline
-            ? "0 0 20px rgba(34,197,94,0.12)"
-            : "0 0 20px rgba(239,68,68,0.12)",
-        }}
-      >
-        <div
-          className="w-3 h-3 rounded-full flex-shrink-0"
-          style={{
-            background: allOnline ? "#22c55e" : "#f59e0b",
-            boxShadow: `0 0 8px ${allOnline ? "#22c55e" : "#f59e0b"}`,
-            animation: "pulse 2s infinite",
-          }}
-        />
-        <span
-          className="text-sm font-medium"
-          style={{ color: allOnline ? "#4ade80" : "#fbbf24" }}
-        >
-          {allOnline
-            ? "All systems operational"
-            : "Some services may be degraded"}
-        </span>
-      </div>
-
-      <div className="space-y-2">
-        {statuses.map((s, i) => (
-          <div
-            key={s.name}
-            className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 hover:border-white/15 transition-colors"
-            style={{ background: "oklch(0.09 0.012 240)" }}
-            data-ocid={`status.item.${i + 1}`}
-          >
-            <div
-              className="w-3 h-3 rounded-full flex-shrink-0"
-              style={{
-                background: dotColor(s.status),
-                boxShadow: `0 0 6px ${dotColor(s.status)}`,
-                animation:
-                  s.status === "checking"
-                    ? "pulse 1s infinite"
-                    : s.status === "online"
-                      ? "pulse 3s infinite"
-                      : "none",
-              }}
-            />
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{s.name}</span>
-                <span
-                  className="text-xs font-medium"
-                  style={{ color: dotColor(s.status) }}
-                >
-                  {dotLabel(s.status)}
-                </span>
-              </div>
-              {s.latency > 0 && (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <div
-                    className="h-1 rounded-full"
-                    style={{
-                      width: `${Math.min(s.latency / 30, 100)}%`,
-                      maxWidth: "120px",
-                      background:
-                        s.latency < 500
-                          ? "#22c55e"
-                          : s.latency < 1500
-                            ? "#f59e0b"
-                            : "#ef4444",
-                    }}
-                  />
-                  <span className="text-[10px] text-muted-foreground">
-                    {s.latency}ms
-                  </span>
-                </div>
-              )}
-            </div>
-            <div
-              className="w-2 h-2 rounded-full flex-shrink-0"
-              style={{ background: s.color, opacity: 0.7 }}
-            />
-          </div>
-        ))}
       </div>
     </div>
   );

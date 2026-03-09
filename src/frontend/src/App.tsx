@@ -24,6 +24,7 @@ import { StatsSection } from "./components/sections/StatsSection";
 import { WorkWithEverythingSection } from "./components/sections/WorkWithEverythingSection";
 import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import { useIsAdmin } from "./hooks/useQueries";
+import { LanguageProvider } from "./i18n/LanguageContext";
 
 function extractPublicProfileHandle(hash: string): string | null {
   if (!hash.startsWith("#/u/")) return null;
@@ -35,7 +36,7 @@ function isLeaderboardHash(hash: string): boolean {
   return hash === "#/leaderboard";
 }
 
-export default function App() {
+function AppInner() {
   const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -206,5 +207,13 @@ export default function App() {
         }}
       />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppInner />
+    </LanguageProvider>
   );
 }

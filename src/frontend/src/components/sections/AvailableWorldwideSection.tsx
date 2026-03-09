@@ -18,8 +18,6 @@ const COUNTRY_META: Record<
   "040": { name: "Austria", alpha2: "AT", continent: "Europe" },
   "050": { name: "Bangladesh", alpha2: "BD", continent: "Asia" },
   "056": { name: "Belgium", alpha2: "BE", continent: "Europe" },
-  "064": { name: "Bhutan", alpha2: "BT", continent: "Asia" },
-  "068": { name: "Bolivia", alpha2: "BO", continent: "Americas" },
   "076": { name: "Brazil", alpha2: "BR", continent: "Americas" },
   "100": { name: "Bulgaria", alpha2: "BG", continent: "Europe" },
   "104": { name: "Myanmar", alpha2: "MM", continent: "Asia" },
@@ -43,7 +41,6 @@ const COUNTRY_META: Record<
   "288": { name: "Ghana", alpha2: "GH", continent: "Africa" },
   "300": { name: "Greece", alpha2: "GR", continent: "Europe" },
   "320": { name: "Guatemala", alpha2: "GT", continent: "Americas" },
-  "324": { name: "Guinea", alpha2: "GN", continent: "Africa" },
   "332": { name: "Haiti", alpha2: "HT", continent: "Americas" },
   "340": { name: "Honduras", alpha2: "HN", continent: "Americas" },
   "348": { name: "Hungary", alpha2: "HU", continent: "Europe" },
@@ -59,41 +56,30 @@ const COUNTRY_META: Record<
   "400": { name: "Jordan", alpha2: "JO", continent: "Asia" },
   "398": { name: "Kazakhstan", alpha2: "KZ", continent: "Asia" },
   "404": { name: "Kenya", alpha2: "KE", continent: "Africa" },
-  "408": { name: "North Korea", alpha2: "KP", continent: "Asia" },
   "410": { name: "South Korea", alpha2: "KR", continent: "Asia" },
   "414": { name: "Kuwait", alpha2: "KW", continent: "Asia" },
-  "418": { name: "Laos", alpha2: "LA", continent: "Asia" },
   "422": { name: "Lebanon", alpha2: "LB", continent: "Asia" },
-  "426": { name: "Lesotho", alpha2: "LS", continent: "Africa" },
-  "430": { name: "Liberia", alpha2: "LR", continent: "Africa" },
   "434": { name: "Libya", alpha2: "LY", continent: "Africa" },
   "484": { name: "Mexico", alpha2: "MX", continent: "Americas" },
   "496": { name: "Mongolia", alpha2: "MN", continent: "Asia" },
   "504": { name: "Morocco", alpha2: "MA", continent: "Africa" },
   "508": { name: "Mozambique", alpha2: "MZ", continent: "Africa" },
-  "516": { name: "Namibia", alpha2: "NA", continent: "Africa" },
   "524": { name: "Nepal", alpha2: "NP", continent: "Asia" },
   "528": { name: "Netherlands", alpha2: "NL", continent: "Europe" },
   "554": { name: "New Zealand", alpha2: "NZ", continent: "Oceania" },
-  "558": { name: "Nicaragua", alpha2: "NI", continent: "Americas" },
   "562": { name: "Niger", alpha2: "NE", continent: "Africa" },
   "566": { name: "Nigeria", alpha2: "NG", continent: "Africa" },
   "578": { name: "Norway", alpha2: "NO", continent: "Europe" },
   "586": { name: "Pakistan", alpha2: "PK", continent: "Asia" },
-  "591": { name: "Panama", alpha2: "PA", continent: "Americas" },
-  "598": { name: "Papua New Guinea", alpha2: "PG", continent: "Oceania" },
-  "600": { name: "Paraguay", alpha2: "PY", continent: "Americas" },
   "604": { name: "Peru", alpha2: "PE", continent: "Americas" },
   "608": { name: "Philippines", alpha2: "PH", continent: "Asia" },
   "616": { name: "Poland", alpha2: "PL", continent: "Europe" },
   "620": { name: "Portugal", alpha2: "PT", continent: "Europe" },
-  "630": { name: "Puerto Rico", alpha2: "PR", continent: "Americas" },
   "634": { name: "Qatar", alpha2: "QA", continent: "Asia" },
   "642": { name: "Romania", alpha2: "RO", continent: "Europe" },
   "643": { name: "Russia", alpha2: "RU", continent: "Europe" },
   "682": { name: "Saudi Arabia", alpha2: "SA", continent: "Asia" },
   "686": { name: "Senegal", alpha2: "SN", continent: "Africa" },
-  "694": { name: "Sierra Leone", alpha2: "SL", continent: "Africa" },
   "706": { name: "Somalia", alpha2: "SO", continent: "Africa" },
   "710": { name: "South Africa", alpha2: "ZA", continent: "Africa" },
   "724": { name: "Spain", alpha2: "ES", continent: "Europe" },
@@ -104,8 +90,6 @@ const COUNTRY_META: Record<
   "760": { name: "Syria", alpha2: "SY", continent: "Asia" },
   "158": { name: "Taiwan", alpha2: "TW", continent: "Asia" },
   "764": { name: "Thailand", alpha2: "TH", continent: "Asia" },
-  "768": { name: "Togo", alpha2: "TG", continent: "Africa" },
-  "780": { name: "Trinidad and Tobago", alpha2: "TT", continent: "Americas" },
   "788": { name: "Tunisia", alpha2: "TN", continent: "Africa" },
   "792": { name: "Turkey", alpha2: "TR", continent: "Europe" },
   "800": { name: "Uganda", alpha2: "UG", continent: "Africa" },
@@ -122,13 +106,12 @@ const COUNTRY_META: Record<
   "716": { name: "Zimbabwe", alpha2: "ZW", continent: "Africa" },
 };
 
-// Vivid, distinct continent colors
 const CONTINENT_COLORS: Record<string, string> = {
-  Americas: "#fb923c", // warm orange
-  Europe: "#818cf8", // indigo
-  Asia: "#22d3ee", // cyan
-  Africa: "#4ade80", // green
-  Oceania: "#f472b6", // pink
+  Americas: "#fb923c",
+  Europe: "#818cf8",
+  Asia: "#22d3ee",
+  Africa: "#4ade80",
+  Oceania: "#f472b6",
 };
 
 const CONTINENTS = ["All", "Americas", "Europe", "Asia", "Africa", "Oceania"];
@@ -154,19 +137,17 @@ export function AvailableWorldwideSection() {
   const [hoveredCountry, setHoveredCountry] = useState<string | null>(null);
   const [activeContinent, setActiveContinent] = useState("All");
   const [glowingCountries, setGlowingCountries] = useState<string[]>([]);
-  const [popup, setPopup] = useState<{
-    id: string;
-    x: number;
-    y: number;
-  } | null>(null);
   const [tooltip, setTooltip] = useState<{
     text: string;
+    flag: string;
+    count: number;
     x: number;
     y: number;
   } | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
   const { data: leaderboardData } = useLeaderboard();
 
-  // Simulate 2-3 countries glowing every second
+  // 2-3 countries auto-glow every second
   useEffect(() => {
     const countryIds = Object.keys(COUNTRY_META);
     const interval = setInterval(() => {
@@ -179,56 +160,6 @@ export function AvailableWorldwideSection() {
     }, 1200);
     return () => clearInterval(interval);
   }, []);
-
-  const getCountryColor = (
-    geoId: string,
-    isSelected: boolean,
-    isHovered: boolean,
-    isGlowing: boolean,
-  ) => {
-    const meta = COUNTRY_META[geoId];
-    const continent = meta?.continent ?? "Asia";
-    const base = CONTINENT_COLORS[continent] ?? "#818cf8";
-    if (isSelected) return base;
-    if (isGlowing) return base;
-    if (isHovered) return `${base}cc`;
-    return "#1e2433";
-  };
-
-  const getCountryOpacity = (
-    geoId: string,
-    isSelected: boolean,
-    isHovered: boolean,
-    isGlowing: boolean,
-  ) => {
-    if (isSelected) return 1;
-    if (isGlowing) return 0.9;
-    if (isHovered) return 0.85;
-    const meta = COUNTRY_META[geoId];
-    if (activeContinent !== "All" && meta?.continent !== activeContinent)
-      return 0.15;
-    return 0.45;
-  };
-
-  const handleCountryClick = (geoId: string, evt: React.MouseEvent) => {
-    setSelectedCountries((prev) => {
-      const next = new Set(prev);
-      if (next.has(geoId)) next.delete(geoId);
-      else next.add(geoId);
-      return next;
-    });
-    const rect = (evt.target as SVGElement)
-      .closest("svg")
-      ?.getBoundingClientRect();
-    if (rect) {
-      setPopup({
-        id: geoId,
-        x: evt.clientX - rect.left,
-        y: evt.clientY - rect.top,
-      });
-      setTimeout(() => setPopup(null), 3000);
-    }
-  };
 
   const registrationsByCountry = useMemo(() => {
     const map: Record<string, number> = {};
@@ -277,6 +208,77 @@ export function AvailableWorldwideSection() {
       ? Object.keys(COUNTRY_META).length
       : (CONTINENT_COUNTRY_COUNT[activeContinent] ?? 0);
 
+  const getGeoFill = (geoId: string) => {
+    const meta = COUNTRY_META[geoId];
+    const continent = meta?.continent ?? "Asia";
+    const contColor = CONTINENT_COLORS[continent] ?? "#818cf8";
+    const isSelected = selectedCountries.has(geoId);
+    const isHovered = hoveredCountry === geoId;
+    const isGlowing = glowingCountries.includes(geoId);
+
+    if (isSelected || isHovered) return contColor;
+    if (isGlowing) return contColor;
+    if (activeContinent !== "All" && continent !== activeContinent)
+      return "#0f172a";
+    return "#1e293b";
+  };
+
+  const getGeoOpacity = (geoId: string) => {
+    const meta = COUNTRY_META[geoId];
+    const continent = meta?.continent ?? "Asia";
+    const isSelected = selectedCountries.has(geoId);
+    const isHovered = hoveredCountry === geoId;
+    const isGlowing = glowingCountries.includes(geoId);
+    if (isSelected || isHovered) return 1;
+    if (isGlowing) return 0.9;
+    if (activeContinent !== "All" && continent !== activeContinent) return 0.2;
+    return 0.6;
+  };
+
+  const handleGeoClick = (geoId: string) => {
+    setSelectedCountries((prev) => {
+      const next = new Set(prev);
+      if (next.has(geoId)) next.delete(geoId);
+      else next.add(geoId);
+      return next;
+    });
+  };
+
+  const handleMouseEnter = (
+    geoId: string,
+    evt: React.MouseEvent<SVGPathElement>,
+  ) => {
+    setHoveredCountry(geoId);
+    const meta = COUNTRY_META[geoId];
+    if (!meta) return;
+    const rect = mapRef.current?.getBoundingClientRect();
+    if (rect) {
+      setTooltip({
+        text: meta.name,
+        flag: getFlag(meta.alpha2),
+        count: registrationsByCountry[meta.alpha2] ?? 0,
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top,
+      });
+    }
+  };
+
+  const handleMouseMove = (
+    geoId: string,
+    evt: React.MouseEvent<SVGPathElement>,
+  ) => {
+    const meta = COUNTRY_META[geoId];
+    if (!meta) return;
+    const rect = mapRef.current?.getBoundingClientRect();
+    if (rect) {
+      setTooltip((prev) =>
+        prev
+          ? { ...prev, x: evt.clientX - rect.left, y: evt.clientY - rect.top }
+          : null,
+      );
+    }
+  };
+
   return (
     <section className="py-16 px-4 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
@@ -285,9 +287,21 @@ export function AvailableWorldwideSection() {
           <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-400 bg-clip-text text-transparent mb-2">
             ClawPro Available Worldwide
           </h2>
-          <p className="text-muted-foreground text-sm">
-            Interactive map — click any country to highlight
-          </p>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <span
+              className="w-2 h-2 rounded-full bg-green-400"
+              style={{
+                boxShadow: "0 0 8px #22c55e",
+                animation: "pulse 1.5s infinite",
+              }}
+            />
+            <span className="text-xs text-muted-foreground">
+              <span className="text-green-400 font-semibold">LIVE</span> ·{" "}
+              {totalCountries} countries available
+              {selectedCountries.size > 0 &&
+                ` · ${selectedCountries.size} selected`}
+            </span>
+          </div>
         </div>
 
         {/* Continent filter buttons */}
@@ -338,14 +352,14 @@ export function AvailableWorldwideSection() {
           )}
         </div>
 
-        {/* Map container – no zoom */}
+        {/* Map */}
         <div
+          ref={mapRef}
           className="relative rounded-2xl overflow-hidden"
           style={{
             background: "oklch(0.07 0.015 240)",
             boxShadow:
               "0 0 0 2px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.08)",
-            animation: "mapGlow 3s ease-in-out infinite alternate",
           }}
           onMouseLeave={() => {
             setHoveredCountry(null);
@@ -353,92 +367,78 @@ export function AvailableWorldwideSection() {
           }}
         >
           <style>{`
-            @keyframes mapGlow {
-              from { box-shadow: 0 0 0 2px rgba(6,182,212,0.15), 0 0 40px rgba(6,182,212,0.08); }
-              to { box-shadow: 0 0 0 2px rgba(99,102,241,0.25), 0 0 60px rgba(99,102,241,0.12); }
-            }
             @keyframes pulse {
               0%, 100% { opacity: 1; transform: scale(1); }
               50% { opacity: 0.6; transform: scale(0.85); }
             }
+            @keyframes geoGlow {
+              0%, 100% { opacity: 0.85; }
+              50% { opacity: 1; }
+            }
           `}</style>
 
           <ComposableMap
-            projectionConfig={{ scale: 145 }}
+            projection="geoNaturalEarth1"
+            projectionConfig={{ scale: 147 }}
+            style={{ width: "100%", height: "auto" }}
             width={800}
             height={400}
-            style={{ width: "100%", height: "auto" }}
           >
             <Geographies geography={GEO_URL}>
               {({ geographies }) =>
                 geographies.map((geo) => {
                   const geoId = String(geo.id).padStart(3, "0");
                   const meta = COUNTRY_META[geoId];
+                  const continent = meta?.continent ?? "";
+                  const contColor = CONTINENT_COLORS[continent] ?? "#818cf8";
                   const isSelected = selectedCountries.has(geoId);
-                  const isHovered = hoveredCountry === geoId;
                   const isGlowing = glowingCountries.includes(geoId);
-                  const fill = getCountryColor(
-                    geoId,
-                    isSelected,
-                    isHovered,
-                    isGlowing,
-                  );
-                  const opacity = getCountryOpacity(
-                    geoId,
-                    isSelected,
-                    isHovered,
-                    isGlowing,
-                  );
+                  const fill = getGeoFill(geoId);
+                  const opacity = getGeoOpacity(geoId);
 
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={fill}
-                      fillOpacity={opacity}
-                      stroke="#0d1117"
-                      strokeWidth={0.5}
+                      onClick={() => handleGeoClick(geoId)}
+                      onMouseEnter={(evt) => handleMouseEnter(geoId, evt)}
+                      onMouseMove={(evt) => handleMouseMove(geoId, evt)}
+                      onMouseLeave={() => setHoveredCountry(null)}
+                      data-ocid="map.map_marker"
                       style={{
                         default: {
+                          fill,
+                          opacity,
+                          stroke: "#0f172a",
+                          strokeWidth: 0.4,
                           outline: "none",
                           cursor: meta ? "pointer" : "default",
+                          filter:
+                            isGlowing && meta
+                              ? `drop-shadow(0 0 4px ${contColor})`
+                              : isSelected
+                                ? `drop-shadow(0 0 6px ${contColor})`
+                                : "none",
+                          transition: "fill 0.3s, opacity 0.3s",
                         },
-                        hover: { outline: "none" },
-                        pressed: { outline: "none" },
-                      }}
-                      onMouseEnter={(evt) => {
-                        if (meta) {
-                          setHoveredCountry(geoId);
-                          const rect = (evt.target as SVGElement)
-                            .closest("svg")
-                            ?.getBoundingClientRect();
-                          if (rect)
-                            setTooltip({
-                              text: meta.name,
-                              x: evt.clientX - rect.left,
-                              y: evt.clientY - rect.top - 10,
-                            });
-                        }
-                      }}
-                      onMouseMove={(evt) => {
-                        if (meta) {
-                          const rect = (evt.target as SVGElement)
-                            .closest("svg")
-                            ?.getBoundingClientRect();
-                          if (rect)
-                            setTooltip({
-                              text: meta.name,
-                              x: evt.clientX - rect.left,
-                              y: evt.clientY - rect.top - 10,
-                            });
-                        }
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredCountry(null);
-                        setTooltip(null);
-                      }}
-                      onClick={(evt) => {
-                        if (meta) handleCountryClick(geoId, evt);
+                        hover: {
+                          fill: meta ? contColor : "#1e293b",
+                          opacity: meta ? 1 : 0.2,
+                          stroke: "#0f172a",
+                          strokeWidth: 0.4,
+                          outline: "none",
+                          cursor: meta ? "pointer" : "default",
+                          filter: meta
+                            ? `drop-shadow(0 0 6px ${contColor})`
+                            : "none",
+                        },
+                        pressed: {
+                          fill: meta ? contColor : "#1e293b",
+                          opacity: 1,
+                          stroke: "#0f172a",
+                          strokeWidth: 0.4,
+                          outline: "none",
+                        },
                       }}
                     />
                   );
@@ -450,60 +450,25 @@ export function AvailableWorldwideSection() {
           {/* Hover tooltip */}
           {tooltip && (
             <div
-              className="absolute pointer-events-none px-2 py-1 rounded text-xs font-medium text-white z-20"
+              className="absolute pointer-events-none px-3 py-1.5 rounded-lg text-xs font-medium text-white z-20"
               style={{
                 left: tooltip.x,
-                top: tooltip.y,
-                transform: "translate(-50%, -100%)",
-                background: "rgba(6,182,212,0.9)",
+                top: tooltip.y - 60,
+                transform: "translateX(-50%)",
+                background: "rgba(6,18,42,0.95)",
+                border: "1px solid rgba(6,182,212,0.4)",
                 backdropFilter: "blur(4px)",
                 whiteSpace: "nowrap",
               }}
             >
-              {tooltip.text}
-            </div>
-          )}
-
-          {/* Click popup */}
-          {popup && COUNTRY_META[popup.id] && (
-            <div
-              className="absolute z-30 rounded-xl p-3 min-w-[160px] pointer-events-none"
-              style={{
-                left: Math.min(popup.x, 640),
-                top: Math.max(popup.y - 90, 10),
-                background: "oklch(0.1 0.02 240)",
-                border: `1px solid ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#22d3ee"}60`,
-                boxShadow: `0 0 20px ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#22d3ee"}30`,
-              }}
-            >
-              <div className="text-2xl mb-1">
-                {getFlag(COUNTRY_META[popup.id].alpha2)}
-              </div>
-              <div className="text-sm font-bold text-white">
-                {COUNTRY_META[popup.id].name}
-              </div>
-              <div
-                className="text-xs mb-1"
-                style={{
-                  color:
-                    CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ??
-                    "#22d3ee",
-                }}
-              >
-                {COUNTRY_META[popup.id].continent}
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                {registrationsByCountry[
-                  COUNTRY_META[popup.id].alpha2
-                ]?.toLocaleString() ?? "0"}{" "}
-                registered users
-              </div>
-              <div className="text-[10px] text-green-400 flex items-center gap-1 mt-1">
-                <span
-                  className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"
-                  style={{ boxShadow: "0 0 6px #22c55e" }}
-                />
-                ClawPro Available Here
+              <div className="flex items-center gap-1.5">
+                <span>{tooltip.flag}</span>
+                <span>{tooltip.text}</span>
+                {tooltip.count > 0 && (
+                  <span className="text-cyan-400 ml-1">
+                    {tooltip.count.toLocaleString()} users
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -538,23 +503,6 @@ export function AvailableWorldwideSection() {
             })}
           </div>
         )}
-
-        {/* Live indicator */}
-        <div className="flex items-center justify-center gap-2 mt-3">
-          <span
-            className="w-2 h-2 rounded-full bg-green-400"
-            style={{
-              boxShadow: "0 0 8px #22c55e",
-              animation: "pulse 1.5s infinite",
-            }}
-          />
-          <span className="text-xs text-muted-foreground">
-            <span className="text-green-400 font-semibold">LIVE</span> ·{" "}
-            {totalCountries} countries available
-            {selectedCountries.size > 0 &&
-              ` · ${selectedCountries.size} selected`}
-          </span>
-        </div>
 
         {/* Top Countries Leaderboard */}
         {topCountries.length > 0 && (
