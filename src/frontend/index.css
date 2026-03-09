@@ -275,21 +275,25 @@
     animation: goldGreenPulse 4s ease-in-out infinite alternate;
   }
 
-  /* Marquee / ticker animations */
+  /* Marquee / ticker animations — GPU-accelerated via transform */
   @keyframes marquee-left {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-33.333%); }
+    0%   { transform: translateX(0) translateZ(0); }
+    100% { transform: translateX(-33.333%) translateZ(0); }
   }
   @keyframes marquee-right {
-    0% { transform: translateX(-33.333%); }
-    100% { transform: translateX(0); }
+    0%   { transform: translateX(-33.333%) translateZ(0); }
+    100% { transform: translateX(0) translateZ(0); }
   }
 
   .marquee-left {
     animation: marquee-left linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
   }
   .marquee-right {
     animation: marquee-right linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
   }
   .marquee-left:hover,
   .marquee-right:hover {

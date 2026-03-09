@@ -305,6 +305,17 @@ export type TranslationKey = {
     sectionLabel: string;
     loading: string;
     rank: string;
+    priceAlerts: string;
+    noAlerts: string;
+    topCoins: string;
+    showChart: string;
+    hideChart: string;
+    marketCap: string;
+    volume24h: string;
+    change24h: string;
+    price: string;
+    refreshing: string;
+    lastUpdated: string;
   };
 };
 
@@ -681,6 +692,17 @@ const en: TranslationKey = {
     sectionLabel: "Live Crypto Markets",
     loading: "Loading...",
     rank: "#",
+    priceAlerts: "Price Alerts",
+    noAlerts: "No significant price movements",
+    topCoins: "Top 15 Cryptocurrencies by Market Cap",
+    showChart: "Show Chart",
+    hideChart: "Hide Chart",
+    marketCap: "Market Cap",
+    volume24h: "24h Volume",
+    change24h: "24h Change",
+    price: "Price",
+    refreshing: "Refreshing...",
+    lastUpdated: "Updated",
   },
 };
 
@@ -1056,6 +1078,17 @@ const id: TranslationKey = {
     sectionLabel: "Pasar Kripto Live",
     loading: "Memuat...",
     rank: "#",
+    priceAlerts: "Notifikasi Harga",
+    noAlerts: "Tidak ada pergerakan harga signifikan",
+    topCoins: "15 Kripto Teratas berdasarkan Market Cap",
+    showChart: "Tampilkan Grafik",
+    hideChart: "Sembunyikan Grafik",
+    marketCap: "Kapitalisasi Pasar",
+    volume24h: "Volume 24j",
+    change24h: "Perubahan 24j",
+    price: "Harga",
+    refreshing: "Memperbarui...",
+    lastUpdated: "Diperbarui",
   },
 };
 
@@ -1424,6 +1457,17 @@ const ar: TranslationKey = {
     sectionLabel: "أسواق العملات المشفرة المباشرة",
     loading: "جاري التحميل...",
     rank: "#",
+    priceAlerts: "تنبيهات الأسعار",
+    noAlerts: "لا توجد تحركات سعرية كبيرة",
+    topCoins: "أفضل 15 عملة مشفرة حسب القيمة السوقية",
+    showChart: "إظهار الرسم البياني",
+    hideChart: "إخفاء الرسم البياني",
+    marketCap: "القيمة السوقية",
+    volume24h: "حجم التداول 24 ساعة",
+    change24h: "التغيير 24 ساعة",
+    price: "السعر",
+    refreshing: "جاري التحديث...",
+    lastUpdated: "محدث",
   },
 };
 
@@ -1797,6 +1841,17 @@ const ru: TranslationKey = {
     sectionLabel: "Крипто-рынки в реальном времени",
     loading: "Загрузка...",
     rank: "#",
+    priceAlerts: "Оповещения о ценах",
+    noAlerts: "Нет значительных изменений цен",
+    topCoins: "15 ведущих криптовалют по рыночной капитализации",
+    showChart: "Показать график",
+    hideChart: "Скрыть график",
+    marketCap: "Рыночная капитализация",
+    volume24h: "Объём за 24ч",
+    change24h: "Изменение за 24ч",
+    price: "Цена",
+    refreshing: "Обновление...",
+    lastUpdated: "Обновлено",
   },
 };
 
@@ -2162,6 +2217,17 @@ const zh: TranslationKey = {
     sectionLabel: "实时加密货币市场",
     loading: "加载中...",
     rank: "#",
+    priceAlerts: "价格提醒",
+    noAlerts: "暂无重大价格变动",
+    topCoins: "按市值排名前15位加密货币",
+    showChart: "显示图表",
+    hideChart: "隐藏图表",
+    marketCap: "市值",
+    volume24h: "24小时交易量",
+    change24h: "24小时涨跌",
+    price: "价格",
+    refreshing: "刷新中...",
+    lastUpdated: "已更新",
   },
 };
 

@@ -1,37 +1,31 @@
 # ClawPro
 
 ## Current State
-- Footer has menu separators with glowing lines per item (cyan, silver, violet, blue, amber)
-- PartnerSection shows ClawPro.ai brand title + OpenClaw.ai, OpenAI.ai, ChatGPT.ai, GitHub logos as static SVG
-- No live API calls in the partner section -- logos are purely decorative
+- CryptoTickerSection exists: horizontal marquee sliding right-to-left with 15 top coins from CoinGecko API (with fallback data). Shows rank, logo, name, symbol, price, 24h change.
+- Multi-language support (EN/ID/AR/RU/ZH) exists via LanguageContext + translations.ts, but many sections still have untranslated strings hardcoded in English.
+- Overall site performance has accumulated many CSS animations, glow effects, and blob effects that slow rendering.
 
 ## Requested Changes (Diff)
 
 ### Add
-- Live API status badges for OpenAI, GitHub, and OpenClaw (public/reachable endpoints)
-  - GitHub: `https://api.github.com` (public, no auth needed -- shows rate limit / user info)
-  - OpenAI: `https://status.openai.com/api/v2/status.json` (public status page API)
-  - OpenClaw: mock/ping to openclaw.ai (show "Connected" if reachable, else "Checking")
-- Real GitHub API call: fetch openclaw/clawpro repo info (stars, forks, watchers) displayed under GitHub logo
-- OpenAI status API call: show current OpenAI system status (Operational / Degraded / etc.)
-- ChatGPT: show OpenAI models list info (from status API) or ChatGPT status
-- Each logo card in PartnerSection gets an API status pill (green/orange/red) with live data
-- Partner logos become interactive cards with hover state showing API data
+- **CryptoPriceNotifications**: Real-time price alert notification system below the crypto ticker marquee. Shows popup/toast-style notifications when price changes are significant (>2% in 30s interval). Translatable labels.
+- **CryptoChart Panel**: Below ticker marquee, add a bar/sparkline chart showing all 15 top cryptos by marketcap ranked visually — logo, name, rank, 24h bar chart, market cap. Uses CoinGecko public API. Elegant, smooth, lightweight.
+- **Translation keys for crypto section**: `cryptoTicker.notifications`, `cryptoTicker.priceAlert`, `cryptoTicker.chart`, `cryptoTicker.marketCap`, `cryptoTicker.volume`, `cryptoTicker.change24h` for all 5 languages.
+- **Full translation audit**: Fix any remaining hardcoded English strings across all sections so all 5 languages work seamlessly.
 
 ### Modify
-- Footer menu separators: replace current single-color per-item approach with more refined design
-  - Each separator gets a dual-tone gradient that shifts smoothly (more polished, less repetitive)
-  - Add subtle pulse animation that varies per item with staggered delays
-  - Bottom bar gets a more prominent gradient separator
+- **CryptoTickerSection**: Refactor to include chart panel (collapsible/expanded view) and notification system. Add refresh interval (30s auto-refresh). Performance optimized — no heavy rerenders.
+- **translations.ts**: Extend `cryptoTicker` type and all 5 language objects with new keys.
+- **Animations & performance**: Replace heavy CSS keyframe animations with simpler CSS transitions where possible. Reduce simultaneous animation count. Use `will-change: transform` sparingly.
 
 ### Remove
-- Nothing removed
+- No features removed.
 
 ## Implementation Plan
-1. Update Footer.tsx: improve separator colors with richer dual-tone gradients, staggered timing, more elegant visual
-2. Update PartnerSection.tsx: 
-   - Add `useEffect` hooks to call GitHub API (repo stats), OpenAI status API
-   - Display live data: GitHub stars/forks, OpenAI system status
-   - Each partner logo gets a status card with live badge
-   - Add hover expand to show live fetched data
-3. Validate and deploy
+1. Extend `TranslationKey.cryptoTicker` type with new keys in `translations.ts`
+2. Add all 5 language translations for new keys (EN, ID, AR, RU, ZH)
+3. Fix remaining hardcoded English strings in major sections (Hero, Features, Pricing, Setup, Docs, Footer, Community, WorldMap, Partner, Changelog, Blog, Forum, Dashboard)
+4. Rewrite `CryptoTickerSection` with: live ticker marquee + collapsible chart panel + notification badge system
+5. Chart panel: responsive bar chart (CSS-only or Recharts if available) showing top 15 coins — rank, logo, name, 24h%, market cap bar
+6. Notification system: state-based price alert panel below ticker, shows colored alerts for coins with >2% move in last refresh cycle
+7. Optimize animation performance: audit and reduce CSS keyframes, ensure smooth 60fps

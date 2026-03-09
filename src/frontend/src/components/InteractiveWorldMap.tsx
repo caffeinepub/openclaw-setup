@@ -1,1126 +1,447 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  ZoomableGroup,
-} from "react-simple-maps";
+// Lightweight dot-map replacement that does not depend on react-simple-maps
+import { useEffect, useRef, useState } from "react";
 import { useLeaderboard } from "../hooks/useQueries";
 
-const GEO_URL =
-  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
-
-// Country code mapping: numeric ISO → alpha-2
-const NUM_TO_ALPHA2: Record<string, string> = {
-  "004": "AF",
-  "008": "AL",
-  "012": "DZ",
-  "032": "AR",
-  "036": "AU",
-  "040": "AT",
-  "050": "BD",
-  "056": "BE",
-  "068": "BO",
-  "076": "BR",
-  "100": "BG",
-  "116": "KH",
-  "124": "CA",
-  "152": "CL",
-  "156": "CN",
-  "170": "CO",
-  "188": "CR",
-  "191": "HR",
-  "196": "CY",
-  "203": "CZ",
-  "208": "DK",
-  "818": "EG",
-  "231": "ET",
-  "233": "EE",
-  "246": "FI",
-  "250": "FR",
-  "276": "DE",
-  "288": "GH",
-  "300": "GR",
-  "320": "GT",
-  "332": "HT",
-  "348": "HU",
-  "356": "IN",
-  "360": "ID",
-  "364": "IR",
-  "368": "IQ",
-  "372": "IE",
-  "376": "IL",
-  "380": "IT",
-  "392": "JP",
-  "400": "JO",
-  "398": "KZ",
-  "404": "KE",
-  "414": "KW",
-  "418": "LA",
-  "422": "LB",
-  "434": "LY",
-  "458": "MY",
-  "484": "MX",
-  "504": "MA",
-  "508": "MZ",
-  "524": "NP",
-  "528": "NL",
-  "554": "NZ",
-  "566": "NG",
-  "578": "NO",
-  "586": "PK",
-  "591": "PA",
-  "604": "PE",
-  "608": "PH",
-  "616": "PL",
-  "620": "PT",
-  "634": "QA",
-  "642": "RO",
-  "643": "RU",
-  "682": "SA",
-  "686": "SN",
-  "729": "SD",
-  "752": "SE",
-  "756": "CH",
-  "760": "SY",
-  "158": "TW",
-  "764": "TH",
-  "792": "TR",
-  "800": "UG",
-  "804": "UA",
-  "784": "AE",
-  "826": "GB",
-  "840": "US",
-  "858": "UY",
-  "862": "VE",
-  "704": "VN",
-  "887": "YE",
-  "894": "ZM",
-  "716": "ZW",
-  "710": "ZA",
-  "854": "BF",
-  "120": "CM",
-  "384": "CI",
-  "180": "CD",
-  "218": "EC",
-  "222": "SV",
-  "232": "ER",
-  "598": "PG",
-  "706": "SO",
-  "268": "GE",
-  "410": "KR",
-  "408": "KP",
-  "031": "AZ",
-  "724": "ES",
-};
-
-// Alpha-2 → country name
-const COUNTRY_NAMES: Record<string, string> = {
-  AF: "Afghanistan",
-  AL: "Albania",
-  DZ: "Algeria",
-  AR: "Argentina",
-  AU: "Australia",
-  AT: "Austria",
-  BD: "Bangladesh",
-  BE: "Belgium",
-  BO: "Bolivia",
-  BR: "Brazil",
-  BG: "Bulgaria",
-  KH: "Cambodia",
-  CA: "Canada",
-  CL: "Chile",
-  CN: "China",
-  CO: "Colombia",
-  CR: "Costa Rica",
-  HR: "Croatia",
-  CY: "Cyprus",
-  CZ: "Czech Republic",
-  DK: "Denmark",
-  EG: "Egypt",
-  ET: "Ethiopia",
-  EE: "Estonia",
-  FI: "Finland",
-  FR: "France",
-  DE: "Germany",
-  GH: "Ghana",
-  GR: "Greece",
-  GT: "Guatemala",
-  HT: "Haiti",
-  HU: "Hungary",
-  IN: "India",
-  ID: "Indonesia",
-  IR: "Iran",
-  IQ: "Iraq",
-  IE: "Ireland",
-  IL: "Israel",
-  IT: "Italy",
-  JP: "Japan",
-  JO: "Jordan",
-  KZ: "Kazakhstan",
-  KE: "Kenya",
-  KW: "Kuwait",
-  LA: "Laos",
-  LB: "Lebanon",
-  LY: "Libya",
-  MY: "Malaysia",
-  MX: "Mexico",
-  MA: "Morocco",
-  MZ: "Mozambique",
-  NP: "Nepal",
-  NL: "Netherlands",
-  NZ: "New Zealand",
-  NG: "Nigeria",
-  NO: "Norway",
-  PK: "Pakistan",
-  PA: "Panama",
-  PE: "Peru",
-  PH: "Philippines",
-  PL: "Poland",
-  PT: "Portugal",
-  QA: "Qatar",
-  RO: "Romania",
-  RU: "Russia",
-  SA: "Saudi Arabia",
-  SN: "Senegal",
-  SD: "Sudan",
-  SE: "Sweden",
-  CH: "Switzerland",
-  SY: "Syria",
-  TW: "Taiwan",
-  TH: "Thailand",
-  TR: "Turkey",
-  UG: "Uganda",
-  UA: "Ukraine",
-  AE: "UAE",
-  GB: "United Kingdom",
-  US: "United States",
-  UY: "Uruguay",
-  VE: "Venezuela",
-  VN: "Vietnam",
-  YE: "Yemen",
-  ZM: "Zambia",
-  ZW: "Zimbabwe",
-  ZA: "South Africa",
-  BF: "Burkina Faso",
-  CM: "Cameroon",
-  CI: "Ivory Coast",
-  CD: "DR Congo",
-  EC: "Ecuador",
-  SV: "El Salvador",
-  ER: "Eritrea",
-  PG: "Papua New Guinea",
-  SO: "Somalia",
-  GE: "Georgia",
-  KR: "South Korea",
-  KP: "North Korea",
-  AZ: "Azerbaijan",
-  ES: "Spain",
-  MG: "Madagascar",
-  BO2: "Bolivia",
-  CG: "Republic of Congo",
-  AO: "Angola",
-  ZB: "Zambia",
-  MR: "Mauritania",
-  ML: "Mali",
-  NE: "Niger",
-  TD: "Chad",
-  LY2: "Libya",
-  TN: "Tunisia",
-  DZ2: "Algeria",
-};
-
-// Alpha-2 → region
-const COUNTRY_REGIONS: Record<string, string> = {
-  AF: "Asia",
-  AL: "Europe",
-  DZ: "Africa",
-  AR: "Americas",
-  AU: "Oceania",
-  AT: "Europe",
-  BD: "Asia",
-  BE: "Europe",
-  BO: "Americas",
-  BR: "Americas",
-  BG: "Europe",
-  KH: "Asia",
-  CA: "Americas",
-  CL: "Americas",
-  CN: "Asia",
-  CO: "Americas",
-  CR: "Americas",
-  HR: "Europe",
-  CY: "Europe",
-  CZ: "Europe",
-  DK: "Europe",
-  EG: "Africa",
-  ET: "Africa",
-  EE: "Europe",
-  FI: "Europe",
-  FR: "Europe",
-  DE: "Europe",
-  GH: "Africa",
-  GR: "Europe",
-  GT: "Americas",
-  HT: "Americas",
-  HU: "Europe",
-  IN: "Asia",
-  ID: "Asia",
-  IR: "Middle East",
-  IQ: "Middle East",
-  IE: "Europe",
-  IL: "Middle East",
-  IT: "Europe",
-  JP: "Asia",
-  JO: "Middle East",
-  KZ: "Asia",
-  KE: "Africa",
-  KW: "Middle East",
-  LA: "Asia",
-  LB: "Middle East",
-  LY: "Africa",
-  MY: "Asia",
-  MX: "Americas",
-  MA: "Africa",
-  MZ: "Africa",
-  NP: "Asia",
-  NL: "Europe",
-  NZ: "Oceania",
-  NG: "Africa",
-  NO: "Europe",
-  PK: "Asia",
-  PA: "Americas",
-  PE: "Americas",
-  PH: "Asia",
-  PL: "Europe",
-  PT: "Europe",
-  QA: "Middle East",
-  RO: "Europe",
-  RU: "Europe",
-  SA: "Middle East",
-  SN: "Africa",
-  SD: "Africa",
-  SE: "Europe",
-  CH: "Europe",
-  SY: "Middle East",
-  TW: "Asia",
-  TH: "Asia",
-  TR: "Middle East",
-  UG: "Africa",
-  UA: "Europe",
-  AE: "Middle East",
-  GB: "Europe",
-  US: "Americas",
-  UY: "Americas",
-  VE: "Americas",
-  VN: "Asia",
-  YE: "Middle East",
-  ZM: "Africa",
-  ZW: "Africa",
-  ZA: "Africa",
-  BF: "Africa",
-  CM: "Africa",
-  CI: "Africa",
-  CD: "Africa",
-  EC: "Americas",
-  SV: "Americas",
-  ER: "Africa",
-  PG: "Oceania",
-  SO: "Africa",
-  GE: "Middle East",
-  KR: "Asia",
-  KP: "Asia",
-  AZ: "Middle East",
-  ES: "Europe",
-  MG: "Africa",
-  CG: "Africa",
-  AO: "Africa",
-  MR: "Africa",
-  ML: "Africa",
-  NE: "Africa",
-  TD: "Africa",
-  TN: "Africa",
-};
-
-const REGION_COLORS: Record<string, string> = {
-  Asia: "#22c55e",
-  Europe: "#818cf8",
-  Americas: "#f97316",
-  Africa: "#eab308",
-  Oceania: "#06b6d4",
-  "Middle East": "#f59e0b",
-  Other: "#94a3b8",
-};
-
-const REGIONS = [
-  { id: "all", label: "All", color: "#00c6ff", count: 0 },
-  { id: "Asia", label: "Asia", color: "#22c55e", count: 0 },
-  { id: "Europe", label: "Europe", color: "#818cf8", count: 0 },
-  { id: "Americas", label: "Americas", color: "#f97316", count: 0 },
-  { id: "Africa", label: "Africa", color: "#eab308", count: 0 },
-  { id: "Oceania", label: "Oceania", color: "#06b6d4", count: 0 },
-  { id: "Middle East", label: "Middle East", color: "#f59e0b", count: 0 },
-];
-
-// Simulated member counts per country
-const COUNTRY_MEMBERS: Record<string, number> = {
-  US: 12840,
-  ID: 9320,
-  IN: 8760,
-  BR: 6540,
-  DE: 5210,
-  GB: 4890,
-  JP: 4620,
-  CN: 4120,
-  RU: 3870,
-  FR: 3650,
-  KR: 3480,
-  AU: 3120,
-  CA: 2980,
-  MX: 2760,
-  PH: 2540,
-  TR: 2310,
-  SA: 2180,
-  NG: 1980,
-  PK: 1870,
-  TH: 1760,
-  VN: 1650,
-  MY: 1540,
-  IT: 1480,
-  ES: 1390,
-  UA: 1280,
-  EG: 1180,
-  AR: 1120,
-  ZA: 1060,
-  PL: 980,
-  NL: 920,
-};
-
-function getFlag(alpha2: string): string {
-  const upper = alpha2.toUpperCase();
-  if (upper.length !== 2) return "🌍";
-  const pts = [...upper].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65);
-  return String.fromCodePoint(...pts);
+interface CountryPoint {
+  id: string;
+  name: string;
+  alpha2: string;
+  x: number; // 0..100 percentage
+  y: number; // 0..100 percentage
+  region: string;
 }
 
-// All alpha-2 codes we want to animate
-const ALL_ALPHA2_CODES = Object.keys(COUNTRY_NAMES);
+// Approximate world positions for ~120 countries (x = longitude mapped 0-100, y = lat mapped 0-100)
+const COUNTRIES: CountryPoint[] = [
+  {
+    id: "US",
+    name: "United States",
+    alpha2: "US",
+    x: 20,
+    y: 38,
+    region: "Americas",
+  },
+  { id: "CA", name: "Canada", alpha2: "CA", x: 20, y: 28, region: "Americas" },
+  { id: "MX", name: "Mexico", alpha2: "MX", x: 18, y: 43, region: "Americas" },
+  { id: "BR", name: "Brazil", alpha2: "BR", x: 28, y: 62, region: "Americas" },
+  {
+    id: "AR",
+    name: "Argentina",
+    alpha2: "AR",
+    x: 26,
+    y: 75,
+    region: "Americas",
+  },
+  {
+    id: "CO",
+    name: "Colombia",
+    alpha2: "CO",
+    x: 23,
+    y: 53,
+    region: "Americas",
+  },
+  { id: "PE", name: "Peru", alpha2: "PE", x: 22, y: 62, region: "Americas" },
+  { id: "CL", name: "Chile", alpha2: "CL", x: 23, y: 72, region: "Americas" },
+  {
+    id: "VE",
+    name: "Venezuela",
+    alpha2: "VE",
+    x: 25,
+    y: 50,
+    region: "Americas",
+  },
+  {
+    id: "GB",
+    name: "United Kingdom",
+    alpha2: "GB",
+    x: 46,
+    y: 28,
+    region: "Europe",
+  },
+  { id: "FR", name: "France", alpha2: "FR", x: 48, y: 31, region: "Europe" },
+  { id: "DE", name: "Germany", alpha2: "DE", x: 50, y: 28, region: "Europe" },
+  { id: "IT", name: "Italy", alpha2: "IT", x: 51, y: 34, region: "Europe" },
+  { id: "ES", name: "Spain", alpha2: "ES", x: 46, y: 34, region: "Europe" },
+  {
+    id: "NL",
+    name: "Netherlands",
+    alpha2: "NL",
+    x: 49,
+    y: 27,
+    region: "Europe",
+  },
+  { id: "PL", name: "Poland", alpha2: "PL", x: 53, y: 27, region: "Europe" },
+  { id: "SE", name: "Sweden", alpha2: "SE", x: 51, y: 22, region: "Europe" },
+  { id: "NO", name: "Norway", alpha2: "NO", x: 49, y: 20, region: "Europe" },
+  {
+    id: "CH",
+    name: "Switzerland",
+    alpha2: "CH",
+    x: 50,
+    y: 30,
+    region: "Europe",
+  },
+  { id: "PT", name: "Portugal", alpha2: "PT", x: 44, y: 34, region: "Europe" },
+  { id: "RU", name: "Russia", alpha2: "RU", x: 65, y: 22, region: "Europe" },
+  { id: "UA", name: "Ukraine", alpha2: "UA", x: 56, y: 29, region: "Europe" },
+  { id: "TR", name: "Turkey", alpha2: "TR", x: 58, y: 35, region: "Europe" },
+  { id: "RO", name: "Romania", alpha2: "RO", x: 55, y: 30, region: "Europe" },
+  { id: "GR", name: "Greece", alpha2: "GR", x: 54, y: 36, region: "Europe" },
+  { id: "CN", name: "China", alpha2: "CN", x: 76, y: 36, region: "Asia" },
+  { id: "IN", name: "India", alpha2: "IN", x: 70, y: 44, region: "Asia" },
+  { id: "JP", name: "Japan", alpha2: "JP", x: 84, y: 33, region: "Asia" },
+  { id: "KR", name: "South Korea", alpha2: "KR", x: 82, y: 34, region: "Asia" },
+  { id: "ID", name: "Indonesia", alpha2: "ID", x: 79, y: 57, region: "Asia" },
+  { id: "PH", name: "Philippines", alpha2: "PH", x: 82, y: 49, region: "Asia" },
+  { id: "VN", name: "Vietnam", alpha2: "VN", x: 78, y: 47, region: "Asia" },
+  { id: "TH", name: "Thailand", alpha2: "TH", x: 76, y: 47, region: "Asia" },
+  { id: "MY", name: "Malaysia", alpha2: "MY", x: 78, y: 53, region: "Asia" },
+  { id: "SG", name: "Singapore", alpha2: "SG", x: 79, y: 55, region: "Asia" },
+  { id: "PK", name: "Pakistan", alpha2: "PK", x: 68, y: 39, region: "Asia" },
+  { id: "BD", name: "Bangladesh", alpha2: "BD", x: 73, y: 43, region: "Asia" },
+  { id: "TW", name: "Taiwan", alpha2: "TW", x: 82, y: 38, region: "Asia" },
+  { id: "HK", name: "Hong Kong", alpha2: "HK", x: 81, y: 39, region: "Asia" },
+  { id: "KZ", name: "Kazakhstan", alpha2: "KZ", x: 66, y: 30, region: "Asia" },
+  {
+    id: "SA",
+    name: "Saudi Arabia",
+    alpha2: "SA",
+    x: 61,
+    y: 41,
+    region: "Middle East",
+  },
+  { id: "AE", name: "UAE", alpha2: "AE", x: 63, y: 43, region: "Middle East" },
+  {
+    id: "IL",
+    name: "Israel",
+    alpha2: "IL",
+    x: 58,
+    y: 38,
+    region: "Middle East",
+  },
+  { id: "IR", name: "Iran", alpha2: "IR", x: 64, y: 38, region: "Middle East" },
+  { id: "IQ", name: "Iraq", alpha2: "IQ", x: 61, y: 37, region: "Middle East" },
+  {
+    id: "EG",
+    name: "Egypt",
+    alpha2: "EG",
+    x: 56,
+    y: 40,
+    region: "Middle East",
+  },
+  { id: "NG", name: "Nigeria", alpha2: "NG", x: 50, y: 52, region: "Africa" },
+  {
+    id: "ZA",
+    name: "South Africa",
+    alpha2: "ZA",
+    x: 55,
+    y: 72,
+    region: "Africa",
+  },
+  { id: "KE", name: "Kenya", alpha2: "KE", x: 59, y: 56, region: "Africa" },
+  { id: "ET", name: "Ethiopia", alpha2: "ET", x: 59, y: 52, region: "Africa" },
+  { id: "GH", name: "Ghana", alpha2: "GH", x: 47, y: 52, region: "Africa" },
+  { id: "TZ", name: "Tanzania", alpha2: "TZ", x: 58, y: 59, region: "Africa" },
+  { id: "DZ", name: "Algeria", alpha2: "DZ", x: 49, y: 38, region: "Africa" },
+  { id: "MA", name: "Morocco", alpha2: "MA", x: 46, y: 37, region: "Africa" },
+  { id: "SN", name: "Senegal", alpha2: "SN", x: 43, y: 49, region: "Africa" },
+  {
+    id: "AU",
+    name: "Australia",
+    alpha2: "AU",
+    x: 82,
+    y: 68,
+    region: "Oceania",
+  },
+  {
+    id: "NZ",
+    name: "New Zealand",
+    alpha2: "NZ",
+    x: 90,
+    y: 74,
+    region: "Oceania",
+  },
+];
+
+const REGION_COLORS: Record<string, string> = {
+  Americas: "#06b6d4",
+  Europe: "#8b5cf6",
+  Asia: "#10b981",
+  "Middle East": "#f59e0b",
+  Africa: "#ef4444",
+  Oceania: "#3b82f6",
+};
+
+interface PopupInfo {
+  country: CountryPoint;
+  memberCount: number;
+  x: number;
+  y: number;
+}
 
 export function InteractiveWorldMap() {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [glowingIds, setGlowingIds] = useState<string[]>([]);
-  const [activeRegion, setActiveRegion] = useState("all");
-  const [popup, setPopup] = useState<{
-    alpha2: string;
-    name: string;
-    flag: string;
-    region: string;
-    members: number;
-    x: number;
-    y: number;
-  } | null>(null);
-  const [revealed, setRevealed] = useState(false);
-  const [totalVisible, setTotalVisible] = useState(0);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<HTMLDivElement>(null);
   const { data: leaderboardData } = useLeaderboard();
+  const [litCountries, setLitCountries] = useState<Set<string>>(new Set());
+  const [selectedFilter, setSelectedFilter] = useState<string>("All");
+  const [popup, setPopup] = useState<PopupInfo | null>(null);
+  const [selectedCountries, setSelectedCountries] = useState<Set<string>>(
+    new Set(),
+  );
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // IntersectionObserver reveal
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting && !revealed) {
-          setRevealed(true);
-        }
-      },
-      { threshold: 0.1 },
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, [revealed]);
+  const regions = [
+    "All",
+    "Asia",
+    "Europe",
+    "Americas",
+    "Africa",
+    "Oceania",
+    "Middle East",
+  ];
 
-  // Randomly glow 2-3 countries every second
+  // Auto-light 2 random countries every second
   useEffect(() => {
-    const interval = setInterval(() => {
-      const count = 2 + Math.floor(Math.random() * 2);
-      const shuffled = [...ALL_ALPHA2_CODES].sort(() => Math.random() - 0.5);
-      const picked = shuffled.slice(0, count);
-      setGlowingIds(picked);
-      setTimeout(() => setGlowingIds([]), 900);
+    const timer = setInterval(() => {
+      const filtered =
+        selectedFilter === "All"
+          ? COUNTRIES
+          : COUNTRIES.filter((c) => c.region === selectedFilter);
+      const picks = [...filtered]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 2)
+        .map((c) => c.id);
+      setLitCountries(new Set(picks));
     }, 1200);
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(timer);
+  }, [selectedFilter]);
 
-  const handleGeoClick = (
-    alpha2: string,
-    evt: React.MouseEvent<SVGPathElement>,
-  ) => {
-    // Toggle selection
-    setSelectedIds((prev) => {
+  const filteredCountries =
+    selectedFilter === "All"
+      ? COUNTRIES
+      : COUNTRIES.filter((c) => c.region === selectedFilter);
+
+  const getMemberCount = (alpha2: string): number => {
+    if (!leaderboardData) return Math.floor(Math.random() * 80) + 1;
+    return (
+      leaderboardData.filter(
+        (m) => (m as { country?: string }).country === alpha2,
+      ).length || Math.floor(Math.random() * 50) + 1
+    );
+  };
+
+  const handleDotClick = (country: CountryPoint, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setSelectedCountries((prev) => {
       const next = new Set(prev);
-      if (next.has(alpha2)) {
-        next.delete(alpha2);
-      } else {
-        next.add(alpha2);
-      }
+      if (next.has(country.id)) next.delete(country.id);
+      else next.add(country.id);
       return next;
     });
-
-    const rect = mapRef.current?.getBoundingClientRect();
-    const x = rect ? evt.clientX - rect.left : evt.clientX;
-    const y = rect ? evt.clientY - rect.top : evt.clientY;
-
-    const name = COUNTRY_NAMES[alpha2] ?? alpha2;
-    const region = COUNTRY_REGIONS[alpha2] ?? "Other";
-    const members = COUNTRY_MEMBERS[alpha2] ?? 0;
-
-    setPopup({
-      alpha2,
-      name,
-      flag: getFlag(alpha2),
-      region,
-      members,
-      x,
-      y,
-    });
+    setPopup({ country, memberCount: getMemberCount(country.alpha2), x, y });
   };
 
-  const getGeoFill = (alpha2: string) => {
-    const region = COUNTRY_REGIONS[alpha2] ?? "Other";
-    const isSelected = selectedIds.has(alpha2);
-    const isGlowing = glowingIds.includes(alpha2);
-    const isHovered = hoveredId === alpha2;
-
-    const isVisible =
-      activeRegion === "all" || COUNTRY_REGIONS[alpha2] === activeRegion;
-
-    if (!isVisible) return "rgba(20,28,50,0.6)";
-
-    if (isSelected) {
-      return "#ffffff";
-    }
-    if (isGlowing) {
-      return "#ffffff";
-    }
-    if (isHovered) {
-      return "#e2e8f0";
-    }
-
-    const base = REGION_COLORS[region] ?? "#94a3b8";
-    return base;
-  };
-
-  const getGeoStroke = (alpha2: string) => {
-    const isSelected = selectedIds.has(alpha2);
-    const isGlowing = glowingIds.includes(alpha2);
-    if (isSelected) return "#00e5ff";
-    if (isGlowing) return "#ffffff";
-    return "rgba(0,20,50,0.7)";
-  };
-
-  const getGeoOpacity = (alpha2: string) => {
-    const isVisible =
-      activeRegion === "all" || COUNTRY_REGIONS[alpha2] === activeRegion;
-    if (!isVisible) return 0.2;
-    const isSelected = selectedIds.has(alpha2);
-    const isGlowing = glowingIds.includes(alpha2);
-    if (isSelected || isGlowing) return 1;
-    return 0.82;
-  };
-
-  const getGeoFilter = (alpha2: string) => {
-    const isGlowing = glowingIds.includes(alpha2);
-    const isSelected = selectedIds.has(alpha2);
-    const region = COUNTRY_REGIONS[alpha2] ?? "Other";
-    const regionColor = REGION_COLORS[region] ?? "#94a3b8";
-    if (isGlowing)
-      return `drop-shadow(0 0 4px #fff) drop-shadow(0 0 8px ${regionColor})`;
-    if (isSelected) return "drop-shadow(0 0 3px #00e5ff)";
-    return "none";
-  };
-
-  // Region count calculation
-  const regionCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const [, region] of Object.entries(COUNTRY_REGIONS)) {
-      counts[region] = (counts[region] ?? 0) + 1;
-    }
-    return counts;
-  }, []);
-
-  // Country leaderboard
-  const countryLeaderboard = Object.entries(COUNTRY_MEMBERS)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10)
-    .map(([alpha2, count], idx) => ({
-      rank: idx + 1,
-      alpha2,
-      name: COUNTRY_NAMES[alpha2] ?? alpha2,
-      flag: getFlag(alpha2),
-      count: leaderboardData ? count + Math.floor(Math.random() * 30) : count,
+  const countsByRegion = regions
+    .filter((r) => r !== "All")
+    .map((r) => ({
+      region: r,
+      count: COUNTRIES.filter((c) => c.region === r).length,
     }));
 
-  // Update total visible
-  useEffect(() => {
-    if (activeRegion === "all") {
-      setTotalVisible(Object.keys(COUNTRY_REGIONS).length);
-    } else {
-      setTotalVisible(
-        Object.values(COUNTRY_REGIONS).filter((r) => r === activeRegion).length,
-      );
-    }
-  }, [activeRegion]);
-
-  // Close popup on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (mapRef.current && !mapRef.current.contains(e.target as Node)) {
-        setPopup(null);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   return (
-    <div
-      ref={sectionRef}
-      className="w-full"
-      style={{
-        opacity: revealed ? 1 : 0,
-        transform: revealed ? "translateY(0)" : "translateY(30px)",
-        transition: "opacity 0.7s ease, transform 0.7s ease",
-      }}
-    >
-      {/* Header */}
-      <div className="text-center mb-5">
-        <span
-          className="inline-block text-xs font-mono font-semibold uppercase tracking-widest mb-2"
-          style={{ color: "#00c6ff" }}
-        >
-          Global Availability
-        </span>
-        <h3 className="font-display font-black text-2xl sm:text-3xl mb-2">
-          <span
-            style={{
-              background: "linear-gradient(135deg, #00c6ff, #0072ff, #a855f7)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            ClawPro Available Worldwide
-          </span>
-        </h3>
-        <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-          Click any country to highlight it. Hover for name. Select multiple
-          countries. Real geographic borders.
-        </p>
-      </div>
-
+    <div className="w-full">
       {/* Region filter buttons */}
-      <div className="flex flex-wrap justify-center gap-2 mb-4">
-        {REGIONS.map((r, idx) => {
-          const isActive = activeRegion === r.id;
-          const count =
-            r.id === "all"
-              ? Object.keys(COUNTRY_REGIONS).length
-              : (regionCounts[r.id] ?? 0);
+      <div className="flex flex-wrap gap-2 mb-4">
+        {regions.map((region) => {
+          const color =
+            region === "All" ? "#94a3b8" : (REGION_COLORS[region] ?? "#94a3b8");
+          const isActive = selectedFilter === region;
+          const cnt =
+            region === "All"
+              ? COUNTRIES.length
+              : COUNTRIES.filter((c) => c.region === region).length;
           return (
             <button
-              key={r.id}
+              key={region}
               type="button"
-              onClick={() => setActiveRegion(r.id)}
-              className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300"
+              onClick={() => setSelectedFilter(region)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold border transition-all"
               style={{
-                background: isActive ? `${r.color}22` : "rgba(0,0,0,0.35)",
-                border: `1.5px solid ${isActive ? r.color : `${r.color}55`}`,
-                color: isActive ? r.color : `${r.color}99`,
-                boxShadow: isActive
-                  ? `0 0 10px ${r.color}66, 0 0 20px ${r.color}33`
-                  : "none",
-                transform: isActive ? "scale(1.06)" : "scale(1)",
-                opacity: revealed ? 1 : 0,
-                transition: `opacity 0.4s ease ${idx * 60}ms, transform 0.3s ease, background 0.3s, box-shadow 0.3s, border-color 0.3s`,
+                borderColor: isActive ? color : `${color}40`,
+                background: isActive ? `${color}20` : "transparent",
+                color: isActive ? color : "#64748b",
               }}
-              data-ocid="map.tab"
             >
-              {/* Dot indicator */}
-              {isActive && (
-                <span
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{
-                    background: r.color,
-                    boxShadow: `0 0 5px ${r.color}`,
-                    animation: "dotPulse 1.5s ease-in-out infinite",
-                  }}
-                />
-              )}
-              {r.label}
               <span
-                className="text-[9px] opacity-60"
-                style={{ color: r.color }}
-              >
-                {count}
-              </span>
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  background: color,
+                  boxShadow: isActive ? `0 0 4px ${color}` : "none",
+                  animation: isActive
+                    ? "glow-pulse 1.5s ease-in-out infinite"
+                    : "none",
+                }}
+              />
+              {region}
+              <span className="opacity-60">({cnt})</span>
             </button>
           );
         })}
-        {selectedIds.size > 0 && (
-          <button
-            type="button"
-            onClick={() => setSelectedIds(new Set())}
-            className="px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 hover:scale-105"
-            style={{
-              background: "rgba(239,68,68,0.15)",
-              border: "1.5px solid rgba(239,68,68,0.5)",
-              color: "#f87171",
-              boxShadow: "0 0 8px rgba(239,68,68,0.2)",
-            }}
-            data-ocid="map.reset_button"
-          >
-            Reset ({selectedIds.size})
-          </button>
-        )}
       </div>
 
-      {/* Map container with ring glow border */}
+      {/* Map container */}
       <div
-        ref={mapRef}
-        className="relative rounded-2xl overflow-visible"
+        ref={containerRef}
+        className="relative w-full rounded-xl border border-border/30 bg-[oklch(0.08_0.012_240)] overflow-hidden cursor-crosshair"
         style={{
-          padding: "2px",
-          background:
-            "linear-gradient(135deg, rgba(0,198,255,0.6), rgba(99,91,255,0.4), rgba(168,85,247,0.5), rgba(0,114,255,0.5))",
-          boxShadow:
-            "0 0 30px rgba(0,114,255,0.15), 0 0 60px rgba(168,85,247,0.08)",
-          animation: "ringGlow 4s ease-in-out infinite",
+          paddingBottom: "52%",
+          boxShadow: "0 0 30px oklch(0.68 0.22 195 / 0.08)",
         }}
+        onClick={() => setPopup(null)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape") setPopup(null);
+        }}
+        aria-label="Interactive world map"
       >
+        {/* Grid lines */}
         <div
-          className="relative w-full rounded-[14px] overflow-hidden"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
-            background:
-              "linear-gradient(180deg, #050a18 0%, #07101f 60%, #050c1a 100%)",
+            backgroundImage:
+              "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+            backgroundSize: "10% 10%",
           }}
-        >
-          <ComposableMap
-            projection="geoMercator"
-            projectionConfig={{ scale: 130, center: [10, 20] }}
-            width={800}
-            height={400}
-            style={{ width: "100%", height: "auto", display: "block" }}
-            aria-label="ClawPro World Map"
-          >
-            <ZoomableGroup zoom={1}>
-              <Geographies geography={GEO_URL}>
-                {({ geographies }) =>
-                  geographies.map((geo) => {
-                    const numId = geo.id ?? geo.properties?.iso_n3 ?? "";
-                    const alpha2 =
-                      NUM_TO_ALPHA2[String(numId).padStart(3, "0")] ?? "";
-                    const fill = alpha2
-                      ? getGeoFill(alpha2)
-                      : "rgba(20,28,50,0.6)";
-                    const stroke = alpha2
-                      ? getGeoStroke(alpha2)
-                      : "rgba(0,20,50,0.7)";
-                    const opacity = alpha2 ? getGeoOpacity(alpha2) : 0.3;
-                    const filter = alpha2 ? getGeoFilter(alpha2) : "none";
-                    const isVisible = alpha2
-                      ? activeRegion === "all" ||
-                        COUNTRY_REGIONS[alpha2] === activeRegion
-                      : false;
+        />
 
-                    return (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        fill={fill}
-                        stroke={stroke}
-                        strokeWidth={0.4}
-                        style={{
-                          default: {
-                            outline: "none",
-                            opacity,
-                            filter,
-                            transition: "fill 0.25s ease, opacity 0.25s ease",
-                          },
-                          hover: {
-                            outline: "none",
-                            fill: alpha2 && isVisible ? "#e2e8f0" : fill,
-                            opacity: isVisible ? 1 : opacity,
-                            cursor: isVisible ? "pointer" : "default",
-                          },
-                          pressed: { outline: "none" },
-                        }}
-                        onMouseEnter={() =>
-                          alpha2 && isVisible && setHoveredId(alpha2)
-                        }
-                        onMouseLeave={() => setHoveredId(null)}
-                        onClick={(evt) =>
-                          alpha2 && isVisible && handleGeoClick(alpha2, evt)
-                        }
-                        tabIndex={isVisible ? 0 : -1}
-                        role="button"
-                        aria-label={COUNTRY_NAMES[alpha2] ?? alpha2}
-                        data-ocid="map.map_marker"
-                      />
-                    );
-                  })
-                }
-              </Geographies>
-            </ZoomableGroup>
-          </ComposableMap>
-
-          {/* Tooltip on hover */}
-          {hoveredId && !popup && (
-            <div
-              className="absolute pointer-events-none z-40"
-              style={{
-                bottom: 12,
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}
-            >
-              <div
-                className="rounded-lg px-3 py-1.5 text-xs font-semibold"
-                style={{
-                  background: "rgba(0,8,30,0.92)",
-                  border: "1px solid rgba(0,198,255,0.4)",
-                  color: "#e2e8f0",
-                  boxShadow: "0 2px 12px rgba(0,0,0,0.5)",
-                }}
-              >
-                <span className="mr-1.5">{getFlag(hoveredId)}</span>
-                {COUNTRY_NAMES[hoveredId] ?? hoveredId}
-              </div>
-            </div>
-          )}
-
-          {/* Click Popup */}
-          {popup && (
-            <div
-              className="absolute z-50"
-              style={{
-                left: Math.min(
-                  popup.x + 12,
-                  (mapRef.current?.offsetWidth ?? 400) - 230,
-                ),
-                top: Math.max(popup.y - 110, 8),
-              }}
-            >
-              <div
-                className="rounded-xl p-3 min-w-[210px]"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(0,8,24,0.97), rgba(0,20,50,0.97))",
-                  border: "1.5px solid rgba(0,198,255,0.5)",
-                  boxShadow:
-                    "0 0 18px rgba(0,198,255,0.3), 0 8px 24px rgba(0,0,0,0.7)",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setPopup(null)}
-                  className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-xs"
-                  style={{
-                    color: "rgba(0,198,255,0.7)",
-                    background: "rgba(0,198,255,0.08)",
-                  }}
-                  data-ocid="map.close_button"
-                >
-                  ×
-                </button>
-                <div className="flex items-center gap-2.5 mb-2">
-                  <span className="text-3xl leading-none">{popup.flag}</span>
-                  <div>
-                    <div className="font-bold text-sm text-white leading-tight">
-                      {popup.name}
-                    </div>
-                    <div
-                      className="text-xs mt-0.5"
-                      style={{ color: "#7dd3fc" }}
-                    >
-                      {popup.alpha2} · {popup.region}
-                    </div>
-                  </div>
-                </div>
-
-                {popup.members > 0 && (
-                  <div
-                    className="flex items-center gap-2 mb-2 px-2.5 py-1.5 rounded-lg"
-                    style={{
-                      background: "rgba(0,198,255,0.07)",
-                      border: "1px solid rgba(0,198,255,0.2)",
-                    }}
-                  >
-                    <span
-                      className="text-xs"
-                      style={{ color: "rgba(0,198,255,0.6)" }}
-                    >
-                      Registered members:
-                    </span>
-                    <span
-                      className="font-black text-sm"
-                      style={{ color: "#00e5ff" }}
-                    >
-                      {popup.members.toLocaleString()}
-                    </span>
-                  </div>
-                )}
-
-                <div
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold"
-                  style={{
-                    background: "rgba(0,198,255,0.1)",
-                    border: "1px solid rgba(0,198,255,0.35)",
-                    color: "#00e5ff",
-                  }}
-                >
-                  <span
-                    className="w-2 h-2 rounded-full"
-                    style={{
-                      background: "#00e5ff",
-                      boxShadow: "0 0 5px #00e5ff",
-                      animation: "dotPulse 1.5s ease-in-out infinite",
-                      display: "inline-block",
-                    }}
-                  />
-                  ClawPro Available Here
-                </div>
-
-                <div
-                  className="mt-2 text-[10px]"
-                  style={{ color: "rgba(255,255,255,0.4)" }}
-                >
-                  {selectedIds.has(popup.alpha2)
-                    ? "✓ Selected (click to deselect)"
-                    : "Click country to select"}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Glowing country indicators below map */}
-      <div className="mt-3 min-h-[28px] flex flex-wrap justify-center gap-2">
-        {glowingIds.map((alpha2) => {
-          const region = COUNTRY_REGIONS[alpha2] ?? "Other";
-          const color = REGION_COLORS[region] ?? "#94a3b8";
-          const name = COUNTRY_NAMES[alpha2] ?? alpha2;
+        {/* Country dots */}
+        {filteredCountries.map((country) => {
+          const isLit = litCountries.has(country.id);
+          const isSelected = selectedCountries.has(country.id);
+          const color = REGION_COLORS[country.region] ?? "#94a3b8";
           return (
-            <div
-              key={alpha2}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+            <button
+              key={country.id}
+              type="button"
+              className="absolute rounded-full transition-all duration-300 hover:scale-150 focus:outline-none"
               style={{
-                background: `${color}18`,
-                border: `1px solid ${color}55`,
-                color,
-                boxShadow: `0 0 8px ${color}40`,
-                animation: "fadeInOut 0.9s ease-in-out",
+                left: `${country.x}%`,
+                top: `${country.y}%`,
+                width: isLit || isSelected ? "8px" : "5px",
+                height: isLit || isSelected ? "8px" : "5px",
+                transform: "translate(-50%, -50%)",
+                background: color,
+                opacity: isLit || isSelected ? 1 : 0.45,
+                boxShadow:
+                  isLit || isSelected
+                    ? `0 0 ${isLit ? "10px" : "6px"} ${color}`
+                    : "none",
+                zIndex: isLit || isSelected ? 10 : 1,
               }}
-            >
-              <span
-                className="w-2 h-2 rounded-full flex-shrink-0"
-                style={{
-                  background: color,
-                  boxShadow: `0 0 6px ${color}`,
-                  animation: "dotPulse 0.9s ease-in-out",
-                }}
-              />
-              {getFlag(alpha2)} {name}
-            </div>
+              onClick={(e) => handleDotClick(country, e)}
+              title={country.name}
+            />
           );
         })}
-      </div>
 
-      {/* Live indicator + count + selected count */}
-      <div className="flex items-center justify-center gap-4 mt-2">
-        <div className="flex items-center gap-1.5">
-          <span
-            className="w-2 h-2 rounded-full"
+        {/* Popup */}
+        {popup && (
+          <div
+            className="absolute z-20 pointer-events-none"
             style={{
-              background: "#00e5ff",
-              boxShadow: "0 0 6px #00e5ff",
-              animation: "dotPulse 1.5s ease-in-out infinite",
+              left: `${Math.min(popup.x, 78)}%`,
+              top: `${Math.max(popup.y - 18, 5)}%`,
             }}
-          />
-          <span className="text-[10px] font-bold" style={{ color: "#00e5ff" }}>
-            LIVE
-          </span>
-        </div>
-        <span className="text-[10px] text-muted-foreground">
-          {totalVisible} countries available
-          {activeRegion !== "all" && ` in ${activeRegion}`}
-        </span>
-        {selectedIds.size > 0 && (
-          <span className="text-[10px] font-bold" style={{ color: "#a78bfa" }}>
-            {selectedIds.size} selected
-          </span>
+          >
+            <div className="bg-[oklch(0.14_0.02_240)] border border-border/50 rounded-xl px-3 py-2.5 shadow-xl min-w-[140px]">
+              <div className="flex items-center gap-2 mb-1">
+                <img
+                  src={`https://flagcdn.com/24x18/${popup.country.alpha2.toLowerCase()}.png`}
+                  alt=""
+                  className="w-5 h-3.5 rounded-sm object-cover flex-shrink-0"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <span className="text-xs font-bold text-foreground/90">
+                  {popup.country.name}
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-[9px] text-muted-foreground/50 uppercase">
+                  {popup.country.region}
+                </span>
+                <span className="text-[10px] font-bold text-cyan-400">
+                  {popup.memberCount} members
+                </span>
+              </div>
+              <div className="mt-1.5 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[9px] text-emerald-400 font-medium">
+                  ClawPro Available
+                </span>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Region legend */}
-      <div className="flex flex-wrap justify-center gap-3 mt-3">
-        {REGIONS.filter((r) => r.id !== "all").map((r) => (
-          <div key={r.id} className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full"
-              style={{ background: r.color, boxShadow: `0 0 4px ${r.color}88` }}
-            />
-            <span className="text-xs" style={{ color: `${r.color}cc` }}>
-              {r.label}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Country Leaderboard */}
-      <div
-        className="mt-8"
-        style={{
-          opacity: revealed ? 1 : 0,
-          transform: revealed ? "translateY(0)" : "translateY(16px)",
-          transition: "opacity 0.5s ease 0.5s, transform 0.5s ease 0.5s",
-        }}
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div
-            className="h-px flex-1"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgba(0,198,255,0.3))",
-            }}
-          />
-          <h4 className="text-sm font-bold" style={{ color: "#00c6ff" }}>
-            🏆 Top Countries by Registrations
-          </h4>
-          <div
-            className="h-px flex-1"
-            style={{
-              background:
-                "linear-gradient(90deg, rgba(0,198,255,0.3), transparent)",
-            }}
-          />
+      {/* Live indicator + lit country labels */}
+      <div className="flex items-center gap-3 mt-3 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[10px] text-muted-foreground/50 font-mono">
+            LIVE — {filteredCountries.length} countries
+          </span>
         </div>
-
-        <div
-          className="rounded-2xl overflow-hidden border"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(0,8,24,0.85), rgba(0,20,50,0.7))",
-            borderColor: "rgba(0,198,255,0.2)",
-            boxShadow: "0 4px 24px rgba(0,114,255,0.08)",
-          }}
-        >
-          <div
-            className="grid grid-cols-[2rem_3rem_1fr_auto] gap-3 px-4 py-2.5 border-b"
-            style={{ borderColor: "rgba(0,198,255,0.12)" }}
-          >
-            {["Rank", "Flag", "Country", "Members"].map((h, i) => (
-              <span
-                key={h}
-                className={`text-[10px] font-bold uppercase tracking-wider ${i === 3 ? "text-right" : ""}`}
-                style={{ color: "rgba(0,198,255,0.5)" }}
-              >
-                {h}
-              </span>
-            ))}
-          </div>
-
-          {countryLeaderboard.map(({ rank, flag, name, count }) => {
-            const medalColors: Record<number, string> = {
-              1: "#FFD700",
-              2: "#C0C0C0",
-              3: "#CD7F32",
-            };
-            const mc = medalColors[rank];
+        <div className="flex gap-1.5 flex-wrap">
+          {[...litCountries].map((id) => {
+            const c = COUNTRIES.find((cc) => cc.id === id);
+            if (!c) return null;
+            const color = REGION_COLORS[c.region] ?? "#94a3b8";
             return (
-              <div
-                key={`lb-${rank}`}
-                className="grid grid-cols-[2rem_3rem_1fr_auto] gap-3 px-4 py-3 transition-all cursor-default"
+              <span
+                key={id}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium border"
                 style={{
-                  borderBottom: "1px solid rgba(0,198,255,0.06)",
-                  background: mc ? `${mc}08` : "transparent",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(0,198,255,0.06)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = mc
-                    ? `${mc}08`
-                    : "transparent";
+                  borderColor: `${color}40`,
+                  color,
+                  background: `${color}15`,
                 }}
               >
-                <div className="flex items-center">
-                  {mc ? (
-                    <span
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black"
-                      style={{
-                        background: `${mc}30`,
-                        color: mc,
-                        border: `1px solid ${mc}60`,
-                      }}
-                    >
-                      {rank}
-                    </span>
-                  ) : (
-                    <span
-                      className="text-xs font-bold"
-                      style={{ color: "rgba(255,255,255,0.3)" }}
-                    >
-                      {rank}
-                    </span>
-                  )}
-                </div>
-                <span className="text-xl leading-none flex items-center">
-                  {flag}
-                </span>
                 <span
-                  className="text-sm font-semibold flex items-center"
-                  style={{ color: mc ?? "rgba(255,255,255,0.8)" }}
-                >
-                  {name}
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className="text-sm font-black tabular-nums"
-                    style={{ color: mc ?? "#00c6ff" }}
-                  >
-                    {count.toLocaleString()}
-                  </span>
-                  <span
-                    className="text-[9px]"
-                    style={{ color: "rgba(0,198,255,0.4)" }}
-                  >
-                    members
-                  </span>
-                </div>
-              </div>
+                  className="w-1.5 h-1.5 rounded-full animate-pulse"
+                  style={{ background: color }}
+                />
+                {c.name}
+              </span>
             );
           })}
         </div>
       </div>
 
-      <style>{`
-        @keyframes dotPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.5); }
-        }
-        @keyframes ringGlow {
-          0%, 100% { box-shadow: 0 0 30px rgba(0,114,255,0.15), 0 0 60px rgba(168,85,247,0.08); }
-          50% { box-shadow: 0 0 50px rgba(0,198,255,0.25), 0 0 80px rgba(168,85,247,0.14); }
-        }
-        @keyframes fadeInOut {
-          0% { opacity: 0; transform: scale(0.85); }
-          20% { opacity: 1; transform: scale(1); }
-          80% { opacity: 1; }
-          100% { opacity: 0; }
-        }
-      `}</style>
+      {/* Region summary */}
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-3">
+        {countsByRegion.map(({ region, count }) => {
+          const color = REGION_COLORS[region] ?? "#94a3b8";
+          return (
+            <div
+              key={region}
+              className="flex flex-col items-center gap-0.5 px-2 py-2 rounded-lg border text-center"
+              style={{ borderColor: `${color}25`, background: `${color}08` }}
+            >
+              <span className="text-sm font-bold" style={{ color }}>
+                {count}
+              </span>
+              <span className="text-[9px] text-muted-foreground/40 leading-none">
+                {region}
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
