@@ -446,34 +446,78 @@ function HomePanel({
 
   const tokenBalance = 2450;
 
-  const portfolio = [
+  // Crypto prices (approximate, updated periodically)
+  const COIN_PRICES: Record<string, number> = {
+    BTC: 98000,
+    ETH: 3300,
+    USDT: 1,
+    SOL: 180,
+    BNB: 420,
+    XRP: 0.55,
+  };
+
+  const DEFAULT_PORTFOLIO = [
     {
       symbol: "BTC",
       name: "Bitcoin",
       amount: "0.0045",
-      value: 450,
-      change: 2.4,
       color: "#f7931a",
+      change: 2.4,
     },
     {
       symbol: "ETH",
       name: "Ethereum",
       amount: "0.85",
-      value: 285,
-      change: -1.2,
       color: "#627eea",
+      change: -1.2,
     },
     {
       symbol: "USDT",
       name: "Tether",
       amount: "120",
-      value: 120,
-      change: 0.01,
       color: "#26a17b",
+      change: 0.01,
     },
   ];
 
-  const totalPortfolio = portfolio.reduce((sum, c) => sum + c.value, 0);
+  const [portfolio, setPortfolio] = useState(() => {
+    try {
+      const saved = localStorage.getItem("clawpro_portfolio");
+      return saved ? JSON.parse(saved) : DEFAULT_PORTFOLIO;
+    } catch {
+      return DEFAULT_PORTFOLIO;
+    }
+  });
+  const [editingPortfolio, setEditingPortfolio] = useState(false);
+  const [editAmounts, setEditAmounts] = useState<Record<string, string>>({});
+
+  const getPortfolioWithValues = () =>
+    portfolio.map((c: (typeof DEFAULT_PORTFOLIO)[0]) => ({
+      ...c,
+      value: Number.parseFloat(c.amount) * (COIN_PRICES[c.symbol] ?? 1),
+    }));
+
+  const totalPortfolio = getPortfolioWithValues().reduce(
+    (sum: number, c: { value: number }) => sum + c.value,
+    0,
+  );
+
+  const startEdit = () => {
+    const amounts: Record<string, string> = {};
+    for (const c of portfolio) amounts[c.symbol] = c.amount;
+    setEditAmounts(amounts);
+    setEditingPortfolio(true);
+  };
+
+  const saveEdit = () => {
+    const updated = portfolio.map((c: (typeof DEFAULT_PORTFOLIO)[0]) => ({
+      ...c,
+      amount: editAmounts[c.symbol] ?? c.amount,
+    }));
+    setPortfolio(updated);
+    localStorage.setItem("clawpro_portfolio", JSON.stringify(updated));
+    setEditingPortfolio(false);
+  };
 
   const apps = [
     {
@@ -580,48 +624,114 @@ function HomePanel({
               <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 Crypto Holdings
               </span>
-              <span className="text-xs font-bold text-cyan-300">
-                ${totalPortfolio.toLocaleString()}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-cyan-300">
+                  $
+                  {totalPortfolio.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+                {editingPortfolio ? (
+                  <Button
+                    size="sm"
+                    className="h-6 px-2 text-[10px] bg-green-600/80 hover:bg-green-500 border-0"
+                    onClick={saveEdit}
+                    data-ocid="portfolio.save_button"
+                  >
+                    <Save className="w-3 h-3 mr-1" /> Save
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300"
+                    onClick={startEdit}
+                    data-ocid="portfolio.edit_button"
+                  >
+                    Edit
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="space-y-2.5">
-              {portfolio.map((coin) => (
-                <div key={coin.symbol} className="flex items-center gap-3">
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{
-                      background: coin.color,
-                      boxShadow: `0 0 6px ${coin.color}80`,
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold">
-                        {coin.symbol}
-                      </span>
-                      <span className="text-xs font-bold">${coin.value}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground">
-                        {coin.amount} {coin.symbol}
-                      </span>
-                      <span
-                        className={`text-[10px] font-medium flex items-center gap-0.5 ${
-                          coin.change >= 0 ? "text-green-400" : "text-red-400"
-                        }`}
-                      >
-                        {coin.change >= 0 ? (
-                          <TrendingUp className="w-2.5 h-2.5" />
-                        ) : (
-                          <TrendingDown className="w-2.5 h-2.5" />
-                        )}
-                        {coin.change >= 0 ? "+" : ""}
-                        {coin.change}%
-                      </span>
+              {getPortfolioWithValues().map(
+                (coin: {
+                  symbol: string;
+                  name: string;
+                  amount: string;
+                  value: number;
+                  change: number;
+                  color: string;
+                }) => (
+                  <div key={coin.symbol} className="flex items-center gap-3">
+                    <div
+                      className="w-2 h-2 rounded-full flex-shrink-0"
+                      style={{
+                        background: coin.color,
+                        boxShadow: `0 0 6px ${coin.color}80`,
+                      }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold">
+                          {coin.symbol}
+                        </span>
+                        <span className="text-xs font-bold">
+                          $
+                          {coin.value.toLocaleString(undefined, {
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
+                      </div>
+                      {editingPortfolio ? (
+                        <div className="flex items-center gap-1 mt-1">
+                          <span className="text-[10px] text-muted-foreground">
+                            Amount:
+                          </span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            className="w-full h-5 text-[10px] bg-white/5 border border-cyan-500/30 rounded px-1 text-cyan-300 focus:outline-none focus:border-cyan-400"
+                            value={editAmounts[coin.symbol] ?? coin.amount}
+                            onChange={(e) =>
+                              setEditAmounts((prev) => ({
+                                ...prev,
+                                [coin.symbol]: e.target.value,
+                              }))
+                            }
+                            data-ocid="portfolio.input"
+                          />
+                          <span className="text-[10px] text-muted-foreground">
+                            {coin.symbol}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-muted-foreground">
+                            {coin.amount} {coin.symbol}
+                          </span>
+                          <span
+                            className={`text-[10px] font-medium flex items-center gap-0.5 ${
+                              coin.change >= 0
+                                ? "text-green-400"
+                                : "text-red-400"
+                            }`}
+                          >
+                            {coin.change >= 0 ? (
+                              <TrendingUp className="w-2.5 h-2.5" />
+                            ) : (
+                              <TrendingDown className="w-2.5 h-2.5" />
+                            )}
+                            {coin.change >= 0 ? "+" : ""}
+                            {coin.change}%
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
         </div>

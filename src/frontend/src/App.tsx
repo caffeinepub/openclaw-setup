@@ -11,12 +11,12 @@ import { PublicLeaderboardPage } from "./components/PublicLeaderboardPage";
 import { PublicProfilePage } from "./components/PublicProfilePage";
 import { TierLandingPage } from "./components/TierLandingPage";
 import { AdminPanel } from "./components/sections/AdminPanel";
+import { AvailableWorldwideSection } from "./components/sections/AvailableWorldwideSection";
 import { ChangelogSection } from "./components/sections/ChangelogSection";
 import { ConfigSection } from "./components/sections/ConfigSection";
 import { DocsSection } from "./components/sections/DocsSection";
 import { FeaturesSection } from "./components/sections/FeaturesSection";
 import { HeroSection } from "./components/sections/HeroSection";
-import { LogoMarqueeSection } from "./components/sections/LogoMarqueeSection";
 import { PartnerSection } from "./components/sections/PartnerSection";
 import { PricingSection } from "./components/sections/PricingSection";
 import { SetupSection } from "./components/sections/SetupSection";
@@ -120,7 +120,7 @@ export default function App() {
             setShowCreateAccount(true);
           }}
         />
-        <LogoMarqueeSection />
+        <AvailableWorldwideSection />
         <FeaturesSection />
         <WorkWithEverythingSection
           onGetStarted={(tier) => {
