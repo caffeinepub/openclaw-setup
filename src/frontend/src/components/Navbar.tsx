@@ -1,14 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  BookOpen,
+  LayoutDashboard,
   LogIn,
   LogOut,
   Menu,
-  MessageSquare,
   Moon,
   Shield,
   Sun,
+  TrendingUp,
   UserPlus,
   X,
 } from "lucide-react";
@@ -45,18 +45,18 @@ interface NavbarProps {
   isDark: boolean;
   toggleTheme: () => void;
   onAdminClick: () => void;
-  onBlogClick: () => void;
-  onForumClick: () => void;
   onCreateAccountClick: () => void;
+  onDashboardClick?: () => void;
+  onMarketsClick: () => void;
 }
 
 export function Navbar({
   isDark,
   toggleTheme,
   onAdminClick,
-  onBlogClick,
-  onForumClick,
   onCreateAccountClick,
+  onDashboardClick,
+  onMarketsClick,
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -71,9 +71,7 @@ export function Navbar({
     { label: t.nav.integrations, href: "#integrations" },
     { label: t.nav.pricing, href: "#pricing" },
     { label: t.nav.setup, href: "#setup" },
-    { label: t.nav.config, href: "#config" },
     { label: t.nav.docs, href: "#docs" },
-    { label: t.nav.changelog, href: "#changelog" },
   ];
 
   useEffect(() => {
@@ -176,29 +174,15 @@ export function Navbar({
                   {link.label}
                 </button>
               ))}
+              {/* Markets link */}
               <button
                 type="button"
-                onClick={() => {
-                  setIsMobileOpen(false);
-                  onBlogClick();
-                }}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-cyan transition-colors rounded-md hover:bg-accent/50 flex items-center gap-1.5"
-                data-ocid="nav.blog.link"
+                onClick={onMarketsClick}
+                data-ocid="nav.markets.button"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-emerald-400/80 hover:text-emerald-400 transition-colors rounded-md hover:bg-emerald-500/10"
               >
-                <BookOpen className="w-3.5 h-3.5" />
-                {t.nav.blog}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMobileOpen(false);
-                  onForumClick();
-                }}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-violet-400 transition-colors rounded-md hover:bg-accent/50 flex items-center gap-1.5"
-                data-ocid="nav.forum.link"
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                {t.nav.forum}
+                <TrendingUp className="w-3.5 h-3.5" />
+                Markets
               </button>
             </div>
 
@@ -232,10 +216,24 @@ export function Navbar({
                 <div className="flex items-center gap-2">
                   {myMembership && (
                     <Badge
-                      className={`border ${MEMBERSHIP_BADGE[myMembership.tier].className}`}
+                      className={`border ${
+                        MEMBERSHIP_BADGE[myMembership.tier].className
+                      }`}
                     >
                       {MEMBERSHIP_BADGE[myMembership.tier].label}
                     </Badge>
+                  )}
+                  {onDashboardClick && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onDashboardClick}
+                      className="border-cyan/40 text-cyan hover:bg-cyan/10 font-semibold"
+                      data-ocid="nav.dashboard.button"
+                    >
+                      <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                      Dashboard
+                    </Button>
                   )}
                   <Button
                     variant="outline"
@@ -311,35 +309,26 @@ export function Navbar({
                   {link.label}
                 </button>
               ))}
+              {/* Markets mobile */}
               <button
                 type="button"
                 onClick={() => {
                   setIsMobileOpen(false);
-                  onBlogClick();
+                  onMarketsClick();
                 }}
-                className="w-full text-left px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-cyan hover:bg-accent/50 rounded-md transition-colors flex items-center gap-2"
-                data-ocid="nav.blog.link"
+                data-ocid="nav.markets.button"
+                className="w-full text-left flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-400 hover:bg-emerald-500/10 rounded-md transition-colors"
               >
-                <BookOpen className="w-4 h-4" />
-                {t.nav.blog}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMobileOpen(false);
-                  onForumClick();
-                }}
-                className="w-full text-left px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-violet-400 hover:bg-accent/50 rounded-md transition-colors flex items-center gap-2"
-                data-ocid="nav.forum.link"
-              >
-                <MessageSquare className="w-4 h-4" />
-                {t.nav.forum}
+                <TrendingUp className="w-4 h-4" />
+                Markets
               </button>
               <div className="pt-2 border-t border-border space-y-2">
                 {identity && myMembership && (
                   <div className="px-1 pb-1">
                     <Badge
-                      className={`border ${MEMBERSHIP_BADGE[myMembership.tier].className}`}
+                      className={`border ${
+                        MEMBERSHIP_BADGE[myMembership.tier].className
+                      }`}
                     >
                       Membership: {MEMBERSHIP_BADGE[myMembership.tier].label}
                     </Badge>
@@ -362,14 +351,31 @@ export function Navbar({
                     {isDark ? t.nav.lightMode : t.nav.darkMode}
                   </button>
                   {identity ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={clear}
-                      className="flex-1 border-cyan/30 text-cyan"
-                    >
-                      <LogOut className="w-4 h-4 mr-1.5" /> {t.nav.logout}
-                    </Button>
+                    <div className="flex-1 flex flex-col gap-2">
+                      {onDashboardClick && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setIsMobileOpen(false);
+                            onDashboardClick();
+                          }}
+                          className="w-full border-cyan/40 text-cyan"
+                          data-ocid="nav.dashboard.button"
+                        >
+                          <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                          Dashboard
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clear}
+                        className="w-full border-cyan/30 text-cyan"
+                      >
+                        <LogOut className="w-4 h-4 mr-1.5" /> {t.nav.logout}
+                      </Button>
+                    </div>
                   ) : (
                     <div className="flex-1 flex flex-col gap-2">
                       <Button

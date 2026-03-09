@@ -1,11 +1,11 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useCallback, useEffect, useState } from "react";
 import { MembershipTier } from "./backend.d";
-import { BlogPage } from "./components/BlogPage";
 import { CreateAccountModal } from "./components/CreateAccountModal";
+import { CryptoMarketPage } from "./components/CryptoMarketPage";
 import { DotsBackground } from "./components/DotsBackground";
 import { Footer } from "./components/Footer";
-import { ForumPage } from "./components/ForumPage";
+import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
 import { PublicLeaderboardPage } from "./components/PublicLeaderboardPage";
 import { PublicProfilePage } from "./components/PublicProfilePage";
@@ -13,7 +13,6 @@ import { TierLandingPage } from "./components/TierLandingPage";
 import { AdminPanel } from "./components/sections/AdminPanel";
 import { ChangelogSection } from "./components/sections/ChangelogSection";
 import { ConfigSection } from "./components/sections/ConfigSection";
-import { CryptoTickerSection } from "./components/sections/CryptoTickerSection";
 import { DocsSection } from "./components/sections/DocsSection";
 import { FeaturesSection } from "./components/sections/FeaturesSection";
 import { HeroSection } from "./components/sections/HeroSection";
@@ -39,6 +38,8 @@ function isLeaderboardHash(hash: string): boolean {
 export default function App() {
   const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showCryptoMarket, setShowCryptoMarket] = useState(false);
   const [showTierLanding, setShowTierLanding] = useState(false);
   const [tierLandingTier, setTierLandingTier] = useState<MembershipTier>(
     MembershipTier.silver,
@@ -51,8 +52,6 @@ export default function App() {
   const [showPublicLeaderboard, setShowPublicLeaderboard] = useState<boolean>(
     () => isLeaderboardHash(window.location.hash),
   );
-  const [showBlog, setShowBlog] = useState(false);
-  const [showForum, setShowForum] = useState(false);
   const [showCreateAccount, setShowCreateAccount] = useState(false);
   const [prefillHandle, setPrefillHandle] = useState("");
   const [prefillFullName, setPrefillFullName] = useState("");
@@ -108,9 +107,9 @@ export default function App() {
         isDark={isDark}
         toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
-        onBlogClick={() => setShowBlog(true)}
-        onForumClick={() => setShowForum(true)}
         onCreateAccountClick={() => setShowCreateAccount(true)}
+        onDashboardClick={identity ? () => setShowDashboard(true) : undefined}
+        onMarketsClick={() => setShowCryptoMarket(true)}
       />
 
       <main>
@@ -122,7 +121,6 @@ export default function App() {
           }}
         />
         <LogoMarqueeSection />
-        <CryptoTickerSection />
         <FeaturesSection />
         <WorkWithEverythingSection
           onGetStarted={(tier) => {
@@ -154,6 +152,14 @@ export default function App() {
         <AdminPanel onClose={() => setShowAdmin(false)} />
       )}
 
+      {showDashboard && (
+        <MemberDashboard onClose={() => setShowDashboard(false)} />
+      )}
+
+      {showCryptoMarket && (
+        <CryptoMarketPage onClose={() => setShowCryptoMarket(false)} />
+      )}
+
       {showTierLanding && (
         <TierLandingPage
           tier={tierLandingTier}
@@ -180,15 +186,6 @@ export default function App() {
 
       {showPublicLeaderboard && (
         <PublicLeaderboardPage onClose={closePublicLeaderboard} />
-      )}
-
-      {showBlog && <BlogPage onClose={() => setShowBlog(false)} />}
-
-      {showForum && (
-        <ForumPage
-          onClose={() => setShowForum(false)}
-          identity={identity ?? null}
-        />
       )}
 
       <CreateAccountModal
