@@ -1,16 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ComposableMap,
-  Geographies,
-  Geography,
-  ZoomableGroup,
-} from "react-simple-maps";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import { useLeaderboard } from "../../hooks/useQueries";
 
 const GEO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// Map numeric ISO to alpha-2 and continent
 const COUNTRY_META: Record<
   string,
   { name: string; alpha2: string; continent: string }
@@ -128,13 +122,13 @@ const COUNTRY_META: Record<
   "716": { name: "Zimbabwe", alpha2: "ZW", continent: "Africa" },
 };
 
+// Vivid, distinct continent colors
 const CONTINENT_COLORS: Record<string, string> = {
-  Americas: "#f97316",
-  Europe: "#6366f1",
-  Asia: "#06b6d4",
-  Africa: "#22c55e",
-  Oceania: "#ec4899",
-  "Middle East": "#f59e0b",
+  Americas: "#fb923c", // warm orange
+  Europe: "#818cf8", // indigo
+  Asia: "#22d3ee", // cyan
+  Africa: "#4ade80", // green
+  Oceania: "#f472b6", // pink
 };
 
 const CONTINENTS = ["All", "Americas", "Europe", "Asia", "Africa", "Oceania"];
@@ -194,7 +188,7 @@ export function AvailableWorldwideSection() {
   ) => {
     const meta = COUNTRY_META[geoId];
     const continent = meta?.continent ?? "Asia";
-    const base = CONTINENT_COLORS[continent] ?? "#6366f1";
+    const base = CONTINENT_COLORS[continent] ?? "#818cf8";
     if (isSelected) return base;
     if (isGlowing) return base;
     if (isHovered) return `${base}cc`;
@@ -244,7 +238,6 @@ export function AvailableWorldwideSection() {
         map[country] = (map[country] ?? 0) + 1;
       }
     }
-    // Seed some demo data
     const seeds: Record<string, number> = {
       US: 2840,
       IN: 1920,
@@ -301,7 +294,7 @@ export function AvailableWorldwideSection() {
         <div className="flex flex-wrap justify-center gap-2 mb-6">
           {CONTINENTS.map((c) => {
             const active = activeContinent === c;
-            const color = CONTINENT_COLORS[c] ?? "#06b6d4";
+            const color = CONTINENT_COLORS[c] ?? "#22d3ee";
             const count =
               c === "All"
                 ? Object.keys(COUNTRY_META).length
@@ -345,7 +338,7 @@ export function AvailableWorldwideSection() {
           )}
         </div>
 
-        {/* Map container */}
+        {/* Map container – no zoom */}
         <div
           className="relative rounded-2xl overflow-hidden"
           style={{
@@ -376,84 +369,82 @@ export function AvailableWorldwideSection() {
             height={400}
             style={{ width: "100%", height: "auto" }}
           >
-            <ZoomableGroup center={[0, 0]} zoom={1}>
-              <Geographies geography={GEO_URL}>
-                {({ geographies }) =>
-                  geographies.map((geo) => {
-                    const geoId = String(geo.id).padStart(3, "0");
-                    const meta = COUNTRY_META[geoId];
-                    const isSelected = selectedCountries.has(geoId);
-                    const isHovered = hoveredCountry === geoId;
-                    const isGlowing = glowingCountries.includes(geoId);
-                    const fill = getCountryColor(
-                      geoId,
-                      isSelected,
-                      isHovered,
-                      isGlowing,
-                    );
-                    const opacity = getCountryOpacity(
-                      geoId,
-                      isSelected,
-                      isHovered,
-                      isGlowing,
-                    );
+            <Geographies geography={GEO_URL}>
+              {({ geographies }) =>
+                geographies.map((geo) => {
+                  const geoId = String(geo.id).padStart(3, "0");
+                  const meta = COUNTRY_META[geoId];
+                  const isSelected = selectedCountries.has(geoId);
+                  const isHovered = hoveredCountry === geoId;
+                  const isGlowing = glowingCountries.includes(geoId);
+                  const fill = getCountryColor(
+                    geoId,
+                    isSelected,
+                    isHovered,
+                    isGlowing,
+                  );
+                  const opacity = getCountryOpacity(
+                    geoId,
+                    isSelected,
+                    isHovered,
+                    isGlowing,
+                  );
 
-                    return (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        fill={fill}
-                        fillOpacity={opacity}
-                        stroke="#0d1117"
-                        strokeWidth={0.5}
-                        style={{
-                          default: {
-                            outline: "none",
-                            cursor: meta ? "pointer" : "default",
-                          },
-                          hover: { outline: "none" },
-                          pressed: { outline: "none" },
-                        }}
-                        onMouseEnter={(evt) => {
-                          if (meta) {
-                            setHoveredCountry(geoId);
-                            const rect = (evt.target as SVGElement)
-                              .closest("svg")
-                              ?.getBoundingClientRect();
-                            if (rect)
-                              setTooltip({
-                                text: meta.name,
-                                x: evt.clientX - rect.left,
-                                y: evt.clientY - rect.top - 10,
-                              });
-                          }
-                        }}
-                        onMouseMove={(evt) => {
-                          if (meta) {
-                            const rect = (evt.target as SVGElement)
-                              .closest("svg")
-                              ?.getBoundingClientRect();
-                            if (rect)
-                              setTooltip({
-                                text: meta.name,
-                                x: evt.clientX - rect.left,
-                                y: evt.clientY - rect.top - 10,
-                              });
-                          }
-                        }}
-                        onMouseLeave={() => {
-                          setHoveredCountry(null);
-                          setTooltip(null);
-                        }}
-                        onClick={(evt) => {
-                          if (meta) handleCountryClick(geoId, evt);
-                        }}
-                      />
-                    );
-                  })
-                }
-              </Geographies>
-            </ZoomableGroup>
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      fill={fill}
+                      fillOpacity={opacity}
+                      stroke="#0d1117"
+                      strokeWidth={0.5}
+                      style={{
+                        default: {
+                          outline: "none",
+                          cursor: meta ? "pointer" : "default",
+                        },
+                        hover: { outline: "none" },
+                        pressed: { outline: "none" },
+                      }}
+                      onMouseEnter={(evt) => {
+                        if (meta) {
+                          setHoveredCountry(geoId);
+                          const rect = (evt.target as SVGElement)
+                            .closest("svg")
+                            ?.getBoundingClientRect();
+                          if (rect)
+                            setTooltip({
+                              text: meta.name,
+                              x: evt.clientX - rect.left,
+                              y: evt.clientY - rect.top - 10,
+                            });
+                        }
+                      }}
+                      onMouseMove={(evt) => {
+                        if (meta) {
+                          const rect = (evt.target as SVGElement)
+                            .closest("svg")
+                            ?.getBoundingClientRect();
+                          if (rect)
+                            setTooltip({
+                              text: meta.name,
+                              x: evt.clientX - rect.left,
+                              y: evt.clientY - rect.top - 10,
+                            });
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredCountry(null);
+                        setTooltip(null);
+                      }}
+                      onClick={(evt) => {
+                        if (meta) handleCountryClick(geoId, evt);
+                      }}
+                    />
+                  );
+                })
+              }
+            </Geographies>
           </ComposableMap>
 
           {/* Hover tooltip */}
@@ -481,8 +472,8 @@ export function AvailableWorldwideSection() {
                 left: Math.min(popup.x, 640),
                 top: Math.max(popup.y - 90, 10),
                 background: "oklch(0.1 0.02 240)",
-                border: `1px solid ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#06b6d4"}60`,
-                boxShadow: `0 0 20px ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#06b6d4"}30`,
+                border: `1px solid ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#22d3ee"}60`,
+                boxShadow: `0 0 20px ${CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ?? "#22d3ee"}30`,
               }}
             >
               <div className="text-2xl mb-1">
@@ -491,7 +482,14 @@ export function AvailableWorldwideSection() {
               <div className="text-sm font-bold text-white">
                 {COUNTRY_META[popup.id].name}
               </div>
-              <div className="text-xs text-cyan-400 mb-1">
+              <div
+                className="text-xs mb-1"
+                style={{
+                  color:
+                    CONTINENT_COLORS[COUNTRY_META[popup.id].continent] ??
+                    "#22d3ee",
+                }}
+              >
                 {COUNTRY_META[popup.id].continent}
               </div>
               <div className="text-[10px] text-muted-foreground">
@@ -515,7 +513,7 @@ export function AvailableWorldwideSection() {
         {glowingMeta.length > 0 && (
           <div className="flex flex-wrap justify-center gap-3 mt-4">
             {glowingMeta.map((meta, idx) => {
-              const color = CONTINENT_COLORS[meta.continent] ?? "#06b6d4";
+              const color = CONTINENT_COLORS[meta.continent] ?? "#22d3ee";
               return (
                 <div
                   key={meta.alpha2 ?? idx}
@@ -567,7 +565,7 @@ export function AvailableWorldwideSection() {
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               {topCountries.slice(0, 10).map((c, idx) => {
                 const color =
-                  CONTINENT_COLORS[c?.continent ?? "Asia"] ?? "#06b6d4";
+                  CONTINENT_COLORS[c?.continent ?? "Asia"] ?? "#22d3ee";
                 return (
                   <div
                     key={c?.alpha2 ?? idx}

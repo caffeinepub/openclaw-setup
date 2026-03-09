@@ -187,12 +187,240 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
   const tierStyle = TIER_STYLES[tier];
   const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
 
-  const initials = fullName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  // UserClaw picker state
+  const [clawStyle, setClawStyle] = useState<number>(() => {
+    const saved = localStorage.getItem("clawpro_avatar_style");
+    return saved !== null ? Number.parseInt(saved, 10) : 0;
+  });
+  const [avatarPhoto, setAvatarPhoto] = useState<string | null>(() =>
+    localStorage.getItem("clawpro_avatar_photo"),
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setAvatarPhoto(dataUrl);
+      localStorage.setItem("clawpro_avatar_photo", dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemovePhoto = () => {
+    setAvatarPhoto(null);
+    localStorage.removeItem("clawpro_avatar_photo");
+  };
+
+  const selectClawStyle = (idx: number) => {
+    setClawStyle(idx);
+    localStorage.setItem("clawpro_avatar_style", String(idx));
+  };
+
+  const CLAW_COLORS = ["#ef4444", "#fbbf24", "#06b6d4", "#8b5cf6"];
+  const CLAW_LABELS = ["Red Steel", "Gold", "Cyan Cyber", "Purple Crystal"];
+
+  const renderClawSVG = (style: number) => {
+    if (style === 0)
+      return (
+        <svg
+          viewBox="0 0 64 64"
+          width="56"
+          height="56"
+          role="img"
+          aria-label="Red Steel Claw"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Red Steel Claw</title>
+          <style>{`
+          @keyframes clawSnap0 {
+            0%,100%{transform:rotate(-18deg)}
+            40%,60%{transform:rotate(18deg)}
+          }
+          @keyframes clawSnap0b {
+            0%,100%{transform:rotate(18deg)}
+            40%,60%{transform:rotate(-18deg)}
+          }
+          .cs0a{transform-origin:32px 48px;animation:clawSnap0 2s infinite}
+          .cs0b{transform-origin:32px 48px;animation:clawSnap0b 2s infinite}
+        `}</style>
+          <defs>
+            <linearGradient id="cg0" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ef4444" />
+              <stop offset="100%" stopColor="#7f1d1d" />
+            </linearGradient>
+          </defs>
+          <g className="cs0a">
+            <path
+              d="M28 48 L18 14 Q16 8 22 10 L30 42Z"
+              fill="url(#cg0)"
+              rx="3"
+            />
+            <path
+              d="M28 48 L16 18 Q12 10 20 12 L30 44Z"
+              fill="#ef444480"
+              rx="3"
+            />
+          </g>
+          <g className="cs0b">
+            <path
+              d="M36 48 L46 14 Q48 8 42 10 L34 42Z"
+              fill="url(#cg0)"
+              rx="3"
+            />
+            <path
+              d="M36 48 L48 18 Q52 10 44 12 L34 44Z"
+              fill="#ef444480"
+              rx="3"
+            />
+          </g>
+          <ellipse cx="32" cy="50" rx="8" ry="4" fill="#7f1d1d" />
+        </svg>
+      );
+    if (style === 1)
+      return (
+        <svg
+          viewBox="0 0 64 64"
+          width="56"
+          height="56"
+          role="img"
+          aria-label="Gold Claw"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Gold Claw</title>
+          <style>{`
+          @keyframes clawSnap1 {
+            0%,100%{transform:rotate(-12deg)}
+            50%{transform:rotate(12deg)}
+          }
+          @keyframes clawSnap1b {
+            0%,100%{transform:rotate(12deg)}
+            50%{transform:rotate(-12deg)}
+          }
+          .cs1a{transform-origin:32px 48px;animation:clawSnap1 2.5s ease-in-out infinite}
+          .cs1b{transform-origin:32px 48px;animation:clawSnap1b 2.5s ease-in-out infinite}
+        `}</style>
+          <defs>
+            <linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#92400e" />
+            </linearGradient>
+          </defs>
+          <g className="cs1a">
+            <path d="M29 48 L20 16 Q18 8 24 11 L31 44Z" fill="url(#cg1)" />
+            <path d="M29 48 L17 20 Q13 11 21 13 L31 46Z" fill="#fbbf2450" />
+          </g>
+          <g className="cs1b">
+            <path d="M35 48 L44 16 Q46 8 40 11 L33 44Z" fill="url(#cg1)" />
+            <path d="M35 48 L47 20 Q51 11 43 13 L33 46Z" fill="#fbbf2450" />
+          </g>
+          <ellipse cx="32" cy="50" rx="8" ry="4" fill="#92400e" />
+        </svg>
+      );
+    if (style === 2)
+      return (
+        <svg
+          viewBox="0 0 64 64"
+          width="56"
+          height="56"
+          role="img"
+          aria-label="Cyan Cyber Claw"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <title>Cyan Cyber Claw</title>
+          <style>{`
+          @keyframes clawSnap2a {
+            0%,100%{transform:rotate(-14deg)}
+            40%{transform:rotate(14deg)}
+          }
+          @keyframes clawSnap2b {
+            0%,100%{transform:rotate(0deg)}
+            40%{transform:rotate(-8deg)}
+          }
+          @keyframes clawSnap2c {
+            0%,100%{transform:rotate(14deg)}
+            40%{transform:rotate(-14deg)}
+          }
+          .cs2a{transform-origin:32px 50px;animation:clawSnap2a 1.6s infinite}
+          .cs2b{transform-origin:32px 50px;animation:clawSnap2b 1.6s infinite}
+          .cs2c{transform-origin:32px 50px;animation:clawSnap2c 1.6s infinite}
+        `}</style>
+          <defs>
+            <linearGradient id="cg2" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#06b6d4" />
+              <stop offset="100%" stopColor="#0e7490" />
+            </linearGradient>
+          </defs>
+          <g className="cs2a">
+            <path
+              d="M30 50 L22 12 Q21 7 25 9 L32 46Z"
+              fill="url(#cg2)"
+              strokeWidth="1"
+              stroke="#22d3ee30"
+            />
+          </g>
+          <g className="cs2b">
+            <path
+              d="M32 50 L32 10 Q32 6 34 9 L34 47Z"
+              fill="url(#cg2)"
+              strokeWidth="1"
+              stroke="#22d3ee30"
+            />
+          </g>
+          <g className="cs2c">
+            <path
+              d="M34 50 L42 12 Q43 7 39 9 L32 46Z"
+              fill="url(#cg2)"
+              strokeWidth="1"
+              stroke="#22d3ee30"
+            />
+          </g>
+          <ellipse cx="32" cy="51" rx="7" ry="3" fill="#0e7490" />
+        </svg>
+      );
+    // style === 3
+    return (
+      <svg
+        viewBox="0 0 64 64"
+        width="56"
+        height="56"
+        role="img"
+        aria-label="Purple Crystal Claw"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <title>Purple Crystal Claw</title>
+        <style>{`
+          @keyframes clawSnap3a {
+            0%,100%{transform:rotate(-20deg);filter:drop-shadow(0 0 4px #8b5cf680)}
+            50%{transform:rotate(8deg);filter:drop-shadow(0 0 10px #8b5cf6cc)}
+          }
+          @keyframes clawSnap3b {
+            0%,100%{transform:rotate(20deg);filter:drop-shadow(0 0 4px #8b5cf680)}
+            50%{transform:rotate(-8deg);filter:drop-shadow(0 0 10px #8b5cf6cc)}
+          }
+          .cs3a{transform-origin:32px 48px;animation:clawSnap3a 3s infinite}
+          .cs3b{transform-origin:32px 48px;animation:clawSnap3b 3s infinite}
+        `}</style>
+        <defs>
+          <linearGradient id="cg3" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#a78bfa" />
+            <stop offset="100%" stopColor="#4c1d95" />
+          </linearGradient>
+        </defs>
+        <g className="cs3a">
+          <path d="M28 48 L16 14 Q14 6 22 9 L30 44Z" fill="url(#cg3)" />
+          <path d="M27 48 L14 18 Q11 9 19 11 L29 45Z" fill="#8b5cf640" />
+        </g>
+        <g className="cs3b">
+          <path d="M36 48 L48 14 Q50 6 42 9 L34 44Z" fill="url(#cg3)" />
+          <path d="M37 48 L50 18 Q53 9 45 11 L35 45Z" fill="#8b5cf640" />
+        </g>
+        <ellipse cx="32" cy="50" rx="8" ry="4" fill="#4c1d95" />
+      </svg>
+    );
+  };
 
   return (
     <div
@@ -241,32 +469,104 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
             </button>
           </div>
 
-          {/* Avatar + Info */}
+          {/* Avatar + Info - UserClaw Picker */}
           <div className="flex flex-col items-center text-center gap-2">
             <div className="relative">
-              <Avatar
-                className="w-16 h-16 border-2"
+              {/* Avatar display */}
+              <div
+                className="w-16 h-16 rounded-full border-2 overflow-hidden flex items-center justify-center relative"
                 style={{
                   borderColor: tierStyle.color,
                   boxShadow: tierStyle.glow,
+                  background: `${tierStyle.color}20`,
                 }}
               >
-                <AvatarFallback
-                  className="text-lg font-bold"
-                  style={{
-                    background: `${tierStyle.color}20`,
-                    color: tierStyle.color,
-                  }}
-                >
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+                {avatarPhoto ? (
+                  <img
+                    src={avatarPhoto}
+                    alt="avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  renderClawSVG(clawStyle)
+                )}
+              </div>
               {/* Ambient glow ring */}
               <div
                 className="absolute -inset-1 rounded-full -z-10 blur-sm"
                 style={{ background: `${tierStyle.color}30` }}
               />
+              {/* Camera upload button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-800 border border-white/20 flex items-center justify-center hover:bg-gray-700 transition-colors"
+                title="Upload photo"
+                data-ocid="dashboard.avatar.upload_button"
+              >
+                <svg
+                  role="img"
+                  aria-label="Upload photo"
+                  viewBox="0 0 16 16"
+                  width="10"
+                  height="10"
+                  fill="currentColor"
+                  className="text-cyan-400"
+                >
+                  <title>Upload photo</title>
+                  <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z" />
+                  <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                </svg>
+              </button>
+              {/* Remove photo button */}
+              {avatarPhoto && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-white/20 flex items-center justify-center hover:bg-red-500 transition-colors"
+                  title="Remove photo"
+                  data-ocid="dashboard.avatar.delete_button"
+                >
+                  <X className="w-2.5 h-2.5 text-white" />
+                </button>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handlePhotoUpload}
+              />
             </div>
+            {/* Claw style selector (hidden when photo uploaded) */}
+            {!avatarPhoto && (
+              <div className="flex gap-1.5 mt-1">
+                {CLAW_COLORS.map((color, idx) => (
+                  <button
+                    key={CLAW_LABELS[idx]}
+                    type="button"
+                    onClick={() => selectClawStyle(idx)}
+                    title={CLAW_LABELS[idx]}
+                    data-ocid="dashboard.claw.toggle"
+                    className="w-5 h-5 rounded-full flex items-center justify-center transition-all"
+                    style={{
+                      background: `${color}30`,
+                      border:
+                        clawStyle === idx
+                          ? `2px solid ${color}`
+                          : "2px solid transparent",
+                      boxShadow:
+                        clawStyle === idx ? `0 0 8px ${color}80` : "none",
+                    }}
+                  >
+                    <span
+                      className="w-2 h-2 rounded-full block"
+                      style={{ background: color }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
             <div>
               <p className="font-semibold text-sm text-foreground">
                 {fullName}
@@ -518,6 +818,8 @@ function HomePanel({
   });
   const [editingPortfolio, setEditingPortfolio] = useState(false);
   const [editAmounts, setEditAmounts] = useState<Record<string, string>>({});
+  const [donutRevealed, setDonutRevealed] = useState(false);
+  const donutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const getPortfolioWithValues = () =>
     portfolio.map((c: (typeof DEFAULT_PORTFOLIO)[0]) => ({
@@ -763,7 +1065,21 @@ function HomePanel({
             </div>
             {/* Donut Chart - Portfolio Distribution */}
             {!editingPortfolio && totalPortfolio > 0 && (
-              <div className="mt-4 pt-3 border-t border-white/5">
+              <div
+                className="mt-4 pt-3 border-t border-white/5 transition-all duration-700 ease-out"
+                style={{
+                  opacity: donutRevealed ? 1 : 0,
+                  transform: donutRevealed ? "scale(1)" : "scale(0.9)",
+                }}
+                ref={(el) => {
+                  if (el && !donutTimerRef.current) {
+                    donutTimerRef.current = setTimeout(
+                      () => setDonutRevealed(true),
+                      200,
+                    );
+                  }
+                }}
+              >
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 text-center">
                   Distribution
                 </div>
@@ -850,8 +1166,6 @@ function HomePanel({
           </div>
         </div>
       </div>
-
-      {/* Installed apps grid */}
       <div>
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           Installed Apps
@@ -883,8 +1197,6 @@ function HomePanel({
           ))}
         </div>
       </div>
-
-      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {[
           {
