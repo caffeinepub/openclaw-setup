@@ -191,6 +191,9 @@ importers:
       three:
         specifier: ^0.176.0
         version: 0.176.0
+      topojson-client:
+        specifier: ^3.1.0
+        version: 3.1.0
       vaul:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.1.11(@types/react@19.1.17))(@types/react@19.1.17)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
