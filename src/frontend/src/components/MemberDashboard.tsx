@@ -1291,6 +1291,142 @@ function HomePanel({
           </div>
         ))}
       </div>
+
+      {/* Works With Everything */}
+      <div
+        data-ocid="overview.works_with.section"
+        className="rounded-xl p-4 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center gap-4"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.10 0.02 260), oklch(0.08 0.015 240))",
+          boxShadow: "0 0 18px rgba(6,182,212,0.08)",
+        }}
+      >
+        {/* Left label */}
+        <div className="flex items-center gap-2 flex-shrink-0 sm:w-32">
+          <span
+            style={{ color: "#06b6d4", filter: "drop-shadow(0 0 6px #06b6d4)" }}
+          >
+            ⚡
+          </span>
+          <span
+            className="text-xs font-bold"
+            style={{
+              color: "#06b6d4",
+              textShadow: "0 0 8px rgba(6,182,212,0.6)",
+            }}
+          >
+            Works With
+            <br />
+            Everything
+          </span>
+        </div>
+        {/* Right: product logos */}
+        <div className="flex-1 flex flex-wrap gap-2">
+          {[
+            {
+              name: "Facebook",
+              icon: "📘",
+              bg: "rgba(24,119,242,0.25)",
+              glow: "rgba(24,119,242,0.4)",
+            },
+            {
+              name: "Instagram",
+              icon: "📷",
+              bg: "rgba(225,48,108,0.25)",
+              glow: "rgba(225,48,108,0.4)",
+            },
+            {
+              name: "TikTok",
+              icon: "🎵",
+              bg: "rgba(40,40,40,0.7)",
+              glow: "rgba(255,255,255,0.15)",
+            },
+            {
+              name: "YouTube",
+              icon: "▶️",
+              bg: "rgba(255,0,0,0.25)",
+              glow: "rgba(255,0,0,0.4)",
+            },
+            {
+              name: "WhatsApp",
+              icon: "💬",
+              bg: "rgba(37,211,102,0.25)",
+              glow: "rgba(37,211,102,0.4)",
+            },
+            {
+              name: "Telegram",
+              icon: "✈️",
+              bg: "rgba(0,136,204,0.25)",
+              glow: "rgba(0,136,204,0.4)",
+            },
+            {
+              name: "Discord",
+              icon: "🎮",
+              bg: "rgba(88,101,242,0.25)",
+              glow: "rgba(88,101,242,0.4)",
+            },
+            {
+              name: "Slack",
+              icon: "💼",
+              bg: "rgba(74,21,75,0.4)",
+              glow: "rgba(197,0,200,0.3)",
+            },
+            {
+              name: "GitHub",
+              icon: "🐙",
+              bg: "rgba(100,100,100,0.3)",
+              glow: "rgba(200,200,200,0.2)",
+            },
+            {
+              name: "OpenAI",
+              icon: "🤖",
+              bg: "rgba(16,163,127,0.25)",
+              glow: "rgba(16,163,127,0.4)",
+            },
+            {
+              name: "Gemini",
+              icon: "✨",
+              bg: "rgba(234,179,8,0.2)",
+              glow: "rgba(234,179,8,0.4)",
+            },
+            {
+              name: "Notion",
+              icon: "📝",
+              bg: "rgba(255,255,255,0.1)",
+              glow: "rgba(255,255,255,0.2)",
+            },
+            {
+              name: "X",
+              icon: "𝕏",
+              bg: "rgba(15,15,15,0.7)",
+              glow: "rgba(255,255,255,0.15)",
+            },
+            {
+              name: "Spotify",
+              icon: "🎧",
+              bg: "rgba(30,215,96,0.25)",
+              glow: "rgba(30,215,96,0.4)",
+            },
+          ].map((product) => (
+            <div
+              key={product.name}
+              title={product.name}
+              className="flex items-center justify-center rounded-lg cursor-default select-none transition-transform hover:scale-110"
+              style={{
+                width: 32,
+                height: 32,
+                background: product.bg,
+                boxShadow: `0 0 8px ${product.glow}`,
+                border: `1px solid ${product.glow}`,
+                fontSize: 16,
+              }}
+            >
+              {product.icon}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
