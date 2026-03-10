@@ -20,6 +20,7 @@ import {
   Loader2,
   Menu,
   Plus,
+  Puzzle,
   Save,
   Send,
   Settings,
@@ -66,6 +67,7 @@ import {
 
 // ---- Types ----
 type SidebarItem =
+  | "integrations"
   | "home"
   | "clawbot"
   | "whatsapp"
@@ -696,6 +698,26 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
                   </button>
                 );
               })}
+              {/* Install & Integrations sub-item under Overview */}
+              {(active === "home" || active === "integrations") && (
+                <button
+                  type="button"
+                  data-ocid="dashboard.integrations.tab"
+                  onClick={() => handleNavClick("integrations")}
+                  className={[
+                    "w-full flex items-center gap-2 pl-8 pr-3 py-2 rounded-lg text-xs font-medium ml-1 border-l-2 transition-all duration-200",
+                    active === "integrations"
+                      ? "text-violet-300 border-violet-500/60 bg-violet-500/10"
+                      : "text-muted-foreground hover:text-violet-300 border-violet-500/30 hover:bg-violet-500/5",
+                  ].join(" ")}
+                >
+                  <Puzzle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Install &amp; Integrations</span>
+                  {active === "integrations" && (
+                    <ChevronRight className="ml-auto w-3 h-3 opacity-60" />
+                  )}
+                </button>
+              )}
             </nav>
           </div>
 
@@ -730,11 +752,23 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
               <Menu className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2">
-              <span className={NAV_ITEMS.find((i) => i.id === active)?.color}>
-                {NAV_ITEMS.find((i) => i.id === active)?.icon}
+              <span
+                className={
+                  active === "integrations"
+                    ? "text-violet-400"
+                    : NAV_ITEMS.find((i) => i.id === active)?.color
+                }
+              >
+                {active === "integrations" ? (
+                  <Puzzle className="w-4 h-4" />
+                ) : (
+                  NAV_ITEMS.find((i) => i.id === active)?.icon
+                )}
               </span>
               <h1 className="font-semibold text-sm">
-                {NAV_ITEMS.find((i) => i.id === active)?.label}
+                {active === "integrations"
+                  ? "Install & Integrations"
+                  : NAV_ITEMS.find((i) => i.id === active)?.label}
               </h1>
             </div>
             <div className="ml-auto flex items-center gap-2">
@@ -780,6 +814,7 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
                 {active === "stats" && <StatsPanel />}
                 {active === "tasks" && <TasksPanel />}
                 {active === "status" && <StatusPanel />}
+                {active === "integrations" && <InstallIntegrationsPanel />}
                 {active === "settings" && (
                   <SettingsPanel
                     handle={handle}
@@ -3389,6 +3424,457 @@ function StatusPanel() {
             />
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ---- Install & Integrations Panel ----
+const INTEGRATIONS = [
+  // AI & Bots
+  {
+    id: "openclaw",
+    name: "OpenClaw.ai",
+    category: "AI",
+    emoji: "🦾",
+    color: "#ef4444",
+    desc: "ClawPro native AI engine",
+  },
+  {
+    id: "openai",
+    name: "OpenAI",
+    category: "AI",
+    emoji: "🤖",
+    color: "#10a37f",
+    desc: "GPT-4 & DALL-E models",
+  },
+  {
+    id: "chatgpt",
+    name: "ChatGPT",
+    category: "AI",
+    emoji: "✨",
+    color: "#10b981",
+    desc: "Conversational AI",
+  },
+  {
+    id: "gemini",
+    name: "Gemini",
+    category: "AI",
+    emoji: "💎",
+    color: "#4285f4",
+    desc: "Google AI assistant",
+  },
+  {
+    id: "claude",
+    name: "Claude",
+    category: "AI",
+    emoji: "🌟",
+    color: "#d97706",
+    desc: "Anthropic AI assistant",
+  },
+  // Messaging
+  {
+    id: "whatsapp",
+    name: "WhatsApp",
+    category: "Messaging",
+    emoji: "💬",
+    color: "#22c55e",
+    desc: "WA bot automation",
+  },
+  {
+    id: "telegram",
+    name: "Telegram",
+    category: "Messaging",
+    emoji: "✈️",
+    color: "#3b82f6",
+    desc: "Telegram bot & channels",
+  },
+  {
+    id: "discord",
+    name: "Discord",
+    category: "Messaging",
+    emoji: "🎮",
+    color: "#5865f2",
+    desc: "Community & bots",
+  },
+  {
+    id: "slack",
+    name: "Slack",
+    category: "Messaging",
+    emoji: "🔔",
+    color: "#4a154b",
+    desc: "Team communication",
+  },
+  {
+    id: "line",
+    name: "LINE",
+    category: "Messaging",
+    emoji: "💚",
+    color: "#00b900",
+    desc: "LINE messaging API",
+  },
+  // Social
+  {
+    id: "facebook",
+    name: "Facebook",
+    category: "Social",
+    emoji: "📘",
+    color: "#1877f2",
+    desc: "Pages & ads",
+  },
+  {
+    id: "instagram",
+    name: "Instagram",
+    category: "Social",
+    emoji: "📸",
+    color: "#e1306c",
+    desc: "Posts & stories",
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    category: "Social",
+    emoji: "🎵",
+    color: "#ff0050",
+    desc: "Short video content",
+  },
+  {
+    id: "twitter",
+    name: "X / Twitter",
+    category: "Social",
+    emoji: "🐦",
+    color: "#1da1f2",
+    desc: "Posts & analytics",
+  },
+  {
+    id: "youtube",
+    name: "YouTube",
+    category: "Social",
+    emoji: "▶️",
+    color: "#ff0000",
+    desc: "Video & streaming",
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    category: "Social",
+    emoji: "💼",
+    color: "#0077b5",
+    desc: "Professional network",
+  },
+  // Dev Tools
+  {
+    id: "github",
+    name: "GitHub",
+    category: "Dev",
+    emoji: "🐙",
+    color: "#6e40c9",
+    desc: "Code repositories",
+  },
+  {
+    id: "gitlab",
+    name: "GitLab",
+    category: "Dev",
+    emoji: "🦊",
+    color: "#fc6d26",
+    desc: "DevOps platform",
+  },
+  {
+    id: "notion",
+    name: "Notion",
+    category: "Dev",
+    emoji: "📝",
+    color: "#888888",
+    desc: "Docs & databases",
+  },
+  {
+    id: "vercel",
+    name: "Vercel",
+    category: "Dev",
+    emoji: "▲",
+    color: "#ffffff",
+    desc: "Deploy & hosting",
+  },
+  // Payments
+  {
+    id: "paypal",
+    name: "PayPal",
+    category: "Payments",
+    emoji: "💰",
+    color: "#003087",
+    desc: "Online payments",
+  },
+  {
+    id: "stripe",
+    name: "Stripe",
+    category: "Payments",
+    emoji: "💳",
+    color: "#635bff",
+    desc: "Payment processing",
+  },
+  {
+    id: "usdt",
+    name: "USDT",
+    category: "Payments",
+    emoji: "🔵",
+    color: "#26a17b",
+    desc: "Tether stablecoin",
+  },
+  {
+    id: "btc",
+    name: "Bitcoin",
+    category: "Payments",
+    emoji: "₿",
+    color: "#f7931a",
+    desc: "Crypto payments",
+  },
+  // Productivity
+  {
+    id: "gdrive",
+    name: "Google Drive",
+    category: "Productivity",
+    emoji: "📁",
+    color: "#4285f4",
+    desc: "Cloud storage & docs",
+  },
+  {
+    id: "zapier",
+    name: "Zapier",
+    category: "Productivity",
+    emoji: "⚡",
+    color: "#ff4a00",
+    desc: "Workflow automation",
+  },
+  {
+    id: "airtable",
+    name: "Airtable",
+    category: "Productivity",
+    emoji: "🗃️",
+    color: "#18bfff",
+    desc: "Database & spreadsheets",
+  },
+  {
+    id: "trello",
+    name: "Trello",
+    category: "Productivity",
+    emoji: "📋",
+    color: "#0052cc",
+    desc: "Project boards",
+  },
+];
+
+const CATEGORIES = [
+  "All",
+  "AI",
+  "Messaging",
+  "Social",
+  "Dev",
+  "Payments",
+  "Productivity",
+];
+const PRE_INSTALLED = ["whatsapp", "telegram", "chatgpt"];
+
+function InstallIntegrationsPanel() {
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [installed, setInstalled] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("clawpro_installed_integrations");
+      return saved ? JSON.parse(saved) : PRE_INSTALLED;
+    } catch {
+      return PRE_INSTALLED;
+    }
+  });
+
+  const filtered =
+    activeFilter === "All"
+      ? INTEGRATIONS
+      : INTEGRATIONS.filter((i) => i.category === activeFilter);
+
+  const install = (id: string) => {
+    if (installed.includes(id)) return;
+    const updated = [...installed, id];
+    setInstalled(updated);
+    localStorage.setItem(
+      "clawpro_installed_integrations",
+      JSON.stringify(updated),
+    );
+    const item = INTEGRATIONS.find((i) => i.id === id);
+    toast.success(`${item?.name} installed successfully!`);
+  };
+
+  const CATEGORY_COLORS: Record<string, string> = {
+    All: "#06b6d4",
+    AI: "#ef4444",
+    Messaging: "#22c55e",
+    Social: "#e1306c",
+    Dev: "#6e40c9",
+    Payments: "#f7931a",
+    Productivity: "#4285f4",
+  };
+
+  return (
+    <div className="p-6 space-y-5">
+      {/* Header */}
+      <div
+        className="rounded-xl p-5 border border-violet-500/30"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.11 0.025 290), oklch(0.08 0.015 260))",
+          boxShadow: "0 0 24px rgba(139,92,246,0.15)",
+        }}
+      >
+        <div className="flex items-center gap-3 mb-2">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{
+              background: "rgba(139,92,246,0.2)",
+              boxShadow: "0 0 16px rgba(139,92,246,0.4)",
+            }}
+          >
+            <Puzzle className="w-5 h-5 text-violet-400" />
+          </div>
+          <div>
+            <h2
+              className="text-lg font-bold"
+              style={{
+                color: "#a78bfa",
+                textShadow: "0 0 12px rgba(139,92,246,0.6)",
+              }}
+            >
+              Install &amp; Integrations
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Connect ClawPro with your favorite apps and services
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 mt-3">
+          <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/40 border text-xs">
+            {INTEGRATIONS.length} Available
+          </Badge>
+          <Badge className="bg-green-500/20 text-green-300 border-green-500/40 border text-xs">
+            {installed.length} Installed
+          </Badge>
+        </div>
+      </div>
+
+      {/* Category filters */}
+      <div className="flex flex-wrap gap-2">
+        {CATEGORIES.map((cat) => {
+          const isActive = activeFilter === cat;
+          const color = CATEGORY_COLORS[cat] ?? "#888";
+          return (
+            <button
+              key={cat}
+              type="button"
+              data-ocid={`integrations.filter.${cat.toLowerCase()}.tab`}
+              onClick={() => setActiveFilter(cat)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 border"
+              style={
+                isActive
+                  ? {
+                      background: `${color}22`,
+                      borderColor: `${color}80`,
+                      color,
+                      boxShadow: `0 0 12px ${color}40`,
+                    }
+                  : {
+                      background: "transparent",
+                      borderColor: "rgba(255,255,255,0.1)",
+                      color: "rgba(255,255,255,0.5)",
+                    }
+              }
+            >
+              {isActive && (
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full mr-1.5"
+                  style={{ background: color, boxShadow: `0 0 6px ${color}` }}
+                />
+              )}
+              {cat}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Integration grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {filtered.map((item) => {
+          const isInstalled = installed.includes(item.id);
+          return (
+            <div
+              key={item.id}
+              data-ocid={`integrations.${item.id}.card`}
+              className="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 hover:scale-[1.03]"
+              style={{
+                background: "oklch(0.09 0.015 250)",
+                borderColor: isInstalled
+                  ? `${item.color}60`
+                  : "rgba(255,255,255,0.08)",
+                boxShadow: isInstalled ? `0 0 16px ${item.color}25` : "none",
+              }}
+            >
+              {/* Icon */}
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                style={{
+                  background: `${item.color}18`,
+                  boxShadow: `0 0 14px ${item.color}35`,
+                }}
+              >
+                {item.emoji}
+              </div>
+
+              {/* Name */}
+              <div className="text-center">
+                <p className="text-xs font-semibold leading-tight">
+                  {item.name}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+                  {item.desc}
+                </p>
+              </div>
+
+              {/* Category badge */}
+              <span
+                className="text-[9px] px-1.5 py-0.5 rounded-full font-medium"
+                style={{
+                  background: `${CATEGORY_COLORS[item.category] ?? "#888"}22`,
+                  color: CATEGORY_COLORS[item.category] ?? "#888",
+                }}
+              >
+                {item.category}
+              </span>
+
+              {/* Install button */}
+              <button
+                type="button"
+                data-ocid={`integrations.${item.id}.${isInstalled ? "installed" : "install"}_button`}
+                onClick={() => install(item.id)}
+                disabled={isInstalled}
+                className="w-full py-1.5 rounded-lg text-[10px] font-semibold transition-all duration-200 border"
+                style={
+                  isInstalled
+                    ? {
+                        background: "rgba(34,197,94,0.15)",
+                        borderColor: "rgba(34,197,94,0.4)",
+                        color: "#86efac",
+                        cursor: "default",
+                      }
+                    : {
+                        background: `${item.color}18`,
+                        borderColor: `${item.color}50`,
+                        color: item.color,
+                        boxShadow: `0 0 8px ${item.color}25`,
+                        cursor: "pointer",
+                      }
+                }
+              >
+                {isInstalled ? "✓ Installed" : "Install"}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
