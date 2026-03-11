@@ -138,6 +138,13 @@ const NAV_ITEMS: {
     glow: "border-cyan-500/60",
   },
   {
+    id: "integrations",
+    label: "Install & Integrations",
+    icon: <Puzzle className="w-4 h-4" />,
+    color: "text-violet-400",
+    glow: "border-violet-500/60",
+  },
+  {
     id: "clawbot",
     label: "ClawBot AI",
     icon: <Bot className="w-4 h-4" />,
@@ -210,10 +217,14 @@ const NAV_ITEMS: {
 ];
 
 // ---- Main Dashboard ----
-export function MemberDashboard({ onClose }: { onClose: () => void }) {
+export function MemberDashboard({
+  onClose,
+  onTopUp,
+}: { onClose: () => void; onTopUp?: (tier: MembershipTier) => void }) {
   const [active, setActive] = useState<SidebarItem>("home");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [glowingId, setGlowingId] = useState<string | null>(null);
+  const [showTopUpModal, setShowTopUpModal] = useState(false);
 
   const handleNavClick = (id: SidebarItem) => {
     setActive(id);
@@ -698,26 +709,6 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
                   </button>
                 );
               })}
-              {/* Install & Integrations sub-item under Overview */}
-              {(active === "home" || active === "integrations") && (
-                <button
-                  type="button"
-                  data-ocid="dashboard.integrations.tab"
-                  onClick={() => handleNavClick("integrations")}
-                  className={[
-                    "w-full flex items-center gap-2 pl-8 pr-3 py-2 rounded-lg text-xs font-medium ml-1 border-l-2 transition-all duration-200",
-                    active === "integrations"
-                      ? "text-violet-300 border-violet-500/60 bg-violet-500/10"
-                      : "text-muted-foreground hover:text-violet-300 border-violet-500/30 hover:bg-violet-500/5",
-                  ].join(" ")}
-                >
-                  <Puzzle className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span>Install &amp; Integrations</span>
-                  {active === "integrations" && (
-                    <ChevronRight className="ml-auto w-3 h-3 opacity-60" />
-                  )}
-                </button>
-              )}
             </nav>
           </div>
 
@@ -803,6 +794,7 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
                     fullName={fullName}
                     tier={tier}
                     tierStyle={tierStyle}
+                    onTopUp={() => setShowTopUpModal(true)}
                   />
                 )}
                 {active === "clawbot" && <ClawBotPanel handle={handle} />}
@@ -827,6 +819,128 @@ export function MemberDashboard({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </div>
+
+      {/* Top Up Modal */}
+      {showTopUpModal && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+          style={{
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(6px)",
+          }}
+          onClick={() => setShowTopUpModal(false)}
+          onKeyDown={() => setShowTopUpModal(false)}
+          role="presentation"
+        >
+          <div
+            className="relative w-full max-w-lg rounded-2xl p-6 border border-amber-500/30"
+            style={{
+              background: "oklch(0.09 0.015 240)",
+              boxShadow: "0 0 40px rgba(251,191,36,0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <button
+              type="button"
+              className="absolute top-3 right-3 text-gray-400 hover:text-white text-xl"
+              onClick={() => setShowTopUpModal(false)}
+            >
+              ×
+            </button>
+            <h2 className="text-xl font-bold text-white mb-1">Top Up Tokens</h2>
+            <p className="text-sm text-gray-400 mb-5">
+              Choose a membership tier to purchase tokens
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div
+                className="rounded-xl p-4 border border-slate-400/30 flex flex-col items-center gap-2"
+                style={{
+                  background: "oklch(0.12 0.01 240)",
+                  boxShadow: "0 0 16px rgba(148,163,184,0.15)",
+                }}
+              >
+                <div className="text-2xl">🥈</div>
+                <div className="text-base font-bold text-slate-300">Silver</div>
+                <div className="text-xs text-slate-400 text-center">
+                  1,000 tokens · Basic AI access
+                </div>
+                <div className="text-lg font-bold text-slate-200 mt-1">
+                  $9.99
+                </div>
+                <button
+                  type="button"
+                  className="mt-2 w-full py-1.5 rounded-lg text-xs font-semibold border border-slate-400/40 text-slate-300 hover:bg-slate-600/30 transition-all"
+                  onClick={() => {
+                    setShowTopUpModal(false);
+                    onTopUp?.(MembershipTierEnum.silver);
+                  }}
+                  data-ocid="topup.silver.button"
+                >
+                  Select Silver
+                </button>
+              </div>
+              <div
+                className="rounded-xl p-4 border border-amber-400/40 flex flex-col items-center gap-2"
+                style={{
+                  background: "oklch(0.12 0.02 60)",
+                  boxShadow: "0 0 20px rgba(251,191,36,0.2)",
+                }}
+              >
+                <div className="text-2xl">🥇</div>
+                <div className="text-base font-bold text-amber-300">Gold</div>
+                <div className="text-xs text-amber-400/80 text-center">
+                  5,000 tokens · Full AI suite
+                </div>
+                <div className="text-lg font-bold text-amber-200 mt-1">
+                  $29.99
+                </div>
+                <button
+                  type="button"
+                  className="mt-2 w-full py-1.5 rounded-lg text-xs font-semibold border border-amber-400/50 text-amber-300 hover:bg-amber-600/20 transition-all"
+                  onClick={() => {
+                    setShowTopUpModal(false);
+                    onTopUp?.(MembershipTierEnum.gold);
+                  }}
+                  data-ocid="topup.gold.button"
+                >
+                  Select Gold
+                </button>
+              </div>
+              <div
+                className="rounded-xl p-4 border border-violet-400/40 flex flex-col items-center gap-2"
+                style={{
+                  background: "oklch(0.12 0.02 290)",
+                  boxShadow: "0 0 20px rgba(167,139,250,0.2)",
+                }}
+              >
+                <div className="text-2xl">💎</div>
+                <div className="text-base font-bold text-violet-300">
+                  Platinum
+                </div>
+                <div className="text-xs text-violet-400/80 text-center">
+                  Unlimited tokens · Priority AI
+                </div>
+                <div className="text-lg font-bold text-violet-200 mt-1">
+                  $99.99
+                </div>
+                <button
+                  type="button"
+                  className="mt-2 w-full py-1.5 rounded-lg text-xs font-semibold border border-violet-400/50 text-violet-300 hover:bg-violet-600/20 transition-all"
+                  onClick={() => {
+                    setShowTopUpModal(false);
+                    onTopUp?.(MembershipTierEnum.platinum);
+                  }}
+                  data-ocid="topup.platinum.button"
+                >
+                  Select Platinum
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -837,11 +951,13 @@ function HomePanel({
   fullName,
   tier,
   tierStyle,
+  onTopUp,
 }: {
   handle: string;
   fullName: string;
   tier: MembershipTier;
   tierStyle: { label: string; color: string; badgeCls: string; glow: string };
+  onTopUp?: () => void;
 }) {
   void tier;
 
@@ -1030,6 +1146,7 @@ function HomePanel({
               className="mt-1 text-xs h-7 bg-amber-600/80 hover:bg-amber-500 text-white border-0"
               style={{ boxShadow: "0 0 12px rgba(251,191,36,0.3)" }}
               data-ocid="wallet.topup.button"
+              onClick={onTopUp}
             >
               <Plus className="w-3 h-3 mr-1" />
               Top Up Tokens

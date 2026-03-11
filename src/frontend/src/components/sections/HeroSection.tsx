@@ -1515,14 +1515,14 @@ function UnifiedClaimSearchCard({
       toast.error("Please enter a valid handle (letters, numbers, _ or -).");
       return;
     }
+    if (onOpenCreateAccount) {
+      onOpenCreateAccount(trimmedHandle, fullName.trim());
+      return;
+    }
     if (!identity) {
-      if (onOpenCreateAccount) {
-        onOpenCreateAccount(trimmedHandle, fullName.trim());
-      } else {
-        setPendingSave(true);
-        toast.info("Please login to save your handle.");
-        login();
-      }
+      setPendingSave(true);
+      toast.info("Please login to save your handle.");
+      login();
       return;
     }
     try {

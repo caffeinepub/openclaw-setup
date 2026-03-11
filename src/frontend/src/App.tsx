@@ -22,6 +22,7 @@ import { PricingSection } from "./components/sections/PricingSection";
 import { SetupSection } from "./components/sections/SetupSection";
 import { StatsSection } from "./components/sections/StatsSection";
 import { WorkWithEverythingSection } from "./components/sections/WorkWithEverythingSection";
+import { useMyUserAccount } from "./hooks/useForumQueries";
 import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import { useIsAdmin } from "./hooks/useQueries";
 import { LanguageProvider } from "./i18n/LanguageContext";
@@ -59,6 +60,7 @@ function AppInner() {
 
   const { data: isAdmin } = useIsAdmin();
   const { identity } = useInternetIdentity();
+  const { data: userAccount } = useMyUserAccount();
 
   const handleHashChange = useCallback(() => {
     const hash = window.location.hash;
@@ -109,7 +111,9 @@ function AppInner() {
         toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
         onCreateAccountClick={() => setShowCreateAccount(true)}
-        onDashboardClick={identity ? () => setShowDashboard(true) : undefined}
+        onDashboardClick={
+          identity && userAccount ? () => setShowDashboard(true) : undefined
+        }
         onMarketsClick={() => setShowCryptoMarket(true)}
       />
 
@@ -154,7 +158,14 @@ function AppInner() {
       )}
 
       {showDashboard && (
-        <MemberDashboard onClose={() => setShowDashboard(false)} />
+        <MemberDashboard
+          onClose={() => setShowDashboard(false)}
+          onTopUp={(tier) => {
+            setShowDashboard(false);
+            setTierLandingTier(tier);
+            setShowTierLanding(true);
+          }}
+        />
       )}
 
       {showCryptoMarket && (
