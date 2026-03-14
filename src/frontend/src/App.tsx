@@ -146,6 +146,8 @@ function AppInner() {
             setPrefillFullName(n);
             setShowCreateAccount(true);
           }}
+          isLoggedIn={!!localAccount || !!(identity && userAccount)}
+          onGoToDashboard={() => setShowDashboard(true)}
         />
         <AvailableWorldwideSection />
         <FeaturesSection />

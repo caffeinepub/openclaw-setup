@@ -1932,9 +1932,15 @@ function UnifiedClaimSearchCard({
 
 interface HeroSectionProps {
   onOpenCreateAccount?: (handle: string, fullName: string) => void;
+  onGoToDashboard?: () => void;
+  isLoggedIn?: boolean;
 }
 
-export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
+export function HeroSection({
+  onOpenCreateAccount,
+  onGoToDashboard,
+  isLoggedIn,
+}: HeroSectionProps) {
   const { data: latestVersion } = useLatestVersion();
   const { data: totalDownloads } = useTotalDownloads();
   const { t } = useLanguage();
@@ -2049,6 +2055,32 @@ export function HeroSection({ onOpenCreateAccount }: HeroSectionProps) {
                 <BookOpen className="w-5 h-5 mr-2" />
                 {t.hero.viewDocs}
               </Button>
+              {isLoggedIn && onGoToDashboard && (
+                <Button
+                  size="lg"
+                  data-ocid="hero.dashboard.button"
+                  onClick={onGoToDashboard}
+                  className="font-bold text-base px-8 transition-all duration-200 group relative overflow-hidden"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, #06b6d4, #3b82f6, #7c3aed)",
+                    backgroundSize: "200% 200%",
+                    animation: "heroDashBtnShift 3s ease infinite",
+                    color: "white",
+                    boxShadow:
+                      "0 0 24px rgba(6,182,212,0.45), 0 0 48px rgba(124,58,237,0.2)",
+                    border: "none",
+                  }}
+                >
+                  <style>
+                    {
+                      "@keyframes heroDashBtnShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }"
+                    }
+                  </style>
+                  <LogIn className="w-5 h-5 mr-2" />
+                  Go to Dashboard →
+                </Button>
+              )}
             </div>
 
             {/* Profile display card — shown when handle is saved */}

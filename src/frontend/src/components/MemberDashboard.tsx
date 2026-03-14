@@ -29,6 +29,7 @@ import {
   Trash2,
   TrendingDown,
   TrendingUp,
+  Trophy,
   User,
   Wallet,
   X,
@@ -104,7 +105,9 @@ type SidebarItem =
   | "activity"
   | "stats"
   | "tasks"
-  | "status";
+  | "status"
+  | "leaderboard"
+  | "notifications";
 
 interface ChatMessage {
   id: string;
@@ -240,6 +243,20 @@ const NAV_ITEMS: {
     color: "text-orange-400",
     glow: "border-orange-500/60",
   },
+  {
+    id: "leaderboard",
+    label: "Leaderboard",
+    icon: <Trophy className="w-4 h-4" />,
+    color: "text-yellow-400",
+    glow: "border-yellow-500/60",
+  },
+  {
+    id: "notifications",
+    label: "Notifications",
+    icon: <Bell className="w-4 h-4" />,
+    color: "text-pink-400",
+    glow: "border-pink-500/60",
+  },
 ];
 
 // ---- Main Dashboard ----
@@ -261,6 +278,26 @@ export function MemberDashboard({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [glowingId, setGlowingId] = useState<string | null>(null);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
+  const [installedApps, setInstalledApps] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("clawpro_installed_integrations");
+      return saved ? JSON.parse(saved) : ["whatsapp", "telegram", "chatgpt"];
+    } catch {
+      return ["whatsapp", "telegram", "chatgpt"];
+    }
+  });
+
+  const handleInstallApp = (id: string) => {
+    if (installedApps.includes(id)) return;
+    const updated = [...installedApps, id];
+    setInstalledApps(updated);
+    localStorage.setItem(
+      "clawpro_installed_integrations",
+      JSON.stringify(updated),
+    );
+    const item = INTEGRATIONS.find((i) => i.id === id);
+    toast.success(`${item?.name ?? "App"} installed successfully!`);
+  };
 
   const handleNavClick = (id: SidebarItem) => {
     setActive(id);
@@ -339,7 +376,7 @@ export function MemberDashboard({
             40%,60%{transform:rotate(-18deg)}
           }
           .cs0a{transform-origin:32px 48px;animation:clawSnap0 2s infinite}
-          .cs0b{transform-origin:32px 48px;animation:clawSnap0b 2s infinite}
+          .cs0btransform-origin:32px 48px;animation:clawSnap0b 2s infinite
         `}</style>
           <defs>
             <linearGradient id="cg0" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -386,16 +423,14 @@ export function MemberDashboard({
         >
           <title>Gold Claw</title>
           <style>{`
-          @keyframes clawSnap1 {
+          @keyframes clawSnap1 
             0%,100%{transform:rotate(-12deg)}
             50%{transform:rotate(12deg)}
-          }
-          @keyframes clawSnap1b {
+          @keyframes clawSnap1b 
             0%,100%{transform:rotate(12deg)}
             50%{transform:rotate(-12deg)}
-          }
-          .cs1a{transform-origin:32px 48px;animation:clawSnap1 2.5s ease-in-out infinite}
-          .cs1b{transform-origin:32px 48px;animation:clawSnap1b 2.5s ease-in-out infinite}
+          .cs1atransform-origin:32px 48px;animation:clawSnap1 2.5s ease-in-out infinite
+          .cs1btransform-origin:32px 48px;animation:clawSnap1b 2.5s ease-in-out infinite
         `}</style>
           <defs>
             <linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -426,21 +461,18 @@ export function MemberDashboard({
         >
           <title>Cyan Cyber Claw</title>
           <style>{`
-          @keyframes clawSnap2a {
+          @keyframes clawSnap2a 
             0%,100%{transform:rotate(-14deg)}
             40%{transform:rotate(14deg)}
-          }
-          @keyframes clawSnap2b {
+          @keyframes clawSnap2b 
             0%,100%{transform:rotate(0deg)}
             40%{transform:rotate(-8deg)}
-          }
-          @keyframes clawSnap2c {
+          @keyframes clawSnap2c 
             0%,100%{transform:rotate(14deg)}
             40%{transform:rotate(-14deg)}
-          }
-          .cs2a{transform-origin:32px 50px;animation:clawSnap2a 1.6s infinite}
-          .cs2b{transform-origin:32px 50px;animation:clawSnap2b 1.6s infinite}
-          .cs2c{transform-origin:32px 50px;animation:clawSnap2c 1.6s infinite}
+          .cs2atransform-origin:32px 50px;animation:clawSnap2a 1.6s infinite
+          .cs2btransform-origin:32px 50px;animation:clawSnap2b 1.6s infinite
+          .cs2ctransform-origin:32px 50px;animation:clawSnap2c 1.6s infinite
         `}</style>
           <defs>
             <linearGradient id="cg2" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -487,8 +519,8 @@ export function MemberDashboard({
       >
         <title>Purple Crystal Claw</title>
         <style>{`
-          @keyframes clawSnap3a {
-            0%,100%{transform:rotate(-20deg);filter:drop-shadow(0 0 4px #8b5cf680)}
+          @keyframes clawSnap3a 
+            0%,100%{transform:rotate(-20deg);filter:drop-shadow(0 0 4px #8b5cf680)
             50%{transform:rotate(8deg);filter:drop-shadow(0 0 10px #8b5cf6cc)}
           }
           @keyframes clawSnap3b {
@@ -750,6 +782,76 @@ export function MemberDashboard({
             </nav>
           </div>
 
+          {/* Dynamic Installed Apps from Integrations panel */}
+          {(() => {
+            const KNOWN = [
+              "clawbot",
+              "whatsapp",
+              "telegram",
+              "chatgpt",
+              "home",
+              "integrations",
+              "pricealerts",
+              "settings",
+              "activity",
+              "stats",
+              "tasks",
+              "status",
+              "leaderboard",
+              "notifications",
+            ];
+            const dynamicApps = installedApps
+              .filter((id) => !KNOWN.includes(id))
+              .map((id) => INTEGRATIONS.find((i) => i.id === id))
+              .filter(Boolean) as (typeof INTEGRATIONS)[number][];
+            if (dynamicApps.length === 0) return null;
+            return (
+              <div className="px-3 pb-2">
+                <Separator className="mb-2 opacity-20" />
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 mb-1">
+                  Installed Apps
+                </p>
+                <nav className="space-y-1">
+                  {dynamicApps.map((app) => {
+                    const isActive = active === app.id;
+                    return (
+                      <button
+                        key={app.id}
+                        type="button"
+                        data-ocid={`dashboard.${app.id}.tab`}
+                        onClick={() => {
+                          setActive(app.id as SidebarItem);
+                          setMobileSidebarOpen(false);
+                        }}
+                        className={[
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative border-l-2",
+                          isActive
+                            ? "border-violet-500/60"
+                            : "border-transparent text-muted-foreground hover:text-foreground",
+                        ].join(" ")}
+                        style={
+                          isActive
+                            ? {
+                                background: "rgba(255,255,255,0.06)",
+                                color: app.color,
+                              }
+                            : {}
+                        }
+                      >
+                        <span
+                          style={{ color: isActive ? app.color : undefined }}
+                        >
+                          {app.icon}
+                        </span>
+                        <span className="truncate">{app.name}</span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            );
+          })()}
+
           {/* Footer */}
           <div className="p-4 border-t border-white/10">
             <p className="text-[10px] text-muted-foreground text-center">
@@ -856,7 +958,12 @@ export function MemberDashboard({
                 {active === "stats" && <StatsPanel />}
                 {active === "tasks" && <TasksPanel />}
                 {active === "status" && <StatusPanel />}
-                {active === "integrations" && <InstallIntegrationsPanel />}
+                {active === "integrations" && (
+                  <InstallIntegrationsPanel
+                    installed={installedApps}
+                    onInstall={handleInstallApp}
+                  />
+                )}
                 {active === "settings" && (
                   <SettingsPanel
                     handle={handle}
@@ -864,6 +971,31 @@ export function MemberDashboard({
                     userAccount={userAccount}
                   />
                 )}
+                {active === "leaderboard" && <LeaderboardPanel />}
+                {active === "notifications" && <NotificationsPanel />}
+                {(() => {
+                  const KNOWN = [
+                    "home",
+                    "clawbot",
+                    "whatsapp",
+                    "telegram",
+                    "chatgpt",
+                    "pricealerts",
+                    "activity",
+                    "stats",
+                    "tasks",
+                    "status",
+                    "integrations",
+                    "settings",
+                    "leaderboard",
+                    "notifications",
+                  ];
+                  if (!KNOWN.includes(active)) {
+                    const app = INTEGRATIONS.find((i) => i.id === active);
+                    if (app) return <DynamicIntegrationPanel app={app} />;
+                  }
+                  return null;
+                })()}
               </motion.div>
             </AnimatePresence>
           </div>
@@ -1114,28 +1246,28 @@ function HomePanel({
       id: "clawbot",
       label: "ClawBot AI",
       desc: "Personal AI assistant",
-      icon: "🤖",
+      icon: <Bot className="w-5 h-5" style={{ color: "#ef4444" }} />,
       color: "#ef4444",
     },
     {
       id: "whatsapp",
       label: "WhatsApp Bot",
       desc: "WA automation",
-      icon: "💬",
+      icon: <SiWhatsapp className="w-5 h-5" style={{ color: "#22c55e" }} />,
       color: "#22c55e",
     },
     {
       id: "telegram",
       label: "Telegram Bot",
       desc: "Telegram automation",
-      icon: "✈️",
+      icon: <SiTelegram className="w-5 h-5" style={{ color: "#3b82f6" }} />,
       color: "#3b82f6",
     },
     {
       id: "chatgpt",
       label: "ChatGPT",
       desc: "OpenAI integration",
-      icon: "✨",
+      icon: <Sparkles className="w-5 h-5" style={{ color: "#10b981" }} />,
       color: "#10b981",
     },
   ];
@@ -1442,7 +1574,7 @@ function HomePanel({
               }}
             >
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
                 style={{
                   background: `${app.color}20`,
                   boxShadow: `0 0 10px ${app.color}30`,
@@ -1492,142 +1624,6 @@ function HomePanel({
             <div className="text-xs text-muted-foreground">{stat.label}</div>
           </div>
         ))}
-      </div>
-
-      {/* Works With Everything */}
-      <div
-        data-ocid="overview.works_with.section"
-        className="rounded-xl p-4 border border-cyan-500/20 flex flex-col sm:flex-row sm:items-center gap-4"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.10 0.02 260), oklch(0.08 0.015 240))",
-          boxShadow: "0 0 18px rgba(6,182,212,0.08)",
-        }}
-      >
-        {/* Left label */}
-        <div className="flex items-center gap-2 flex-shrink-0 sm:w-32">
-          <span
-            style={{ color: "#06b6d4", filter: "drop-shadow(0 0 6px #06b6d4)" }}
-          >
-            ⚡
-          </span>
-          <span
-            className="text-xs font-bold"
-            style={{
-              color: "#06b6d4",
-              textShadow: "0 0 8px rgba(6,182,212,0.6)",
-            }}
-          >
-            Works With
-            <br />
-            Everything
-          </span>
-        </div>
-        {/* Right: product logos */}
-        <div className="flex-1 flex flex-wrap gap-2">
-          {[
-            {
-              name: "Facebook",
-              icon: "📘",
-              bg: "rgba(24,119,242,0.25)",
-              glow: "rgba(24,119,242,0.4)",
-            },
-            {
-              name: "Instagram",
-              icon: "📷",
-              bg: "rgba(225,48,108,0.25)",
-              glow: "rgba(225,48,108,0.4)",
-            },
-            {
-              name: "TikTok",
-              icon: "🎵",
-              bg: "rgba(40,40,40,0.7)",
-              glow: "rgba(255,255,255,0.15)",
-            },
-            {
-              name: "YouTube",
-              icon: "▶️",
-              bg: "rgba(255,0,0,0.25)",
-              glow: "rgba(255,0,0,0.4)",
-            },
-            {
-              name: "WhatsApp",
-              icon: "💬",
-              bg: "rgba(37,211,102,0.25)",
-              glow: "rgba(37,211,102,0.4)",
-            },
-            {
-              name: "Telegram",
-              icon: "✈️",
-              bg: "rgba(0,136,204,0.25)",
-              glow: "rgba(0,136,204,0.4)",
-            },
-            {
-              name: "Discord",
-              icon: "🎮",
-              bg: "rgba(88,101,242,0.25)",
-              glow: "rgba(88,101,242,0.4)",
-            },
-            {
-              name: "Slack",
-              icon: "💼",
-              bg: "rgba(74,21,75,0.4)",
-              glow: "rgba(197,0,200,0.3)",
-            },
-            {
-              name: "GitHub",
-              icon: "🐙",
-              bg: "rgba(100,100,100,0.3)",
-              glow: "rgba(200,200,200,0.2)",
-            },
-            {
-              name: "OpenAI",
-              icon: "🤖",
-              bg: "rgba(16,163,127,0.25)",
-              glow: "rgba(16,163,127,0.4)",
-            },
-            {
-              name: "Gemini",
-              icon: "✨",
-              bg: "rgba(234,179,8,0.2)",
-              glow: "rgba(234,179,8,0.4)",
-            },
-            {
-              name: "Notion",
-              icon: "📝",
-              bg: "rgba(255,255,255,0.1)",
-              glow: "rgba(255,255,255,0.2)",
-            },
-            {
-              name: "X",
-              icon: "𝕏",
-              bg: "rgba(15,15,15,0.7)",
-              glow: "rgba(255,255,255,0.15)",
-            },
-            {
-              name: "Spotify",
-              icon: "🎧",
-              bg: "rgba(30,215,96,0.25)",
-              glow: "rgba(30,215,96,0.4)",
-            },
-          ].map((product) => (
-            <div
-              key={product.name}
-              title={product.name}
-              className="flex items-center justify-center rounded-lg cursor-default select-none transition-transform hover:scale-110"
-              style={{
-                width: 32,
-                height: 32,
-                background: product.bg,
-                boxShadow: `0 0 8px ${product.glow}`,
-                border: `1px solid ${product.glow}`,
-                fontSize: 16,
-              }}
-            >
-              {product.icon}
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -3849,6 +3845,286 @@ const INTEGRATIONS: {
   },
 ];
 
+function LeaderboardPanel() {
+  const members = [
+    {
+      rank: 1,
+      handle: "cryptoking",
+      tier: "Platinum",
+      score: 9842,
+      badge: "🥇",
+    },
+    { rank: 2, handle: "clawmaster", tier: "Gold", score: 8751, badge: "🥈" },
+    {
+      rank: 3,
+      handle: "web3ninja",
+      tier: "Platinum",
+      score: 7630,
+      badge: "🥉",
+    },
+    { rank: 4, handle: "defiwhale", tier: "Gold", score: 6520, badge: "🏅" },
+    { rank: 5, handle: "satoshi_jr", tier: "Silver", score: 5410, badge: "🏅" },
+    { rank: 6, handle: "bot_wizard", tier: "Gold", score: 4380, badge: "🏅" },
+    { rank: 7, handle: "nft_hunter", tier: "Silver", score: 3290, badge: "🏅" },
+    {
+      rank: 8,
+      handle: "clawpro_fan",
+      tier: "Platinum",
+      score: 2870,
+      badge: "🏅",
+    },
+    {
+      rank: 9,
+      handle: "crypto_sage",
+      tier: "Silver",
+      score: 2150,
+      badge: "🏅",
+    },
+    { rank: 10, handle: "hodler_pro", tier: "Gold", score: 1980, badge: "🏅" },
+  ];
+  const tierColors: Record<string, string> = {
+    Platinum: "#a78bfa",
+    Gold: "#f59e0b",
+    Silver: "#94a3b8",
+  };
+  return (
+    <div className="p-6 space-y-5">
+      <div
+        className="rounded-xl p-5 border border-yellow-500/30"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.12 0.025 80), oklch(0.08 0.015 60))",
+          boxShadow: "0 0 24px rgba(245,158,11,0.15)",
+        }}
+      >
+        <div className="flex items-center gap-3 mb-1">
+          <Trophy className="w-5 h-5 text-yellow-400" />
+          <h2 className="text-xl font-bold" style={{ color: "#f59e0b" }}>
+            Leaderboard
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Top ClawPro members by activity score
+        </p>
+      </div>
+      <div className="space-y-2">
+        {members.map((m) => (
+          <div
+            key={m.rank}
+            className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-white/20 transition-all"
+            style={{
+              background: "oklch(0.09 0.015 240)",
+              boxShadow:
+                m.rank <= 3 ? "0 0 12px rgba(245,158,11,0.1)" : undefined,
+            }}
+          >
+            <span className="text-lg w-7 text-center">{m.badge}</span>
+            <span className="text-xs font-bold text-muted-foreground w-4">
+              {m.rank}
+            </span>
+            <span className="flex-1 text-sm font-semibold">@{m.handle}</span>
+            <span
+              className="text-xs px-2 py-0.5 rounded-full border"
+              style={{
+                color: tierColors[m.tier],
+                borderColor: `${tierColors[m.tier]}50`,
+                background: `${tierColors[m.tier]}15`,
+              }}
+            >
+              {m.tier}
+            </span>
+            <span className="text-xs font-mono text-yellow-300">
+              {m.score.toLocaleString()}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NotificationsPanel() {
+  const notifs = [
+    {
+      id: 1,
+      icon: "👤",
+      color: "#06b6d4",
+      title: "New follower",
+      desc: "@cryptoking started following you",
+      time: "2m ago",
+    },
+    {
+      id: 2,
+      icon: "🏅",
+      color: "#f59e0b",
+      title: "Badge earned",
+      desc: "You earned the Early Adopter badge!",
+      time: "1h ago",
+    },
+    {
+      id: 3,
+      icon: "🔔",
+      color: "#ef4444",
+      title: "Price alert triggered",
+      desc: "BTC crossed $100,000!",
+      time: "3h ago",
+    },
+    {
+      id: 4,
+      icon: "⚡",
+      color: "#8b5cf6",
+      title: "Integration ready",
+      desc: "Your WhatsApp bot is connected and active",
+      time: "5h ago",
+    },
+    {
+      id: 5,
+      icon: "⬆️",
+      color: "#10b981",
+      title: "Tier upgrade available",
+      desc: "Upgrade to Gold for 5x more bot messages",
+      time: "1d ago",
+    },
+    {
+      id: 6,
+      icon: "🛡️",
+      color: "#64748b",
+      title: "System update",
+      desc: "ClawPro v95 deployed — new AI features available",
+      time: "2d ago",
+    },
+  ];
+  return (
+    <div className="p-6 space-y-5">
+      <div
+        className="rounded-xl p-5 border border-pink-500/30"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.12 0.025 0), oklch(0.08 0.015 340))",
+          boxShadow: "0 0 24px rgba(236,72,153,0.15)",
+        }}
+      >
+        <div className="flex items-center gap-3 mb-1">
+          <Bell className="w-5 h-5 text-pink-400" />
+          <h2 className="text-xl font-bold" style={{ color: "#f472b6" }}>
+            Notifications
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Recent activity and alerts
+        </p>
+      </div>
+      <div className="space-y-2">
+        {notifs.map((n) => (
+          <div
+            key={n.id}
+            className="flex items-start gap-3 p-4 rounded-xl border border-white/10 hover:border-white/20 transition-all cursor-pointer"
+            style={{ background: "oklch(0.09 0.015 240)" }}
+          >
+            <span className="text-xl mt-0.5">{n.icon}</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: n.color }}>
+                {n.title}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">{n.desc}</p>
+            </div>
+            <span className="text-[10px] text-muted-foreground flex-shrink-0">
+              {n.time}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DynamicIntegrationPanel({
+  app,
+}: {
+  app: {
+    id: string;
+    name: string;
+    icon: React.ReactNode;
+    color: string;
+    desc: string;
+  };
+}) {
+  return (
+    <div className="p-6 space-y-5">
+      <div
+        className="rounded-xl p-5 border"
+        style={{
+          borderColor: `${app.color}40`,
+          background:
+            "linear-gradient(135deg, oklch(0.12 0.02 260), oklch(0.08 0.015 240))",
+          boxShadow: `0 0 24px ${app.color}20`,
+        }}
+      >
+        <div className="flex items-center gap-4 mb-3">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{
+              background: `${app.color}20`,
+              boxShadow: `0 0 16px ${app.color}40`,
+            }}
+          >
+            {app.icon}
+          </div>
+          <div>
+            <h2 className="text-xl font-bold" style={{ color: app.color }}>
+              {app.name}
+            </h2>
+            <p className="text-sm text-muted-foreground">{app.desc}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span
+            className="text-xs px-2 py-0.5 rounded-full border"
+            style={{
+              color: "#22c55e",
+              borderColor: "rgba(34,197,94,0.4)",
+              background: "rgba(34,197,94,0.1)",
+            }}
+          >
+            ● Active
+          </span>
+          <span className="text-xs text-muted-foreground">
+            Installed & Ready
+          </span>
+        </div>
+      </div>
+      <div
+        className="rounded-xl p-5 border border-white/10"
+        style={{ background: "oklch(0.09 0.015 240)" }}
+      >
+        <h3 className="text-sm font-semibold mb-4">Configuration</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              Enable Integration
+            </span>
+            <div
+              className="w-10 h-5 rounded-full relative cursor-pointer"
+              style={{ background: app.color }}
+            >
+              <div className="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full" />
+            </div>
+          </div>
+          <div className="pt-2">
+            <Label className="text-sm text-muted-foreground">
+              API Webhook URL
+            </Label>
+            <Input
+              className="mt-1 bg-background/50 border-white/10 text-sm"
+              placeholder="https://api.example.com/webhook"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const CATEGORIES = [
   "All",
   "AI",
@@ -3858,18 +4134,11 @@ const CATEGORIES = [
   "Payments",
   "Productivity",
 ];
-const PRE_INSTALLED = ["whatsapp", "telegram", "chatgpt"];
-
-function InstallIntegrationsPanel() {
+function InstallIntegrationsPanel({
+  installed,
+  onInstall,
+}: { installed: string[]; onInstall: (id: string) => void }) {
   const [activeFilter, setActiveFilter] = useState("All");
-  const [installed, setInstalled] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem("clawpro_installed_integrations");
-      return saved ? JSON.parse(saved) : PRE_INSTALLED;
-    } catch {
-      return PRE_INSTALLED;
-    }
-  });
 
   const filtered =
     activeFilter === "All"
@@ -3877,15 +4146,7 @@ function InstallIntegrationsPanel() {
       : INTEGRATIONS.filter((i) => i.category === activeFilter);
 
   const install = (id: string) => {
-    if (installed.includes(id)) return;
-    const updated = [...installed, id];
-    setInstalled(updated);
-    localStorage.setItem(
-      "clawpro_installed_integrations",
-      JSON.stringify(updated),
-    );
-    const item = INTEGRATIONS.find((i) => i.id === id);
-    toast.success(`${item?.name} installed successfully!`);
+    onInstall(id);
   };
 
   const CATEGORY_COLORS: Record<string, string> = {
