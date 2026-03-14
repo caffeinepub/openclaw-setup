@@ -735,8 +735,8 @@ export function MemberDashboard({
 
           {/* Navigation */}
           <div
-            className="flex-1 px-3 py-3"
-            style={{ overflowY: "auto", minHeight: 0 }}
+            className="px-3 py-3"
+            style={{ height: "50%", overflowY: "auto", minHeight: 0 }}
           >
             <nav className="space-y-1">
               {NAV_ITEMS.map((item) => {
@@ -806,48 +806,50 @@ export function MemberDashboard({
               .filter(Boolean) as (typeof INTEGRATIONS)[number][];
             if (dynamicApps.length === 0) return null;
             return (
-              <div className="px-3 pb-2">
-                <Separator className="mb-2 opacity-20" />
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 mb-1">
-                  Installed Apps
-                </p>
-                <nav className="space-y-1">
-                  {dynamicApps.map((app) => {
-                    const isActive = active === app.id;
-                    return (
-                      <button
-                        key={app.id}
-                        type="button"
-                        data-ocid={`dashboard.${app.id}.tab`}
-                        onClick={() => {
-                          setActive(app.id as SidebarItem);
-                          setMobileSidebarOpen(false);
-                        }}
-                        className={[
-                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative border-l-2",
-                          isActive
-                            ? "border-violet-500/60"
-                            : "border-transparent text-muted-foreground hover:text-foreground",
-                        ].join(" ")}
-                        style={
-                          isActive
-                            ? {
-                                background: "rgba(255,255,255,0.06)",
-                                color: app.color,
-                              }
-                            : {}
-                        }
-                      >
-                        <span
-                          style={{ color: isActive ? app.color : undefined }}
+              <div style={{ height: "50%", overflowY: "auto", minHeight: 0 }}>
+                <div className="px-3 pb-2">
+                  <Separator className="mb-2 opacity-20" />
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 mb-1">
+                    Installed Apps
+                  </p>
+                  <nav className="space-y-1">
+                    {dynamicApps.map((app) => {
+                      const isActive = active === app.id;
+                      return (
+                        <button
+                          key={app.id}
+                          type="button"
+                          data-ocid={`dashboard.${app.id}.tab`}
+                          onClick={() => {
+                            setActive(app.id as SidebarItem);
+                            setMobileSidebarOpen(false);
+                          }}
+                          className={[
+                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative border-l-2",
+                            isActive
+                              ? "border-violet-500/60"
+                              : "border-transparent text-muted-foreground hover:text-foreground",
+                          ].join(" ")}
+                          style={
+                            isActive
+                              ? {
+                                  background: "rgba(255,255,255,0.06)",
+                                  color: app.color,
+                                }
+                              : {}
+                          }
                         >
-                          {app.icon}
-                        </span>
-                        <span className="truncate">{app.name}</span>
-                      </button>
-                    );
-                  })}
-                </nav>
+                          <span
+                            style={{ color: isActive ? app.color : undefined }}
+                          >
+                            {app.icon}
+                          </span>
+                          <span className="truncate">{app.name}</span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </div>
               </div>
             );
           })()}
@@ -914,6 +916,15 @@ export function MemberDashboard({
                   </span>
                 </button>
               )}
+              <button
+                type="button"
+                data-ocid="dashboard.home.button"
+                onClick={() => setActive("home")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
+              >
+                <Home className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </button>
               <button
                 type="button"
                 data-ocid="dashboard.logout.button"

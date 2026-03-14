@@ -393,7 +393,6 @@ function PlayStoreBadge() {
     <>
       <style>{`
         @keyframes playStorePulse { 0%{transform:scale(1)} 30%{transform:scale(1.08)} 60%{transform:scale(1.04)} 100%{transform:scale(1)} }
-        @keyframes appStorePulse  { 0%{transform:scale(1)} 30%{transform:scale(1.08)} 60%{transform:scale(1.04)} 100%{transform:scale(1)} }
       `}</style>
       <a
         href="https://play.google.com/store"
@@ -402,46 +401,22 @@ function PlayStoreBadge() {
         aria-label="Get it on Google Play"
         data-ocid="partner.playstore.button"
         onClick={handleClick}
-        className="inline-flex items-center gap-3 px-5 py-3 min-w-[160px] rounded-xl border border-border bg-[#111] transition-all duration-200 hover:border-border/60"
+        className="inline-flex items-center transition-all duration-200"
         style={{
           animation: isGlowing
             ? "playStorePulse 0.8s ease-out forwards"
             : undefined,
           boxShadow: isGlowing
-            ? "0 0 0 4px rgba(74,222,128,0.4), 0 0 30px rgba(74,222,128,0.3), 0 0 60px rgba(74,222,128,0.15)"
+            ? "0 0 0 4px rgba(74,222,128,0.4), 0 0 30px rgba(74,222,128,0.3)"
             : "none",
+          borderRadius: 8,
         }}
       >
-        {/* Official Google Play icon - 4 colored triangles */}
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 24 24"
-          fill="none"
-          role="img"
-          aria-label="Google Play"
-        >
-          <title>Google Play</title>
-          {/* top-left cyan */}
-          <path d="M3 1.5L13.5 12L3 22.5V1.5z" fill="#00d4aa" />
-          {/* bottom-left green */}
-          <path d="M3 22.5L16.5 15.5L13.5 12L3 22.5z" fill="#5ef86b" />
-          {/* top-right yellow */}
-          <path d="M3 1.5L13.5 12L16.5 8.5L3 1.5z" fill="#ffca28" />
-          {/* center-right red */}
-          <path
-            d="M13.5 12L16.5 8.5L21 10.8L16.5 15.5L13.5 12z"
-            fill="#f04747"
-          />
-        </svg>
-        <div className="text-left">
-          <div className="text-[9px] text-white/70 leading-none mb-0.5 tracking-wide uppercase">
-            GET IT ON
-          </div>
-          <div className="text-sm font-bold leading-none text-white">
-            Google Play
-          </div>
-        </div>
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg"
+          alt="Get it on Google Play"
+          style={{ height: 44, width: "auto" }}
+        />
       </a>
     </>
   );
@@ -456,47 +431,35 @@ function AppStoreBadge() {
   };
 
   return (
-    <a
-      href="https://apps.apple.com"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Download on the App Store"
-      data-ocid="partner.appstore.button"
-      onClick={handleClick}
-      className="inline-flex items-center gap-3 px-5 py-3 min-w-[160px] rounded-xl border border-border bg-[#111] transition-all duration-200 hover:border-border/60"
-      style={{
-        animation: isGlowing
-          ? "appStorePulse 0.8s ease-out forwards"
-          : undefined,
-        boxShadow: isGlowing
-          ? "0 0 0 4px rgba(255,255,255,0.3), 0 0 30px rgba(200,200,255,0.3), 0 0 60px rgba(200,200,255,0.15)"
-          : "none",
-      }}
-    >
-      {/* Official Apple logo */}
-      <svg
-        width="24"
-        height="28"
-        viewBox="0 0 814 1000"
-        fill="none"
-        role="img"
-        aria-label="App Store"
+    <>
+      <style>{`
+        @keyframes appStorePulse { 0%{transform:scale(1)} 30%{transform:scale(1.08)} 60%{transform:scale(1.04)} 100%{transform:scale(1)} }
+      `}</style>
+      <a
+        href="https://apps.apple.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Download on the App Store"
+        data-ocid="partner.appstore.button"
+        onClick={handleClick}
+        className="inline-flex items-center transition-all duration-200"
+        style={{
+          animation: isGlowing
+            ? "appStorePulse 0.8s ease-out forwards"
+            : undefined,
+          boxShadow: isGlowing
+            ? "0 0 0 4px rgba(200,200,255,0.4), 0 0 30px rgba(200,200,255,0.3)"
+            : "none",
+          borderRadius: 8,
+        }}
       >
-        <title>App Store</title>
-        <path
-          d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 405.8 0 304.8 0 212.7c0-130.3 84.3-199.2 167.5-199.2 58.6 0 107.4 43.4 143.8 43.4 34.4 0 92.5-46.1 159.3-46.1 25.4 0 108.2 4.5 179.7 77 0 0 10.2 10.9 10.2 10.9zm-88.8-219.7c0 71.4-36.4 154.5-79.4 204.7-42.8 49.3-100.7 91.1-168.7 91.1-7.7 0-15.4-.6-23.2-1.3 0-1.3-.3-3.2-.3-4.5 0-72.7 36.4-152.9 81.7-204.7 43.5-49.3 115.4-93.7 181-93.7 7.7 0 15.4.6 23.1 1.3.3 2.4 1.9 5.8 1.9 7.2l-16.1-.1z"
-          fill="#ffffff"
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg"
+          alt="Download on the App Store"
+          style={{ height: 44, width: "auto" }}
         />
-      </svg>
-      <div className="text-left">
-        <div className="text-[9px] text-white/70 leading-none mb-0.5 tracking-wide">
-          Download on the
-        </div>
-        <div className="text-sm font-bold leading-none text-white">
-          App Store
-        </div>
-      </div>
-    </a>
+      </a>
+    </>
   );
 }
 

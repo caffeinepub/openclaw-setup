@@ -254,6 +254,18 @@ export function Navbar({
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
+                  {onDashboardClick && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onDashboardClick}
+                      className="border-cyan/40 text-cyan hover:bg-cyan/10 font-semibold"
+                      data-ocid="nav.dashboard.button"
+                    >
+                      <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                      Dashboard
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"

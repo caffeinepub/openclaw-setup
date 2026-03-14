@@ -1,112 +1,6 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-// Inline stubs for react-simple-maps (package not available)
-const ComposableMap = ({
-  children,
-  ...p
-}: React.PropsWithChildren<Record<string, unknown>>) => (
-  <svg
-    viewBox="0 0 900 450"
-    style={{ width: "100%", height: "auto" }}
-    aria-label="World map"
-    role="img"
-    {...(p as React.SVGProps<SVGSVGElement>)}
-  >
-    <title>World map</title>
-    {children}
-  </svg>
-);
-type GeoShape = {
-  rsmKey: string;
-  id?: string;
-  properties: Record<string, string>;
-};
-const Geographies = ({
-  geography,
-  children,
-}: {
-  geography: string;
-  children: (props: { geographies: GeoShape[] }) => React.ReactNode;
-}) => {
-  const [geos, setGeos] = React.useState<GeoShape[]>([]);
-  React.useEffect(() => {
-    fetch(geography)
-      .then((r) => r.json())
-      .then((data) => {
-        const features = data?.objects?.countries?.geometries ?? [];
-        setGeos(
-          features.map((g: Record<string, unknown>) => ({
-            rsmKey: String(g.id ?? Math.random()),
-            properties: {
-              ...(g.properties as Record<string, string>),
-              iso_n3: String(g.id ?? ""),
-            },
-          })),
-        );
-      })
-      .catch(() => setGeos([]));
-  }, [geography]);
-  return <>{children({ geographies: geos })}</>;
-};
-const Geography = ({
-  geography,
-  style,
-  onMouseEnter,
-  onMouseLeave,
-  onClick,
-  fill,
-  stroke,
-  strokeWidth,
-}: {
-  geography: GeoShape;
-  style?: {
-    default?: React.CSSProperties;
-    hover?: React.CSSProperties;
-    pressed?: React.CSSProperties;
-  };
-  onMouseEnter?: (e: React.MouseEvent) => void;
-  onMouseLeave?: (e: React.MouseEvent) => void;
-  onClick?: (e: React.MouseEvent) => void;
-  fill?: string;
-  stroke?: string;
-  strokeWidth?: number;
-}) => {
-  const [hovered, setHovered] = React.useState(false);
-  const merged = {
-    ...(style?.default ?? {}),
-    ...(hovered ? (style?.hover ?? {}) : {}),
-  };
-  return (
-    <rect
-      key={geography.rsmKey}
-      x={0}
-      y={0}
-      width={0}
-      height={0}
-      fill={fill}
-      stroke={stroke}
-      strokeWidth={strokeWidth}
-      style={merged}
-      onMouseEnter={(e) => {
-        setHovered(true);
-        onMouseEnter?.(e as unknown as React.MouseEvent);
-      }}
-      onMouseLeave={(e) => {
-        setHovered(false);
-        onMouseLeave?.(e as unknown as React.MouseEvent);
-      }}
-      onClick={(e) => onClick?.(e as unknown as React.MouseEvent)}
-      onKeyDown={(e) =>
-        e.key === "Enter" && onClick?.(e as unknown as React.MouseEvent)
-      }
-    />
-  );
-};
+import type React from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 
 const GEO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -286,6 +180,7 @@ export function InteractiveWorldMap() {
   const [litCountries, setLitCountries] = useState<LitCountry[]>([]);
   const [popup, setPopup] = useState<PopupInfo | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
+  const [leaderboardSeed, setLeaderboardSeed] = useState(0);
 
   // Stable ref to all geo IDs so the interval doesn't re-register
   const allGeosRef = useRef<LitCountry[]>([]);
@@ -304,6 +199,17 @@ export function InteractiveWorldMap() {
     }, 1200);
     return () => clearInterval(timer);
   }, [selectedFilter]);
+
+  // Shuffle leaderboard every 10 minutes
+  useEffect(() => {
+    const timer = setInterval(
+      () => {
+        setLeaderboardSeed((s) => s + 1);
+      },
+      10 * 60 * 1000,
+    );
+    return () => clearInterval(timer);
+  }, []);
 
   const litSet = useMemo(
     () => new Set(litCountries.map((c) => c.id)),
@@ -336,20 +242,20 @@ export function InteractiveWorldMap() {
     setPopup({ name, isoNum, alpha2, region, members, xPct, yPct });
   }, []);
 
-  const topCountries = useMemo(
-    () =>
-      Object.entries(ISO_MAP)
-        .map(([isoNum, { alpha2, region, name }]) => ({
-          isoNum,
-          alpha2,
-          region,
-          name,
-          members: getMemberCount(isoNum),
-        }))
-        .sort((a, b) => b.members - a.members)
-        .slice(0, 5),
-    [],
-  );
+  const topCountries = useMemo(() => {
+    const rng = (idx: number) => Math.sin(leaderboardSeed * 9999 + idx) * 10000;
+    return Object.entries(ISO_MAP)
+      .map(([isoNum, { alpha2, region, name }], idx) => ({
+        isoNum,
+        alpha2,
+        region,
+        name,
+        members: getMemberCount(isoNum),
+        sortKey: getMemberCount(isoNum) + rng(idx) * 0.01,
+      }))
+      .sort((a, b) => b.sortKey - a.sortKey)
+      .slice(0, 5);
+  }, [leaderboardSeed]);
 
   const countsByRegion = useMemo(
     () =>
