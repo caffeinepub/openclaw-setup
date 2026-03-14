@@ -48,6 +48,8 @@ interface NavbarProps {
   onCreateAccountClick: () => void;
   onDashboardClick?: () => void;
   onMarketsClick: () => void;
+  onLoginClick?: () => void;
+  onLogout?: () => void;
 }
 
 export function Navbar({
@@ -57,6 +59,8 @@ export function Navbar({
   onCreateAccountClick,
   onDashboardClick,
   onMarketsClick,
+  onLoginClick,
+  onLogout,
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -238,7 +242,10 @@ export function Navbar({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={clear}
+                    onClick={() => {
+                      clear();
+                      onLogout?.();
+                    }}
                     className="border-cyan/30 text-cyan hover:bg-cyan/10 hover:border-cyan/60"
                   >
                     <LogOut className="w-4 h-4 mr-1.5" />
@@ -259,13 +266,15 @@ export function Navbar({
                   </Button>
                   <Button
                     size="sm"
-                    onClick={login}
-                    disabled={isLoggingIn}
+                    onClick={onLoginClick ?? login}
+                    disabled={isLoggingIn && !onLoginClick}
                     className="bg-cyan text-background hover:bg-cyan-bright font-semibold shadow-glow-sm"
                     data-ocid="nav.login.button"
                   >
                     <LogIn className="w-4 h-4 mr-1.5" />
-                    {isLoggingIn ? t.nav.connecting : t.nav.login}
+                    {isLoggingIn && !onLoginClick
+                      ? t.nav.connecting
+                      : t.nav.login}
                   </Button>
                 </div>
               )}
@@ -393,8 +402,8 @@ export function Navbar({
                       </Button>
                       <Button
                         size="sm"
-                        onClick={login}
-                        disabled={isLoggingIn}
+                        onClick={onLoginClick ?? login}
+                        disabled={isLoggingIn && !onLoginClick}
                         className="w-full bg-cyan text-background"
                         data-ocid="nav.login.button"
                       >

@@ -5,6 +5,7 @@ import { CreateAccountModal } from "./components/CreateAccountModal";
 import { CryptoMarketPage } from "./components/CryptoMarketPage";
 import { DotsBackground } from "./components/DotsBackground";
 import { Footer } from "./components/Footer";
+import { LoginModal } from "./components/LoginModal";
 import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
 import { PublicLeaderboardPage } from "./components/PublicLeaderboardPage";
@@ -55,6 +56,20 @@ function AppInner() {
     () => isLeaderboardHash(window.location.hash),
   );
   const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [localAccount, setLocalAccount] = useState<{
+    handle: string;
+    fullName: string;
+    email?: string;
+    phone?: string;
+  } | null>(() => {
+    try {
+      const s = localStorage.getItem("clawpro_logged_in_user");
+      return s ? JSON.parse(s) : null;
+    } catch {
+      return null;
+    }
+  });
   const [prefillHandle, setPrefillHandle] = useState("");
   const [prefillFullName, setPrefillFullName] = useState("");
 
@@ -111,10 +126,17 @@ function AppInner() {
         toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
         onCreateAccountClick={() => setShowCreateAccount(true)}
+        onLoginClick={() => setShowLogin(true)}
         onDashboardClick={
-          identity && userAccount ? () => setShowDashboard(true) : undefined
+          (identity && userAccount) || localAccount
+            ? () => setShowDashboard(true)
+            : undefined
         }
         onMarketsClick={() => setShowCryptoMarket(true)}
+        onLogout={() => {
+          setLocalAccount(null);
+          localStorage.removeItem("clawpro_logged_in_user");
+        }}
       />
 
       <main>
@@ -160,6 +182,7 @@ function AppInner() {
       {showDashboard && (
         <MemberDashboard
           onClose={() => setShowDashboard(false)}
+          localAccount={localAccount}
           onTopUp={(tier) => {
             setShowDashboard(false);
             setTierLandingTier(tier);
@@ -200,6 +223,23 @@ function AppInner() {
         <PublicLeaderboardPage onClose={closePublicLeaderboard} />
       )}
 
+      <LoginModal
+        open={showLogin}
+        onClose={() => setShowLogin(false)}
+        onLoginSuccess={(account) => {
+          localStorage.setItem(
+            "clawpro_logged_in_user",
+            JSON.stringify(account),
+          );
+          setLocalAccount(account);
+          setShowLogin(false);
+          setShowDashboard(true);
+        }}
+        onSwitchToRegister={() => {
+          setShowLogin(false);
+          setShowCreateAccount(true);
+        }}
+      />
       <CreateAccountModal
         open={showCreateAccount}
         onClose={() => setShowCreateAccount(false)}

@@ -1,5 +1,112 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+// Inline stubs for react-simple-maps (package not available)
+const ComposableMap = ({
+  children,
+  ...p
+}: React.PropsWithChildren<Record<string, unknown>>) => (
+  <svg
+    viewBox="0 0 900 450"
+    style={{ width: "100%", height: "auto" }}
+    aria-label="World map"
+    role="img"
+    {...(p as React.SVGProps<SVGSVGElement>)}
+  >
+    <title>World map</title>
+    {children}
+  </svg>
+);
+type GeoShape = {
+  rsmKey: string;
+  id?: string;
+  properties: Record<string, string>;
+};
+const Geographies = ({
+  geography,
+  children,
+}: {
+  geography: string;
+  children: (props: { geographies: GeoShape[] }) => React.ReactNode;
+}) => {
+  const [geos, setGeos] = React.useState<GeoShape[]>([]);
+  React.useEffect(() => {
+    fetch(geography)
+      .then((r) => r.json())
+      .then((data) => {
+        const features = data?.objects?.countries?.geometries ?? [];
+        setGeos(
+          features.map((g: Record<string, unknown>) => ({
+            rsmKey: String(g.id ?? Math.random()),
+            properties: {
+              ...(g.properties as Record<string, string>),
+              iso_n3: String(g.id ?? ""),
+            },
+          })),
+        );
+      })
+      .catch(() => setGeos([]));
+  }, [geography]);
+  return <>{children({ geographies: geos })}</>;
+};
+const Geography = ({
+  geography,
+  style,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+  fill,
+  stroke,
+  strokeWidth,
+}: {
+  geography: GeoShape;
+  style?: {
+    default?: React.CSSProperties;
+    hover?: React.CSSProperties;
+    pressed?: React.CSSProperties;
+  };
+  onMouseEnter?: (e: React.MouseEvent) => void;
+  onMouseLeave?: (e: React.MouseEvent) => void;
+  onClick?: (e: React.MouseEvent) => void;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+}) => {
+  const [hovered, setHovered] = React.useState(false);
+  const merged = {
+    ...(style?.default ?? {}),
+    ...(hovered ? (style?.hover ?? {}) : {}),
+  };
+  return (
+    <rect
+      key={geography.rsmKey}
+      x={0}
+      y={0}
+      width={0}
+      height={0}
+      fill={fill}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      style={merged}
+      onMouseEnter={(e) => {
+        setHovered(true);
+        onMouseEnter?.(e as unknown as React.MouseEvent);
+      }}
+      onMouseLeave={(e) => {
+        setHovered(false);
+        onMouseLeave?.(e as unknown as React.MouseEvent);
+      }}
+      onClick={(e) => onClick?.(e as unknown as React.MouseEvent)}
+      onKeyDown={(e) =>
+        e.key === "Enter" && onClick?.(e as unknown as React.MouseEvent)
+      }
+    />
+  );
+};
 
 const GEO_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";

@@ -237,6 +237,23 @@ export function CreateAccountModal({
           handle: trimHandle,
         }),
       );
+      // Save credentials for local login
+      const existingRaw1 = localStorage.getItem("clawpro_local_accounts");
+      const existing1 = existingRaw1 ? JSON.parse(existingRaw1) : [];
+      const newAccounts1 = existing1.filter(
+        (a: { handle: string }) => a.handle !== trimHandle,
+      );
+      newAccounts1.push({
+        handle: trimHandle,
+        password,
+        email: email.trim(),
+        phone: phone.trim(),
+        fullName: fullName.trim(),
+      });
+      localStorage.setItem(
+        "clawpro_local_accounts",
+        JSON.stringify(newAccounts1),
+      );
       toast.info("Please complete ICP login to create your account");
       login();
       onClose();
@@ -250,6 +267,23 @@ export function CreateAccountModal({
         fullName: fullName.trim(),
         handle: trimHandle,
       });
+      // Save credentials for local login
+      const existingRaw2 = localStorage.getItem("clawpro_local_accounts");
+      const existing2 = existingRaw2 ? JSON.parse(existingRaw2) : [];
+      const newAccounts2 = existing2.filter(
+        (a: { handle: string }) => a.handle !== trimHandle,
+      );
+      newAccounts2.push({
+        handle: trimHandle,
+        password,
+        email: email.trim(),
+        phone: phone.trim(),
+        fullName: fullName.trim(),
+      });
+      localStorage.setItem(
+        "clawpro_local_accounts",
+        JSON.stringify(newAccounts2),
+      );
       setSubmitted(true);
       toast.success("Account created successfully! Welcome to ClawPro.");
       setTimeout(onClose, 1500);

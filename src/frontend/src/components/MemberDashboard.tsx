@@ -18,6 +18,7 @@ import {
   Home,
   Key,
   Loader2,
+  LogOut,
   Menu,
   Plus,
   Puzzle,
@@ -35,7 +36,32 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { SiTelegram, SiWhatsapp } from "react-icons/si";
+import {
+  SiAirtable,
+  SiBitcoin,
+  SiDiscord,
+  SiFacebook,
+  SiGithub,
+  SiGitlab,
+  SiGoogledrive,
+  SiGooglegemini,
+  SiInstagram,
+  SiLine,
+  SiLinkedin,
+  SiNotion,
+  SiOpenai,
+  SiPaypal,
+  SiSlack,
+  SiStripe,
+  SiTelegram,
+  SiTether,
+  SiTiktok,
+  SiVercel,
+  SiWhatsapp,
+  SiX,
+  SiYoutube,
+  SiZapier,
+} from "react-icons/si";
 import {
   Cell,
   Pie,
@@ -220,7 +246,17 @@ const NAV_ITEMS: {
 export function MemberDashboard({
   onClose,
   onTopUp,
-}: { onClose: () => void; onTopUp?: (tier: MembershipTier) => void }) {
+  localAccount,
+}: {
+  onClose: () => void;
+  onTopUp?: (tier: MembershipTier) => void;
+  localAccount?: {
+    handle: string;
+    fullName: string;
+    email?: string;
+    phone?: string;
+  } | null;
+}) {
   const [active, setActive] = useState<SidebarItem>("home");
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [glowingId, setGlowingId] = useState<string | null>(null);
@@ -238,8 +274,10 @@ export function MemberDashboard({
   const { data: notifications } = useForumNotifications();
 
   const principal = identity?.getPrincipal().toString() ?? "";
-  const handle = userAccount?.handle ?? principal.slice(0, 8);
-  const fullName = userAccount?.fullName ?? "ClawPro User";
+  const handle =
+    userAccount?.handle ?? localAccount?.handle ?? principal.slice(0, 8);
+  const fullName =
+    userAccount?.fullName ?? localAccount?.fullName ?? "ClawPro User";
   const tier = membership?.tier ?? MembershipTierEnum.silver;
   const tierStyle = TIER_STYLES[tier];
   const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
@@ -774,6 +812,18 @@ export function MemberDashboard({
                   </span>
                 </button>
               )}
+              <button
+                type="button"
+                data-ocid="dashboard.logout.button"
+                onClick={() => {
+                  localStorage.removeItem("clawpro_logged_in_user");
+                  onClose();
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-all duration-200"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
             </div>
           </div>
 
@@ -3547,13 +3597,24 @@ function StatusPanel() {
 }
 
 // ---- Install & Integrations Panel ----
-const INTEGRATIONS = [
+const INTEGRATIONS: {
+  id: string;
+  name: string;
+  category: string;
+  icon: React.ReactNode;
+  color: string;
+  desc: string;
+}[] = [
   // AI & Bots
   {
     id: "openclaw",
     name: "OpenClaw.ai",
     category: "AI",
-    emoji: "🦾",
+    icon: (
+      <span className="text-xl font-black" style={{ color: "#ef4444" }}>
+        🦾
+      </span>
+    ),
     color: "#ef4444",
     desc: "ClawPro native AI engine",
   },
@@ -3561,7 +3622,7 @@ const INTEGRATIONS = [
     id: "openai",
     name: "OpenAI",
     category: "AI",
-    emoji: "🤖",
+    icon: <SiOpenai className="w-6 h-6" style={{ color: "#10a37f" }} />,
     color: "#10a37f",
     desc: "GPT-4 & DALL-E models",
   },
@@ -3569,7 +3630,7 @@ const INTEGRATIONS = [
     id: "chatgpt",
     name: "ChatGPT",
     category: "AI",
-    emoji: "✨",
+    icon: <SiOpenai className="w-6 h-6" style={{ color: "#10b981" }} />,
     color: "#10b981",
     desc: "Conversational AI",
   },
@@ -3577,7 +3638,7 @@ const INTEGRATIONS = [
     id: "gemini",
     name: "Gemini",
     category: "AI",
-    emoji: "💎",
+    icon: <SiGooglegemini className="w-6 h-6" style={{ color: "#4285f4" }} />,
     color: "#4285f4",
     desc: "Google AI assistant",
   },
@@ -3585,7 +3646,11 @@ const INTEGRATIONS = [
     id: "claude",
     name: "Claude",
     category: "AI",
-    emoji: "🌟",
+    icon: (
+      <span className="text-lg font-black" style={{ color: "#d97706" }}>
+        A
+      </span>
+    ),
     color: "#d97706",
     desc: "Anthropic AI assistant",
   },
@@ -3594,7 +3659,7 @@ const INTEGRATIONS = [
     id: "whatsapp",
     name: "WhatsApp",
     category: "Messaging",
-    emoji: "💬",
+    icon: <SiWhatsapp className="w-6 h-6" style={{ color: "#22c55e" }} />,
     color: "#22c55e",
     desc: "WA bot automation",
   },
@@ -3602,7 +3667,7 @@ const INTEGRATIONS = [
     id: "telegram",
     name: "Telegram",
     category: "Messaging",
-    emoji: "✈️",
+    icon: <SiTelegram className="w-6 h-6" style={{ color: "#3b82f6" }} />,
     color: "#3b82f6",
     desc: "Telegram bot & channels",
   },
@@ -3610,7 +3675,7 @@ const INTEGRATIONS = [
     id: "discord",
     name: "Discord",
     category: "Messaging",
-    emoji: "🎮",
+    icon: <SiDiscord className="w-6 h-6" style={{ color: "#5865f2" }} />,
     color: "#5865f2",
     desc: "Community & bots",
   },
@@ -3618,15 +3683,15 @@ const INTEGRATIONS = [
     id: "slack",
     name: "Slack",
     category: "Messaging",
-    emoji: "🔔",
-    color: "#4a154b",
+    icon: <SiSlack className="w-6 h-6" style={{ color: "#e01e5a" }} />,
+    color: "#e01e5a",
     desc: "Team communication",
   },
   {
     id: "line",
     name: "LINE",
     category: "Messaging",
-    emoji: "💚",
+    icon: <SiLine className="w-6 h-6" style={{ color: "#00b900" }} />,
     color: "#00b900",
     desc: "LINE messaging API",
   },
@@ -3635,7 +3700,7 @@ const INTEGRATIONS = [
     id: "facebook",
     name: "Facebook",
     category: "Social",
-    emoji: "📘",
+    icon: <SiFacebook className="w-6 h-6" style={{ color: "#1877f2" }} />,
     color: "#1877f2",
     desc: "Pages & ads",
   },
@@ -3643,7 +3708,7 @@ const INTEGRATIONS = [
     id: "instagram",
     name: "Instagram",
     category: "Social",
-    emoji: "📸",
+    icon: <SiInstagram className="w-6 h-6" style={{ color: "#e1306c" }} />,
     color: "#e1306c",
     desc: "Posts & stories",
   },
@@ -3651,7 +3716,7 @@ const INTEGRATIONS = [
     id: "tiktok",
     name: "TikTok",
     category: "Social",
-    emoji: "🎵",
+    icon: <SiTiktok className="w-6 h-6" style={{ color: "#ff0050" }} />,
     color: "#ff0050",
     desc: "Short video content",
   },
@@ -3659,15 +3724,15 @@ const INTEGRATIONS = [
     id: "twitter",
     name: "X / Twitter",
     category: "Social",
-    emoji: "🐦",
-    color: "#1da1f2",
+    icon: <SiX className="w-6 h-6" style={{ color: "#ffffff" }} />,
+    color: "#ffffff",
     desc: "Posts & analytics",
   },
   {
     id: "youtube",
     name: "YouTube",
     category: "Social",
-    emoji: "▶️",
+    icon: <SiYoutube className="w-6 h-6" style={{ color: "#ff0000" }} />,
     color: "#ff0000",
     desc: "Video & streaming",
   },
@@ -3675,7 +3740,7 @@ const INTEGRATIONS = [
     id: "linkedin",
     name: "LinkedIn",
     category: "Social",
-    emoji: "💼",
+    icon: <SiLinkedin className="w-6 h-6" style={{ color: "#0077b5" }} />,
     color: "#0077b5",
     desc: "Professional network",
   },
@@ -3684,15 +3749,15 @@ const INTEGRATIONS = [
     id: "github",
     name: "GitHub",
     category: "Dev",
-    emoji: "🐙",
-    color: "#6e40c9",
+    icon: <SiGithub className="w-6 h-6" style={{ color: "#e6edf3" }} />,
+    color: "#e6edf3",
     desc: "Code repositories",
   },
   {
     id: "gitlab",
     name: "GitLab",
     category: "Dev",
-    emoji: "🦊",
+    icon: <SiGitlab className="w-6 h-6" style={{ color: "#fc6d26" }} />,
     color: "#fc6d26",
     desc: "DevOps platform",
   },
@@ -3700,15 +3765,15 @@ const INTEGRATIONS = [
     id: "notion",
     name: "Notion",
     category: "Dev",
-    emoji: "📝",
-    color: "#888888",
+    icon: <SiNotion className="w-6 h-6" style={{ color: "#ffffff" }} />,
+    color: "#ffffff",
     desc: "Docs & databases",
   },
   {
     id: "vercel",
     name: "Vercel",
     category: "Dev",
-    emoji: "▲",
+    icon: <SiVercel className="w-6 h-6" style={{ color: "#ffffff" }} />,
     color: "#ffffff",
     desc: "Deploy & hosting",
   },
@@ -3717,15 +3782,15 @@ const INTEGRATIONS = [
     id: "paypal",
     name: "PayPal",
     category: "Payments",
-    emoji: "💰",
-    color: "#003087",
+    icon: <SiPaypal className="w-6 h-6" style={{ color: "#009cde" }} />,
+    color: "#009cde",
     desc: "Online payments",
   },
   {
     id: "stripe",
     name: "Stripe",
     category: "Payments",
-    emoji: "💳",
+    icon: <SiStripe className="w-6 h-6" style={{ color: "#635bff" }} />,
     color: "#635bff",
     desc: "Payment processing",
   },
@@ -3733,7 +3798,7 @@ const INTEGRATIONS = [
     id: "usdt",
     name: "USDT",
     category: "Payments",
-    emoji: "🔵",
+    icon: <SiTether className="w-6 h-6" style={{ color: "#26a17b" }} />,
     color: "#26a17b",
     desc: "Tether stablecoin",
   },
@@ -3741,7 +3806,7 @@ const INTEGRATIONS = [
     id: "btc",
     name: "Bitcoin",
     category: "Payments",
-    emoji: "₿",
+    icon: <SiBitcoin className="w-6 h-6" style={{ color: "#f7931a" }} />,
     color: "#f7931a",
     desc: "Crypto payments",
   },
@@ -3750,7 +3815,7 @@ const INTEGRATIONS = [
     id: "gdrive",
     name: "Google Drive",
     category: "Productivity",
-    emoji: "📁",
+    icon: <SiGoogledrive className="w-6 h-6" style={{ color: "#4285f4" }} />,
     color: "#4285f4",
     desc: "Cloud storage & docs",
   },
@@ -3758,7 +3823,7 @@ const INTEGRATIONS = [
     id: "zapier",
     name: "Zapier",
     category: "Productivity",
-    emoji: "⚡",
+    icon: <SiZapier className="w-6 h-6" style={{ color: "#ff4a00" }} />,
     color: "#ff4a00",
     desc: "Workflow automation",
   },
@@ -3766,7 +3831,7 @@ const INTEGRATIONS = [
     id: "airtable",
     name: "Airtable",
     category: "Productivity",
-    emoji: "🗃️",
+    icon: <SiAirtable className="w-6 h-6" style={{ color: "#18bfff" }} />,
     color: "#18bfff",
     desc: "Database & spreadsheets",
   },
@@ -3774,7 +3839,11 @@ const INTEGRATIONS = [
     id: "trello",
     name: "Trello",
     category: "Productivity",
-    emoji: "📋",
+    icon: (
+      <span className="text-lg font-black" style={{ color: "#0052cc" }}>
+        T
+      </span>
+    ),
     color: "#0052cc",
     desc: "Project boards",
   },
@@ -3939,7 +4008,7 @@ function InstallIntegrationsPanel() {
                   boxShadow: `0 0 14px ${item.color}35`,
                 }}
               >
-                {item.emoji}
+                {item.icon}
               </div>
 
               {/* Name */}
