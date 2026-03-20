@@ -1,6 +1,7 @@
 import { useLanguage } from "@/i18n/LanguageContext";
 // Pre-footer section: ClawPro.ai brand + partner logos + app download badges
 import React, { useEffect, useState } from "react";
+import { SiGithub, SiOpenai } from "react-icons/si";
 
 // ── API Types ──
 interface GitHubRepoData {
@@ -232,152 +233,55 @@ function OpenClawLogo({ size = 32 }: { size?: number }) {
 
 function OpenAILogo({ size = 32 }: { size?: number }) {
   return (
-    <svg
-      width={size * 3}
-      height={size}
-      viewBox="0 0 90 32"
-      fill="none"
-      role="img"
-      aria-label="OpenAI.ai"
-    >
-      <title>OpenAI.ai</title>
-      {/* OpenAI swirl icon simplified */}
-      <g transform="translate(2, 4)">
-        <path
-          d="M12 2C7.029 2 3 6.03 3 11c0 2.387.945 4.557 2.482 6.163L4 22l5.123-1.462A8.945 8.945 0 0 0 12 21c4.971 0 9-4.03 9-9s-4.029-9-9-9z"
-          fill="url(#oai-grad)"
-          opacity="0.9"
-        />
-        <path
-          d="M12 6.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9z"
-          fill="#0a0a0a"
-          opacity="0.8"
-        />
-        <defs>
-          <linearGradient id="oai-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#b0c0d0" />
-          </linearGradient>
-        </defs>
-      </g>
-      <text
-        x="30"
-        y="20"
-        fill="url(#silver-oai)"
-        fontSize="11"
-        fontWeight="600"
-        fontFamily="system-ui, sans-serif"
-        letterSpacing="0.3"
+    <div className="flex items-center gap-2">
+      <SiOpenai style={{ width: size, height: size, color: "#ffffff" }} />
+      <span
+        style={{
+          color: "#ffffff",
+          fontWeight: 600,
+          fontSize: size * 0.4,
+          fontFamily: "system-ui",
+        }}
       >
-        OpenAI.ai
-      </text>
-      <defs>
-        <linearGradient id="silver-oai" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="50%" stopColor="#d0dbe8" />
-          <stop offset="100%" stopColor="#a8b8c8" />
-        </linearGradient>
-      </defs>
-    </svg>
+        OpenAI
+      </span>
+    </div>
   );
 }
 
 function ChatGPTLogo({ size = 32 }: { size?: number }) {
   return (
-    <svg
-      width={size * 3.2}
-      height={size}
-      viewBox="0 0 96 32"
-      fill="none"
-      role="img"
-      aria-label="ChatGPT.ai"
-    >
-      <title>ChatGPT.ai</title>
-      <g transform="translate(2, 5)">
-        <circle cx="11" cy="11" r="9" fill="url(#gpt-circ)" opacity="0.9" />
-        <path
-          d="M11 5a6 6 0 0 1 5.196 9H5.804A6 6 0 0 1 11 5z"
-          fill="#0a0a0a"
-          opacity="0.4"
-        />
-        <path
-          d="M7 11h8M11 7v8"
-          stroke="#0a0a0a"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-        <defs>
-          <linearGradient id="gpt-circ" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#a8bac8" />
-          </linearGradient>
-        </defs>
-      </g>
-      <text
-        x="30"
-        y="20"
-        fill="url(#silver-gpt)"
-        fontSize="11"
-        fontWeight="600"
-        fontFamily="system-ui, sans-serif"
-        letterSpacing="0.3"
+    <div className="flex items-center gap-2">
+      <SiOpenai style={{ width: size, height: size, color: "#10a37f" }} />
+      <span
+        style={{
+          color: "#10a37f",
+          fontWeight: 600,
+          fontSize: size * 0.4,
+          fontFamily: "system-ui",
+        }}
       >
-        ChatGPT.ai
-      </text>
-      <defs>
-        <linearGradient id="silver-gpt" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="50%" stopColor="#d0dbe8" />
-          <stop offset="100%" stopColor="#a8b8c8" />
-        </linearGradient>
-      </defs>
-    </svg>
+        ChatGPT
+      </span>
+    </div>
   );
 }
 
 function GithubLogo({ size = 32 }: { size?: number }) {
   return (
-    <svg
-      width={size * 2.8}
-      height={size}
-      viewBox="0 0 84 32"
-      fill="none"
-      role="img"
-      aria-label="GitHub"
-    >
-      <title>GitHub</title>
-      <g transform="translate(2, 4)">
-        <path
-          d="M12 0C5.373 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.796 24 17.3 24 12c0-6.627-5.373-12-12-12z"
-          fill="url(#gh-grad)"
-        />
-        <defs>
-          <linearGradient id="gh-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#b0c0d0" />
-          </linearGradient>
-        </defs>
-      </g>
-      <text
-        x="34"
-        y="20"
-        fill="url(#silver-gh)"
-        fontSize="11"
-        fontWeight="600"
-        fontFamily="system-ui, sans-serif"
-        letterSpacing="0.3"
+    <div className="flex items-center gap-2">
+      <SiGithub style={{ width: size, height: size, color: "#ffffff" }} />
+      <span
+        style={{
+          color: "#ffffff",
+          fontWeight: 600,
+          fontSize: size * 0.4,
+          fontFamily: "system-ui",
+        }}
       >
         GitHub
-      </text>
-      <defs>
-        <linearGradient id="silver-gh" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="50%" stopColor="#d0dbe8" />
-          <stop offset="100%" stopColor="#a8b8c8" />
-        </linearGradient>
-      </defs>
-    </svg>
+      </span>
+    </div>
   );
 }
 

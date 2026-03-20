@@ -1,0 +1,342 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* Light mode - clean silver/white with cyan accents */
+    --background: 0.97 0.005 220;
+    --foreground: 0.12 0.02 240;
+    --card: 1 0 0;
+    --card-foreground: 0.12 0.02 240;
+    --popover: 1 0 0;
+    --popover-foreground: 0.12 0.02 240;
+    --primary: 0.72 0.19 210;
+    --primary-foreground: 0.98 0 0;
+    --secondary: 0.88 0.01 220;
+    --secondary-foreground: 0.2 0.03 240;
+    --muted: 0.88 0.01 220;
+    --muted-foreground: 0.28 0.03 240;
+    --accent: 0.72 0.19 210;
+    --accent-foreground: 0.98 0 0;
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+    --border: 0.78 0.01 220;
+    --input: 0.78 0.01 220;
+    --ring: 0.72 0.19 210;
+    --chart-1: 0.72 0.19 210;
+    --chart-2: 0.65 0.22 200;
+    --chart-3: 0.55 0.2 250;
+    --chart-4: 0.75 0.18 170;
+    --chart-5: 0.68 0.22 230;
+    --sidebar: 0.95 0.01 220;
+    --sidebar-foreground: 0.12 0.02 240;
+    --sidebar-primary: 0.72 0.19 210;
+    --sidebar-primary-foreground: 0.98 0 0;
+    --sidebar-accent: 0.93 0.01 220;
+    --sidebar-accent-foreground: 0.12 0.02 240;
+    --sidebar-border: 0.78 0.01 220;
+    --sidebar-ring: 0.72 0.19 210;
+
+    /* Custom tokens */
+    --cyan: 0.82 0.18 195;
+    --cyan-bright: 0.88 0.2 195;
+    --glow-cyan: 0 0 20px oklch(0.82 0.18 195 / 0.6);
+    --glow-cyan-lg: 0 0 40px oklch(0.82 0.18 195 / 0.4), 0 0 80px
+      oklch(0.72 0.18 210 / 0.2);
+    --surface-1: 0.94 0.01 220;
+    --surface-2: 0.97 0.005 220;
+    --surface-3: 1 0 0;
+  }
+
+  .dark {
+    /* Dark mode - deep space tech aesthetic */
+    --background: 0.085 0.01 240;
+    --foreground: 0.94 0.02 210;
+    --card: 0.12 0.015 240;
+    --card-foreground: 0.94 0.02 210;
+    --popover: 0.14 0.015 240;
+    --popover-foreground: 0.94 0.02 210;
+    --primary: 0.82 0.18 195;
+    --primary-foreground: 0.085 0.01 240;
+    --secondary: 0.18 0.02 240;
+    --secondary-foreground: 0.88 0.02 210;
+    --muted: 0.18 0.02 240;
+    --muted-foreground: 0.55 0.03 220;
+    --accent: 0.22 0.03 240;
+    --accent-foreground: 0.88 0.02 210;
+    --destructive: 0.65 0.24 25;
+    --destructive-foreground: 0.12 0.01 240;
+    --border: 1 0 0 / 8%;
+    --input: 1 0 0 / 10%;
+    --ring: 0.82 0.18 195;
+    --chart-1: 0.82 0.18 195;
+    --chart-2: 0.7 0.2 200;
+    --chart-3: 0.6 0.22 250;
+    --chart-4: 0.78 0.18 165;
+    --chart-5: 0.75 0.2 230;
+    --sidebar: 0.11 0.012 240;
+    --sidebar-foreground: 0.94 0.02 210;
+    --sidebar-primary: 0.82 0.18 195;
+    --sidebar-primary-foreground: 0.085 0.01 240;
+    --sidebar-accent: 0.18 0.02 240;
+    --sidebar-accent-foreground: 0.88 0.02 210;
+    --sidebar-border: 1 0 0 / 8%;
+    --sidebar-ring: 0.82 0.18 195;
+
+    /* Custom tokens */
+    --cyan: 0.82 0.18 195;
+    --cyan-bright: 0.9 0.22 195;
+    --glow-cyan: 0 0 12px oklch(0.82 0.18 195 / 0.4);
+    --glow-cyan-lg: 0 0 40px oklch(0.82 0.18 195 / 0.3), 0 0 80px
+      oklch(0.7 0.2 200 / 0.15);
+    --surface-1: 0.11 0.012 240;
+    --surface-2: 0.12 0.015 240;
+    --surface-3: 0.15 0.02 240;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Outfit", "Sora", ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: oklch(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(var(--cyan) / 0.4);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(var(--cyan) / 0.7);
+  }
+}
+
+@layer utilities {
+  .text-cyan {
+    color: oklch(var(--cyan));
+  }
+  .text-cyan-bright {
+    color: oklch(var(--cyan-bright));
+  }
+  .bg-cyan {
+    background-color: oklch(var(--cyan));
+  }
+  .border-cyan {
+    border-color: oklch(var(--cyan));
+  }
+  .shadow-glow-cyan {
+    box-shadow: var(--glow-cyan);
+  }
+  .shadow-glow-cyan-lg {
+    box-shadow: var(--glow-cyan-lg);
+  }
+  .text-glow-cyan {
+    text-shadow: 0 0 20px oklch(var(--cyan) / 0.5), 0 0 40px
+      oklch(var(--cyan) / 0.2);
+  }
+  .surface-1 {
+    background-color: oklch(var(--surface-1));
+  }
+  .surface-2 {
+    background-color: oklch(var(--surface-2));
+  }
+  .surface-3 {
+    background-color: oklch(var(--surface-3));
+  }
+
+  /* Gradient utilities */
+  .gradient-cyber {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--background)),
+      oklch(0.1 0.03 220),
+      oklch(var(--background))
+    );
+  }
+  .gradient-cyan-fade {
+    background: linear-gradient(
+      180deg,
+      oklch(var(--cyan) / 0.15) 0%,
+      transparent 100%
+    );
+  }
+
+  /* Grid noise texture */
+  .noise-overlay {
+    position: relative;
+  }
+  .noise-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  /* Scanline effect */
+  .scanlines::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      oklch(var(--cyan) / 0.02) 2px,
+      oklch(var(--cyan) / 0.02) 4px
+    );
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* Hex grid background */
+  .hex-grid-bg {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100'%3E%3Cpath d='M28 66L0 50V16L28 0l28 16v34L28 66z' fill='none' stroke='%2300d4ff14' stroke-width='1'/%3E%3Cpath d='M28 100L0 84V50l28-16 28 16v34L28 100z' fill='none' stroke='%2300d4ff10' stroke-width='1'/%3E%3C/svg%3E");
+  }
+
+  /* Animated gradient border */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      oklch(var(--cyan) / 0.6),
+      oklch(0.6 0.2 250 / 0.3),
+      transparent,
+      oklch(var(--cyan) / 0.4)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+
+  /* Glow pulse animation */
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes counter-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes border-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 8px oklch(var(--cyan) / 0.15);
+    }
+    50% {
+      box-shadow: 0 0 14px oklch(var(--cyan) / 0.35), 0 0 24px
+        oklch(var(--cyan) / 0.12);
+    }
+  }
+
+  .animate-glow-pulse {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  .animate-border-glow {
+    animation: border-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes goldGreenPulse {
+    0% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+  }
+  .animate-gold-green-pulse {
+    animation: goldGreenPulse 4s ease-in-out infinite alternate;
+  }
+
+  /* Marquee / ticker animations — GPU-accelerated via transform */
+  @keyframes marquee-left {
+    0% {
+      transform: translateX(0) translateZ(0);
+    }
+    100% {
+      transform: translateX(-33.333%) translateZ(0);
+    }
+  }
+  @keyframes marquee-right {
+    0% {
+      transform: translateX(-33.333%) translateZ(0);
+    }
+    100% {
+      transform: translateX(0) translateZ(0);
+    }
+  }
+
+  .marquee-left {
+    animation: marquee-left linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  .marquee-right {
+    animation: marquee-right linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+  .marquee-left:hover,
+  .marquee-right:hover {
+    animation-play-state: paused;
+  }
+}

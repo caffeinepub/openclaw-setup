@@ -171,6 +171,9 @@ export function CreateAccountModal({
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState(prefillFullName);
   const [handle, setHandle] = useState(prefillHandle);
+  const [handleTaken, setHandleTaken] = useState<"taken" | "available" | null>(
+    null,
+  );
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -205,6 +208,25 @@ export function CreateAccountModal({
   }, [open, prefillHandle, prefillFullName]);
 
   const PENDING_ACCOUNT_KEY = "clawpro_pending_account";
+
+  const checkHandleAvailability = (val: string) => {
+    if (val.length < 3) {
+      setHandleTaken(null);
+      return;
+    }
+    try {
+      const accounts: Array<{ handle?: string; username?: string }> =
+        JSON.parse(localStorage.getItem("clawpro_accounts") || "[]");
+      const taken = accounts.some(
+        (a) =>
+          a.handle?.toLowerCase() === val.toLowerCase() ||
+          a.username?.toLowerCase() === val.toLowerCase(),
+      );
+      setHandleTaken(taken ? "taken" : "available");
+    } catch {
+      setHandleTaken(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -456,11 +478,14 @@ export function CreateAccountModal({
                         <input
                           type="text"
                           value={handle}
-                          onChange={(e) =>
-                            setHandle(
-                              e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""),
-                            )
-                          }
+                          onChange={(e) => {
+                            const v = e.target.value.replace(
+                              /[^a-zA-Z0-9_-]/g,
+                              "",
+                            );
+                            setHandle(v);
+                            checkHandleAvailability(v);
+                          }}
                           placeholder="your-handle"
                           required
                           className="flex-1 bg-transparent px-3 py-2.5 text-sm text-white placeholder:text-slate-600 outline-none font-mono"
@@ -472,6 +497,22 @@ export function CreateAccountModal({
                     <p className="text-[10px] text-slate-600">
                       Letters, numbers, hyphens and underscores only.
                     </p>
+                    {handleTaken === "taken" && (
+                      <p
+                        className="text-[11px] text-red-500 flex items-center gap-1 font-medium"
+                        data-ocid="create-account.error_state"
+                      >
+                        ⚠ Already taken — please choose another handle
+                      </p>
+                    )}
+                    {handleTaken === "available" && (
+                      <p
+                        className="text-[11px] text-green-500 flex items-center gap-1 font-medium"
+                        data-ocid="create-account.success_state"
+                      >
+                        ✓ Available!
+                      </p>
+                    )}
                   </div>
 
                   {/* Email */}
@@ -645,7 +686,11 @@ export function CreateAccountModal({
                   {/* Submit */}
                   <Button
                     type="submit"
-                    disabled={saveAccount.isPending || isLoggingIn}
+                    disabled={
+                      saveAccount.isPending ||
+                      isLoggingIn ||
+                      handleTaken === "taken"
+                    }
                     className="w-full h-11 font-bold relative overflow-hidden transition-all"
                     data-ocid="create-account.submit_button"
                     style={{

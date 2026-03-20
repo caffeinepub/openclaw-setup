@@ -1474,6 +1474,9 @@ function UnifiedClaimSearchCard({
   const [handle, setHandle] = useState("");
   const [fullName, setFullName] = useState("");
   const [saved, setSaved] = useState(false);
+  const [handleTaken, setHandleTaken] = useState<"taken" | "available" | null>(
+    null,
+  );
   const [pendingSave, setPendingSave] = useState(false);
 
   // Search state
@@ -1508,6 +1511,25 @@ function UnifiedClaimSearchCard({
       })();
     }
   }, [identity, pendingSave, handle, fullName, saveProfile]);
+
+  const checkHandleAvailability = (val: string) => {
+    if (val.length < 3) {
+      setHandleTaken(null);
+      return;
+    }
+    try {
+      const accounts: Array<{ handle?: string; username?: string }> =
+        JSON.parse(localStorage.getItem("clawpro_accounts") || "[]");
+      const taken = accounts.some(
+        (a) =>
+          a.handle?.toLowerCase() === val.toLowerCase() ||
+          a.username?.toLowerCase() === val.toLowerCase(),
+      );
+      setHandleTaken(taken ? "taken" : "available");
+    } catch {
+      setHandleTaken(null);
+    }
+  };
 
   const handleSave = async () => {
     const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
@@ -1651,9 +1673,11 @@ function UnifiedClaimSearchCard({
                     <input
                       type="text"
                       value={handle}
-                      onChange={(e) =>
-                        setHandle(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))
-                      }
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^a-zA-Z0-9_-]/g, "");
+                        setHandle(v);
+                        checkHandleAvailability(v);
+                      }}
                       placeholder="your-handle"
                       className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
                       autoComplete="username"
@@ -1661,6 +1685,18 @@ function UnifiedClaimSearchCard({
                   </div>
                 </div>
               </div>
+
+              {/* Handle availability indicator */}
+              {handleTaken === "taken" && (
+                <p className="text-[11px] text-red-400 flex items-center gap-1 font-medium -mt-1">
+                  ⚠ Handle already taken — try another
+                </p>
+              )}
+              {handleTaken === "available" && (
+                <p className="text-[11px] text-green-400 flex items-center gap-1 font-medium -mt-1">
+                  ✓ Available!
+                </p>
+              )}
 
               {/* Full name field */}
               <div className="space-y-1">
@@ -1691,7 +1727,11 @@ function UnifiedClaimSearchCard({
               {/* Save button */}
               <Button
                 onClick={handleSave}
-                disabled={saveProfile.isPending || !handle.trim()}
+                disabled={
+                  saveProfile.isPending ||
+                  !handle.trim() ||
+                  handleTaken === "taken"
+                }
                 size="sm"
                 className="w-full font-semibold h-10 text-sm relative overflow-hidden transition-all duration-300"
                 style={{

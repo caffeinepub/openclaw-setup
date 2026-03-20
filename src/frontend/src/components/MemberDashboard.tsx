@@ -12,6 +12,7 @@ import {
   Bot,
   CheckSquare2,
   ChevronRight,
+  ChevronUp,
   Circle,
   Coins,
   Cpu,
@@ -36,7 +37,8 @@ import {
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   SiAirtable,
   SiBitcoin,
@@ -299,12 +301,26 @@ export function MemberDashboard({
     toast.success(`${item?.name ?? "App"} installed successfully!`);
   };
 
-  const handleNavClick = (id: SidebarItem) => {
+  const handleNavClick = useCallback((id: SidebarItem) => {
     setActive(id);
     setMobileSidebarOpen(false);
     setGlowingId(id);
     setTimeout(() => setGlowingId(null), 800);
-  };
+  }, []);
+
+  // Listen for navigation events from overview market buttons
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail === "markets" || detail === "pricealerts") {
+        setActive("pricealerts");
+        setGlowingId("pricealerts");
+        setTimeout(() => setGlowingId(null), 800);
+      }
+    };
+    window.addEventListener("clawpro-navigate", handler);
+    return () => window.removeEventListener("clawpro-navigate", handler);
+  }, []);
   const { identity } = useInternetIdentity();
   const { data: membership } = useMyMembership();
   const { data: userAccount } = useMyUserAccount();
@@ -559,10 +575,7 @@ export function MemberDashboard({
       }
       .nav-glow-ring { animation: glowRingPulse 0.7s ease-out forwards; }
     `}</style>
-      <div
-        className="fixed inset-0 z-50 flex"
-        style={{ background: "oklch(0.07 0.015 240)" }}
-      >
+      <div className="fixed inset-0 z-50 flex bg-[#0a0a0f]">
         {/* Mobile overlay */}
         {mobileSidebarOpen && (
           <div
@@ -580,13 +593,13 @@ export function MemberDashboard({
           className={[
             "fixed md:relative z-50 md:z-auto",
             "w-64 h-full flex flex-col",
-            "border-r border-white/10",
+            "border-r border-gray-800",
             "transition-transform duration-300",
             mobileSidebarOpen
               ? "translate-x-0"
               : "-translate-x-full md:translate-x-0",
           ].join(" ")}
-          style={{ background: "oklch(0.1 0.015 240)" }}
+          style={{ background: "#0d0d1a", borderRight: "1px solid #1f2937" }}
         >
           {/* Profile Header */}
           <div className="p-5 pb-4">
@@ -597,7 +610,7 @@ export function MemberDashboard({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors"
+                className="p-1 rounded text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                 aria-label="Close dashboard"
                 data-ocid="dashboard.close.button"
               >
@@ -636,7 +649,7 @@ export function MemberDashboard({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-800 border border-white/20 flex items-center justify-center hover:bg-gray-700 transition-colors"
+                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-800 border border-gray-300 flex items-center justify-center hover:bg-gray-700 transition-colors"
                   title="Upload photo"
                   data-ocid="dashboard.avatar.upload_button"
                 >
@@ -659,7 +672,7 @@ export function MemberDashboard({
                   <button
                     type="button"
                     onClick={handleRemovePhoto}
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-white/20 flex items-center justify-center hover:bg-red-500 transition-colors"
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-gray-300 flex items-center justify-center hover:bg-red-500 transition-colors"
                     title="Remove photo"
                     data-ocid="dashboard.avatar.delete_button"
                   >
@@ -707,7 +720,7 @@ export function MemberDashboard({
                 <p className="font-semibold text-sm text-foreground">
                   {fullName}
                 </p>
-                <p className="text-xs text-muted-foreground">@{handle}</p>
+                <p className="text-xs text-gray-500">@{handle}</p>
               </div>
               <Badge
                 className={`border text-[10px] px-2 py-0.5 ${tierStyle.badgeCls}`}
@@ -717,15 +730,9 @@ export function MemberDashboard({
             </div>
 
             {/* Token balance */}
-            <div
-              className="mt-4 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 border border-amber-500/30"
-              style={{
-                background: "oklch(0.12 0.02 60)",
-                boxShadow: "0 0 12px rgba(251,191,36,0.25)",
-              }}
-            >
+            <div className="mt-4 flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 border border-amber-800/40 bg-amber-950/30">
               <Coins className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-xs text-amber-300 font-medium">
+              <span className="text-xs text-amber-700 font-medium">
                 2,450 tokens
               </span>
             </div>
@@ -752,14 +759,14 @@ export function MemberDashboard({
                       "transition-all duration-200 relative border-l-2",
                       isActive
                         ? `${item.color} ${item.glow}`
-                        : "text-muted-foreground hover:text-foreground border-transparent",
+                        : "text-gray-400 hover:text-gray-100 border-transparent",
                       glowingId === item.id ? "nav-glow-ring" : "",
                     ].join(" ")}
                     style={
                       isActive
                         ? {
-                            background: "rgba(255,255,255,0.06)",
-                            boxShadow: "inset 0 0 12px rgba(6,182,212,0.08)",
+                            background: "rgba(6,182,212,0.08)",
+                            boxShadow: "inset 0 0 12px rgba(6,182,212,0.05)",
                           }
                         : {}
                     }
@@ -782,81 +789,9 @@ export function MemberDashboard({
             </nav>
           </div>
 
-          {/* Dynamic Installed Apps from Integrations panel */}
-          {(() => {
-            const KNOWN = [
-              "clawbot",
-              "whatsapp",
-              "telegram",
-              "chatgpt",
-              "home",
-              "integrations",
-              "pricealerts",
-              "settings",
-              "activity",
-              "stats",
-              "tasks",
-              "status",
-              "leaderboard",
-              "notifications",
-            ];
-            const dynamicApps = installedApps
-              .filter((id) => !KNOWN.includes(id))
-              .map((id) => INTEGRATIONS.find((i) => i.id === id))
-              .filter(Boolean) as (typeof INTEGRATIONS)[number][];
-            if (dynamicApps.length === 0) return null;
-            return (
-              <div style={{ height: "50%", overflowY: "auto", minHeight: 0 }}>
-                <div className="px-3 pb-2">
-                  <Separator className="mb-2 opacity-20" />
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground px-2 mb-1">
-                    Installed Apps
-                  </p>
-                  <nav className="space-y-1">
-                    {dynamicApps.map((app) => {
-                      const isActive = active === app.id;
-                      return (
-                        <button
-                          key={app.id}
-                          type="button"
-                          data-ocid={`dashboard.${app.id}.tab`}
-                          onClick={() => {
-                            setActive(app.id as SidebarItem);
-                            setMobileSidebarOpen(false);
-                          }}
-                          className={[
-                            "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative border-l-2",
-                            isActive
-                              ? "border-violet-500/60"
-                              : "border-transparent text-muted-foreground hover:text-foreground",
-                          ].join(" ")}
-                          style={
-                            isActive
-                              ? {
-                                  background: "rgba(255,255,255,0.06)",
-                                  color: app.color,
-                                }
-                              : {}
-                          }
-                        >
-                          <span
-                            style={{ color: isActive ? app.color : undefined }}
-                          >
-                            {app.icon}
-                          </span>
-                          <span className="truncate">{app.name}</span>
-                        </button>
-                      );
-                    })}
-                  </nav>
-                </div>
-              </div>
-            );
-          })()}
-
           {/* Footer */}
-          <div className="p-4 border-t border-white/10">
-            <p className="text-[10px] text-muted-foreground text-center">
+          <div className="p-4 border-t border-gray-800">
+            <p className="text-[10px] text-gray-400 text-center">
               Powered by{" "}
               <a
                 href="https://andri.id"
@@ -873,13 +808,10 @@ export function MemberDashboard({
         {/* Main content */}
         <div className="flex-1 flex flex-col min-w-0 h-full">
           {/* Top bar */}
-          <div
-            className="flex items-center gap-3 px-4 py-3 border-b border-white/10"
-            style={{ background: "oklch(0.09 0.015 240)" }}
-          >
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800 bg-[#0d0d1a]">
             <button
               type="button"
-              className="md:hidden p-1.5 rounded text-muted-foreground hover:text-foreground"
+              className="md:hidden p-1.5 rounded text-gray-400 hover:text-white"
               onClick={() => setMobileSidebarOpen(true)}
             >
               <Menu className="w-5 h-5" />
@@ -898,7 +830,7 @@ export function MemberDashboard({
                   NAV_ITEMS.find((i) => i.id === active)?.icon
                 )}
               </span>
-              <h1 className="font-semibold text-sm">
+              <h1 className="font-semibold text-sm text-white">
                 {active === "integrations"
                   ? "Install & Integrations"
                   : NAV_ITEMS.find((i) => i.id === active)?.label}
@@ -908,7 +840,7 @@ export function MemberDashboard({
               {unreadCount > 0 && (
                 <button
                   type="button"
-                  className="relative p-1.5 text-muted-foreground hover:text-foreground"
+                  className="relative p-1.5 text-gray-500 hover:text-foreground"
                 >
                   <Bell className="w-4 h-4" />
                   <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full text-[9px] flex items-center justify-center text-white">
@@ -919,11 +851,11 @@ export function MemberDashboard({
               <button
                 type="button"
                 data-ocid="dashboard.home.button"
-                onClick={() => setActive("home")}
+                onClick={() => onClose()}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
               >
                 <Home className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Dashboard</span>
+                <span className="hidden sm:inline">Home</span>
               </button>
               <button
                 type="button"
@@ -941,7 +873,7 @@ export function MemberDashboard({
           </div>
 
           {/* Panel content */}
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto bg-[#0a0a0f]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
@@ -958,6 +890,7 @@ export function MemberDashboard({
                     tier={tier}
                     tierStyle={tierStyle}
                     onTopUp={() => setShowTopUpModal(true)}
+                    installedApps={installedApps}
                   />
                 )}
                 {active === "clawbot" && <ClawBotPanel handle={handle} />}
@@ -1028,7 +961,7 @@ export function MemberDashboard({
           <div
             className="relative w-full max-w-lg rounded-2xl p-6 border border-amber-500/30"
             style={{
-              background: "oklch(0.09 0.015 240)",
+              background: "#ffffff",
               boxShadow: "0 0 40px rgba(251,191,36,0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
@@ -1050,7 +983,7 @@ export function MemberDashboard({
               <div
                 className="rounded-xl p-4 border border-slate-400/30 flex flex-col items-center gap-2"
                 style={{
-                  background: "oklch(0.12 0.01 240)",
+                  background: "#f8fafc",
                   boxShadow: "0 0 16px rgba(148,163,184,0.15)",
                 }}
               >
@@ -1145,12 +1078,14 @@ function HomePanel({
   tier,
   tierStyle,
   onTopUp,
+  installedApps = [],
 }: {
   handle: string;
   fullName: string;
   tier: MembershipTier;
   tierStyle: { label: string; color: string; badgeCls: string; glow: string };
   onTopUp?: () => void;
+  installedApps?: string[];
 }) {
   void tier;
 
@@ -1223,6 +1158,9 @@ function HomePanel({
   const [editAmounts, setEditAmounts] = useState<Record<string, string>>({});
   const [donutRevealed, setDonutRevealed] = useState(false);
   const donutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showMarket, setShowMarket] = useState(true);
+  const [showWallet, setShowWallet] = useState(true);
+  const [showInstalled, setShowInstalled] = useState(true);
 
   const getPortfolioWithValues = () =>
     portfolio.map((c: (typeof DEFAULT_PORTFOLIO)[0]) => ({
@@ -1252,7 +1190,19 @@ function HomePanel({
     setEditingPortfolio(false);
   };
 
-  const apps = [
+  const KNOWN_NAV = [
+    "home",
+    "integrations",
+    "pricealerts",
+    "settings",
+    "activity",
+    "stats",
+    "tasks",
+    "status",
+    "leaderboard",
+    "notifications",
+  ];
+  const DEFAULT_APPS = [
     {
       id: "clawbot",
       label: "ClawBot AI",
@@ -1278,363 +1228,729 @@ function HomePanel({
       id: "chatgpt",
       label: "ChatGPT",
       desc: "OpenAI integration",
-      icon: <Sparkles className="w-5 h-5" style={{ color: "#10b981" }} />,
+      icon: <SiOpenai className="w-5 h-5" style={{ color: "#10b981" }} />,
       color: "#10b981",
     },
   ];
+  // Build apps list: start with defaults that are installed, then add dynamic apps
+  const defaultInstalled = DEFAULT_APPS.filter(
+    (a) => installedApps.length === 0 || installedApps.includes(a.id),
+  );
+  const dynamicApps = installedApps
+    .filter(
+      (id) => !KNOWN_NAV.includes(id) && !DEFAULT_APPS.some((a) => a.id === id),
+    )
+    .map((id) => {
+      const integration = INTEGRATIONS.find((i) => i.id === id);
+      if (!integration) return null;
+      return {
+        id: integration.id,
+        label: integration.name,
+        desc: integration.category,
+        icon: integration.icon,
+        color: integration.color,
+      };
+    })
+    .filter(Boolean) as typeof DEFAULT_APPS;
+  const apps =
+    installedApps.length === 0
+      ? DEFAULT_APPS
+      : [...defaultInstalled, ...dynamicApps];
 
   return (
     <div className="p-6 space-y-6">
       {/* Welcome */}
       <div
-        className="rounded-xl p-5 border border-cyan-500/20"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.12 0.02 240), oklch(0.08 0.015 260))",
-          boxShadow: "0 0 20px rgba(6,182,212,0.1)",
-        }}
+        className="rounded-xl p-5 border border-cyan-800/40 bg-gradient-to-br from-cyan-950/40 to-blue-950/40"
+        style={{ boxShadow: "0 0 20px rgba(6,182,212,0.12)" }}
       >
-        <h2 className="text-xl font-bold mb-1">
+        <h2 className="text-xl font-bold mb-1 text-white">
           Welcome back,{" "}
           <span style={{ color: tierStyle.color }}>@{handle}</span> 👋
         </h2>
-        <p className="text-sm text-muted-foreground">{fullName}</p>
+        <p className="text-sm text-gray-500">{fullName}</p>
         <div className="mt-3 flex items-center gap-2">
           <Badge className={`border text-xs ${tierStyle.badgeCls}`}>
             {tierStyle.label} Member
           </Badge>
-          <span className="text-xs text-muted-foreground">Active</span>
+          <span className="text-xs text-gray-500">Active</span>
         </div>
       </div>
 
-      {/* Wallet & Portfolio */}
-      <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
-          <Wallet className="w-4 h-4 text-amber-400" />
-          Wallet & Portfolio
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-          {/* Token Balance Card */}
-          <div
-            className="sm:col-span-1 rounded-xl p-4 border border-amber-500/30 flex flex-col gap-2"
-            style={{
-              background: "oklch(0.11 0.02 60)",
-              boxShadow: "0 0 20px rgba(251,191,36,0.2)",
-            }}
-          >
-            <div className="flex items-center gap-2">
-              <Coins className="w-4 h-4 text-amber-400" />
-              <span className="text-xs text-amber-300/70 font-medium uppercase tracking-wider">
-                ClawPro Tokens
-              </span>
-            </div>
-            <div className="text-2xl font-bold text-amber-300">
-              {tokenBalance.toLocaleString()}
-            </div>
-            <div className="text-xs text-amber-400/60">
-              ≈ ${(tokenBalance / 100).toFixed(2)} USD
-            </div>
-            <Button
-              size="sm"
-              className="mt-1 text-xs h-7 bg-amber-600/80 hover:bg-amber-500 text-white border-0"
-              style={{ boxShadow: "0 0 12px rgba(251,191,36,0.3)" }}
-              data-ocid="wallet.topup.button"
-              onClick={onTopUp}
-            >
-              <Plus className="w-3 h-3 mr-1" />
-              Top Up Tokens
-            </Button>
-          </div>
+      {/* Toggle Buttons: Market / Wallet & Portfolio / Installed Apps */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          data-ocid="overview.market.toggle"
+          onClick={() => setShowMarket((v) => !v)}
+          className={[
+            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-200",
+            showMarket
+              ? "border-emerald-500 bg-emerald-500/20 text-emerald-300 shadow-[0_0_16px_rgba(52,211,153,0.35)]"
+              : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600",
+          ].join(" ")}
+        >
+          <TrendingUp className="w-4 h-4" />
+          Market
+        </button>
+        <button
+          type="button"
+          data-ocid="overview.wallet.toggle"
+          onClick={() => setShowWallet((v) => !v)}
+          className={[
+            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-200",
+            showWallet
+              ? "border-cyan-500 bg-cyan-500/20 text-cyan-300 shadow-[0_0_16px_rgba(6,182,212,0.35)]"
+              : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600",
+          ].join(" ")}
+        >
+          <Wallet className="w-4 h-4" />
+          Wallet &amp; Portfolio
+        </button>
+        <button
+          type="button"
+          data-ocid="overview.installed.toggle"
+          onClick={() => setShowInstalled((v) => !v)}
+          className={[
+            "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all duration-200",
+            showInstalled
+              ? "border-violet-500 bg-violet-500/20 text-violet-300 shadow-[0_0_16px_rgba(139,92,246,0.35)]"
+              : "border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600",
+          ].join(" ")}
+        >
+          <Puzzle className="w-4 h-4" />
+          Installed Apps
+        </button>
+      </div>
 
-          {/* Crypto Portfolio */}
-          <div
-            className="sm:col-span-2 rounded-xl p-4 border border-cyan-500/20"
-            style={{
-              background: "oklch(0.09 0.015 240)",
-              boxShadow: "0 0 20px rgba(6,182,212,0.08)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                Crypto Holdings
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-cyan-300">
-                  $
-                  {totalPortfolio.toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                  })}
-                </span>
-                {editingPortfolio ? (
-                  <Button
-                    size="sm"
-                    className="h-6 px-2 text-[10px] bg-green-600/80 hover:bg-green-500 border-0"
-                    onClick={saveEdit}
-                    data-ocid="portfolio.save_button"
-                  >
-                    <Save className="w-3 h-3 mr-1" /> Save
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300"
-                    onClick={startEdit}
-                    data-ocid="portfolio.edit_button"
-                  >
-                    Edit
-                  </Button>
-                )}
+      {/* Market Section - Quick Links */}
+      {showMarket && (
+        <div className="rounded-xl border border-emerald-800/40 bg-emerald-950/20 p-4 space-y-3">
+          <h3 className="text-sm font-semibold text-emerald-300 uppercase tracking-wider flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Crypto Markets
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowMarket(false)}
+              className="flex items-center gap-1 px-3 py-1 rounded-lg border border-emerald-700/50 bg-emerald-900/30 text-emerald-400 text-xs hover:bg-emerald-900/60 transition-all"
+            >
+              <ChevronUp className="w-3 h-3" /> Back
+            </button>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button
+              type="button"
+              data-ocid="market.live.button"
+              className="flex items-center gap-3 p-3 rounded-lg border border-emerald-700/40 bg-emerald-900/20 hover:bg-emerald-900/40 transition-all text-left"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("clawpro-navigate", { detail: "markets" }),
+                )
+              }
+            >
+              <TrendingUp className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-200">
+                  Live Markets
+                </p>
+                <p className="text-xs text-gray-400">Real-time prices</p>
               </div>
+            </button>
+            <button
+              type="button"
+              data-ocid="market.alerts.button"
+              className="flex items-center gap-3 p-3 rounded-lg border border-amber-700/40 bg-amber-900/20 hover:bg-amber-900/40 transition-all text-left"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("clawpro-navigate", {
+                    detail: "pricealerts",
+                  }),
+                )
+              }
+            >
+              <Bell className="w-5 h-5 text-amber-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-amber-200">
+                  Price Alerts
+                </p>
+                <p className="text-xs text-gray-400">Set custom alerts</p>
+              </div>
+            </button>
+            <button
+              type="button"
+              data-ocid="market.top15.button"
+              className="flex items-center gap-3 p-3 rounded-lg border border-cyan-700/40 bg-cyan-900/20 hover:bg-cyan-900/40 transition-all text-left"
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("clawpro-navigate", { detail: "markets" }),
+                )
+              }
+            >
+              <BarChart3 className="w-5 h-5 text-cyan-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-cyan-200">
+                  Top 15 Crypto
+                </p>
+                <p className="text-xs text-gray-400">Market rankings</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Wallet & Portfolio */}
+      {showWallet && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider mb-3 flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-cyan-500" />
+              Wallet &amp; Portfolio
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowWallet(false)}
+              className="flex items-center gap-1 px-3 py-1 rounded-lg border border-cyan-700/50 bg-cyan-900/30 text-cyan-400 text-xs hover:bg-cyan-900/60 transition-all"
+            >
+              <ChevronUp className="w-3 h-3" /> Back
+            </button>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+            {/* Token Balance Card */}
+            <div
+              className="sm:col-span-1 rounded-xl p-4 border border-amber-800/40 flex flex-col gap-2 bg-amber-950/30"
+              style={{ boxShadow: "0 0 20px rgba(251,191,36,0.15)" }}
+            >
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4 text-amber-500" />
+                <span className="text-xs text-amber-300 font-medium uppercase tracking-wider">
+                  ClawPro Tokens
+                </span>
+              </div>
+              <div className="text-2xl font-bold text-amber-300">
+                {tokenBalance.toLocaleString()}
+              </div>
+              <div className="text-xs text-amber-400">
+                ≈ ${(tokenBalance / 100).toFixed(2)} USD
+              </div>
+              <Button
+                size="sm"
+                className="mt-1 text-xs h-7 bg-amber-600/80 hover:bg-amber-500 text-white border-0"
+                style={{ boxShadow: "0 0 12px rgba(251,191,36,0.3)" }}
+                data-ocid="wallet.topup.button"
+                onClick={onTopUp}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Top Up Tokens
+              </Button>
             </div>
-            <div className="space-y-2.5">
-              {getPortfolioWithValues().map(
-                (coin: {
-                  symbol: string;
-                  name: string;
-                  amount: string;
-                  value: number;
-                  change: number;
-                  color: string;
-                }) => (
-                  <div key={coin.symbol} className="flex items-center gap-3">
-                    <div
-                      className="w-2 h-2 rounded-full flex-shrink-0"
-                      style={{
-                        background: coin.color,
-                        boxShadow: `0 0 6px ${coin.color}80`,
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold">
-                          {coin.symbol}
-                        </span>
-                        <span className="text-xs font-bold">
-                          $
-                          {coin.value.toLocaleString(undefined, {
-                            maximumFractionDigits: 2,
-                          })}
-                        </span>
-                      </div>
-                      {editingPortfolio ? (
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-[10px] text-muted-foreground">
-                            Amount:
-                          </span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="any"
-                            className="w-full h-5 text-[10px] bg-white/5 border border-cyan-500/30 rounded px-1 text-cyan-300 focus:outline-none focus:border-cyan-400"
-                            value={editAmounts[coin.symbol] ?? coin.amount}
-                            onChange={(e) =>
-                              setEditAmounts((prev) => ({
-                                ...prev,
-                                [coin.symbol]: e.target.value,
-                              }))
-                            }
-                            data-ocid="portfolio.input"
-                          />
-                          <span className="text-[10px] text-muted-foreground">
+
+            {/* Crypto Portfolio */}
+            <div
+              className="sm:col-span-2 rounded-xl p-4 border border-cyan-800/40 bg-gray-900"
+              style={{
+                background: "#111827",
+                boxShadow: "0 0 20px rgba(6,182,212,0.08)",
+              }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                  Crypto Holdings
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-cyan-300">
+                    $
+                    {totalPortfolio.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                  {editingPortfolio ? (
+                    <Button
+                      size="sm"
+                      className="h-6 px-2 text-[10px] bg-green-600/80 hover:bg-green-500 border-0"
+                      onClick={saveEdit}
+                      data-ocid="portfolio.save_button"
+                    >
+                      <Save className="w-3 h-3 mr-1" /> Save
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 text-[10px] text-cyan-400 hover:text-cyan-300"
+                      onClick={startEdit}
+                      data-ocid="portfolio.edit_button"
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2.5">
+                {getPortfolioWithValues().map(
+                  (coin: {
+                    symbol: string;
+                    name: string;
+                    amount: string;
+                    value: number;
+                    change: number;
+                    color: string;
+                  }) => (
+                    <div key={coin.symbol} className="flex items-center gap-3">
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{
+                          background: coin.color,
+                          boxShadow: `0 0 6px ${coin.color}80`,
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold">
                             {coin.symbol}
                           </span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-muted-foreground">
-                            {coin.amount} {coin.symbol}
+                          <span className="text-xs font-bold">
+                            $
+                            {coin.value.toLocaleString(undefined, {
+                              maximumFractionDigits: 2,
+                            })}
                           </span>
-                          <span
-                            className={`text-[10px] font-medium flex items-center gap-0.5 ${
-                              coin.change >= 0
-                                ? "text-green-400"
-                                : "text-red-400"
-                            }`}
+                        </div>
+                        {editingPortfolio ? (
+                          <div className="flex items-center gap-1 mt-1">
+                            <span className="text-[10px] text-gray-500">
+                              Amount:
+                            </span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="any"
+                              className="w-full h-5 text-[10px] bg-white/5 border border-cyan-500/30 rounded px-1 text-cyan-300 focus:outline-none focus:border-cyan-400"
+                              value={editAmounts[coin.symbol] ?? coin.amount}
+                              onChange={(e) =>
+                                setEditAmounts((prev) => ({
+                                  ...prev,
+                                  [coin.symbol]: e.target.value,
+                                }))
+                              }
+                              data-ocid="portfolio.input"
+                            />
+                            <span className="text-[10px] text-gray-500">
+                              {coin.symbol}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-gray-500">
+                              {coin.amount} {coin.symbol}
+                            </span>
+                            <span
+                              className={`text-[10px] font-medium flex items-center gap-0.5 ${
+                                coin.change >= 0
+                                  ? "text-green-400"
+                                  : "text-red-400"
+                              }`}
+                            >
+                              {coin.change >= 0 ? (
+                                <TrendingUp className="w-2.5 h-2.5" />
+                              ) : (
+                                <TrendingDown className="w-2.5 h-2.5" />
+                              )}
+                              {coin.change >= 0 ? "+" : ""}
+                              {coin.change}%
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+              {/* Donut Chart - Portfolio Distribution */}
+              {!editingPortfolio && totalPortfolio > 0 && (
+                <div
+                  className="mt-4 pt-3 border-t border-gray-800 transition-all duration-700 ease-out"
+                  style={{
+                    opacity: donutRevealed ? 1 : 0,
+                    transform: donutRevealed ? "scale(1)" : "scale(0.9)",
+                  }}
+                  ref={(el) => {
+                    if (el && !donutTimerRef.current) {
+                      donutTimerRef.current = setTimeout(
+                        () => setDonutRevealed(true),
+                        200,
+                      );
+                    }
+                  }}
+                >
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-2 text-center">
+                    Distribution
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="relative flex-shrink-0"
+                      style={{ width: 90, height: 90 }}
+                    >
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={getPortfolioWithValues()}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={28}
+                            outerRadius={42}
+                            paddingAngle={2}
+                            dataKey="value"
+                            stroke="none"
                           >
-                            {coin.change >= 0 ? (
-                              <TrendingUp className="w-2.5 h-2.5" />
-                            ) : (
-                              <TrendingDown className="w-2.5 h-2.5" />
+                            {getPortfolioWithValues().map(
+                              (coin: { symbol: string; color: string }) => (
+                                <Cell key={coin.symbol} fill={coin.color} />
+                              ),
                             )}
-                            {coin.change >= 0 ? "+" : ""}
-                            {coin.change}%
-                          </span>
-                        </div>
+                          </Pie>
+                          <RechartsTooltip
+                            formatter={(val: number, name: string) => [
+                              `$${(val as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+                              name,
+                            ]}
+                            contentStyle={{
+                              background: "#0a0a0f",
+                              border: "1px solid rgba(6,182,212,0.3)",
+                              borderRadius: 8,
+                              fontSize: 11,
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-[9px] text-gray-500">Total</span>
+                        <span className="text-[10px] font-bold text-cyan-300">
+                          ${(totalPortfolio / 1000).toFixed(1)}k
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex-1 grid grid-cols-2 gap-1">
+                      {getPortfolioWithValues().map(
+                        (coin: {
+                          symbol: string;
+                          value: number;
+                          color: string;
+                        }) => (
+                          <div
+                            key={coin.symbol}
+                            className="flex items-center gap-1"
+                          >
+                            <div
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                              style={{ background: coin.color }}
+                            />
+                            <span className="text-[10px] text-gray-500">
+                              {coin.symbol}
+                            </span>
+                            <span
+                              className="text-[10px] font-medium ml-auto"
+                              style={{ color: coin.color }}
+                            >
+                              {totalPortfolio > 0
+                                ? Math.round(
+                                    (coin.value / totalPortfolio) * 100,
+                                  )
+                                : 0}
+                              %
+                            </span>
+                          </div>
+                        ),
                       )}
                     </div>
                   </div>
-                ),
+                </div>
               )}
             </div>
-            {/* Donut Chart - Portfolio Distribution */}
-            {!editingPortfolio && totalPortfolio > 0 && (
-              <div
-                className="mt-4 pt-3 border-t border-white/5 transition-all duration-700 ease-out"
-                style={{
-                  opacity: donutRevealed ? 1 : 0,
-                  transform: donutRevealed ? "scale(1)" : "scale(0.9)",
-                }}
-                ref={(el) => {
-                  if (el && !donutTimerRef.current) {
-                    donutTimerRef.current = setTimeout(
-                      () => setDonutRevealed(true),
-                      200,
-                    );
-                  }
-                }}
-              >
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2 text-center">
-                  Distribution
-                </div>
-                <div className="flex items-center gap-3">
-                  <div
-                    className="relative flex-shrink-0"
-                    style={{ width: 90, height: 90 }}
-                  >
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={getPortfolioWithValues()}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={28}
-                          outerRadius={42}
-                          paddingAngle={2}
-                          dataKey="value"
-                          stroke="none"
-                        >
-                          {getPortfolioWithValues().map(
-                            (coin: { symbol: string; color: string }) => (
-                              <Cell key={coin.symbol} fill={coin.color} />
-                            ),
-                          )}
-                        </Pie>
-                        <RechartsTooltip
-                          formatter={(val: number, name: string) => [
-                            `$${(val as number).toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
-                            name,
-                          ]}
-                          contentStyle={{
-                            background: "#0a0a0f",
-                            border: "1px solid rgba(6,182,212,0.3)",
-                            borderRadius: 8,
-                            fontSize: 11,
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                      <span className="text-[9px] text-muted-foreground">
-                        Total
-                      </span>
-                      <span className="text-[10px] font-bold text-cyan-300">
-                        ${(totalPortfolio / 1000).toFixed(1)}k
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex-1 grid grid-cols-2 gap-1">
-                    {getPortfolioWithValues().map(
-                      (coin: {
-                        symbol: string;
-                        value: number;
-                        color: string;
-                      }) => (
-                        <div
-                          key={coin.symbol}
-                          className="flex items-center gap-1"
-                        >
-                          <div
-                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                            style={{ background: coin.color }}
-                          />
-                          <span className="text-[10px] text-muted-foreground">
-                            {coin.symbol}
-                          </span>
-                          <span
-                            className="text-[10px] font-medium ml-auto"
-                            style={{ color: coin.color }}
-                          >
-                            {totalPortfolio > 0
-                              ? Math.round((coin.value / totalPortfolio) * 100)
-                              : 0}
-                            %
-                          </span>
-                        </div>
-                      ),
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      </div>
-      <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Installed Apps
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {apps.map((app) => (
-            <div
-              key={app.id}
-              className="flex items-center gap-3 p-4 rounded-xl border border-white/10 hover:border-white/20 transition-all cursor-pointer"
-              style={{
-                background: "oklch(0.09 0.015 240)",
-                boxShadow: `0 0 16px ${app.color}10`,
-              }}
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{
-                  background: `${app.color}20`,
-                  boxShadow: `0 0 10px ${app.color}30`,
-                }}
-              >
-                {app.icon}
-              </div>
-              <div>
-                <p className="text-sm font-semibold">{app.label}</p>
-                <p className="text-xs text-muted-foreground">{app.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {[
-          {
-            label: "Tier",
-            value: tierStyle.label,
-            icon: "🏅",
-            glow: "rgba(245,158,11,0.15)",
-          },
-          {
-            label: "Apps",
-            value: "4",
-            icon: "📦",
-            glow: "rgba(6,182,212,0.1)",
-          },
-          {
-            label: "Status",
-            value: "Active",
-            icon: "✅",
-            glow: "rgba(34,197,94,0.1)",
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="p-4 rounded-xl border border-white/10 text-center"
-            style={{
-              background: "oklch(0.09 0.015 240)",
-              boxShadow: `0 0 16px ${stat.glow}`,
-            }}
+      )}
+
+      {/* Installed Apps */}
+      {showInstalled && (
+        <InstalledAppsSection
+          apps={apps}
+          onBack={() => setShowInstalled(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ---- App API info ----
+const APP_API_INFO: Record<string, { api: string; uses: string[] }> = {
+  whatsapp: {
+    api: "api.whatsapp.com/v1",
+    uses: [
+      "Send automated messages",
+      "Receive notifications",
+      "Customer support bot",
+      "Order confirmations",
+    ],
+  },
+  telegram: {
+    api: "api.telegram.org/bot<TOKEN>",
+    uses: [
+      "Bot commands",
+      "Group notifications",
+      "File sharing",
+      "Inline queries",
+    ],
+  },
+  chatgpt: {
+    api: "api.openai.com/v1/chat/completions",
+    uses: [
+      "AI responses",
+      "Content generation",
+      "Question answering",
+      "Code assistance",
+    ],
+  },
+  openclaw: {
+    api: "api.openclaw.ai/v1",
+    uses: [
+      "ClawPro native AI assistant",
+      "Personalized bot",
+      "Platform integrations",
+    ],
+  },
+  clawbot: {
+    api: "api.openclaw.ai/v1/bot",
+    uses: [
+      "ClawPro native AI assistant",
+      "Multi-model switching",
+      "Automated workflows",
+    ],
+  },
+  paypal: {
+    api: "api.paypal.com/v2/payments",
+    uses: [
+      "Accept payments",
+      "Send invoices",
+      "Subscription billing",
+      "Refunds",
+    ],
+  },
+  github: {
+    api: "api.github.com/repos",
+    uses: [
+      "Code repository access",
+      "CI/CD triggers",
+      "Issue tracking",
+      "PR reviews",
+    ],
+  },
+  openai: {
+    api: "api.openai.com/v1",
+    uses: [
+      "Text generation",
+      "Embeddings",
+      "Image analysis",
+      "Function calling",
+    ],
+  },
+  gemini: {
+    api: "generativelanguage.googleapis.com/v1",
+    uses: [
+      "Multimodal AI",
+      "Image understanding",
+      "Long context",
+      "Coding tasks",
+    ],
+  },
+  stripe: {
+    api: "api.stripe.com/v1",
+    uses: [
+      "Payment processing",
+      "Subscriptions",
+      "Invoicing",
+      "Fraud detection",
+    ],
+  },
+};
+
+function getAppApiInfo(id: string) {
+  return (
+    APP_API_INFO[id] ?? {
+      api: `api.${id}.com/v1`,
+      uses: ["Integration and automation", "Data sync", "Notifications"],
+    }
+  );
+}
+
+function InstalledAppsSection({
+  apps,
+  onBack,
+}: {
+  apps: {
+    id: string;
+    label: string;
+    desc: string;
+    icon: React.ReactNode;
+    color: string;
+  }[];
+  onBack?: () => void;
+}) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  if (apps.length === 0) {
+    return (
+      <div
+        className="rounded-xl border border-gray-700 bg-gray-900 p-5"
+        data-ocid="installed.empty_state"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider flex items-center gap-2">
+            <Puzzle className="w-4 h-4 text-violet-500" />
+            Installed Apps
+          </h3>
+          <button
+            type="button"
+            onClick={() => onBack?.()}
+            className="flex items-center gap-1 px-3 py-1 rounded-lg border border-violet-700/50 bg-violet-900/30 text-violet-400 text-xs hover:bg-violet-900/60 transition-all"
           >
-            <div className="text-2xl mb-1">{stat.icon}</div>
-            <div className="text-sm font-bold">{stat.value}</div>
-            <div className="text-xs text-muted-foreground">{stat.label}</div>
-          </div>
-        ))}
+            <ChevronUp className="w-3 h-3" /> Back
+          </button>
+        </div>
+        <p className="text-sm text-gray-400">
+          No apps installed yet. Go to Install &amp; Integrations to add apps.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div
+      className="rounded-xl border border-gray-700 bg-gray-900 overflow-hidden"
+      data-ocid="installed.panel"
+    >
+      <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800 bg-gray-800">
+        <span className="flex items-center gap-2">
+          <Puzzle className="w-4 h-4 text-violet-500" />
+          <h3 className="text-sm font-bold text-gray-100 uppercase tracking-wider">
+            Installed Apps
+          </h3>
+          <span className="text-xs text-gray-400">{apps.length} installed</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => onBack?.()}
+          className="flex items-center gap-1 px-3 py-1 rounded-lg border border-violet-700/50 bg-violet-900/30 text-violet-400 text-xs hover:bg-violet-900/60 transition-all"
+        >
+          <ChevronUp className="w-3 h-3" /> Back
+        </button>
+      </div>
+      <div className="divide-y divide-gray-800">
+        {apps.map((app, idx) => {
+          const info = getAppApiInfo(app.id);
+          const isOpen = expandedId === app.id;
+          return (
+            <div key={app.id} data-ocid={`installed.item.${idx + 1}`}>
+              <button
+                type="button"
+                className={[
+                  "w-full flex items-center gap-3 px-5 py-3.5 text-left transition-all duration-200",
+                  isOpen
+                    ? "bg-cyan-950/40 ring-1 ring-inset ring-cyan-600/50"
+                    : "hover:bg-gray-800/50",
+                ].join(" ")}
+                style={
+                  isOpen
+                    ? { boxShadow: "0 0 0 2px rgba(34,211,238,0.3) inset" }
+                    : {}
+                }
+                onClick={() => setExpandedId(isOpen ? null : app.id)}
+                data-ocid="installed.app.toggle"
+              >
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: `${app.color}18`,
+                    boxShadow: `0 0 8px ${app.color}30`,
+                  }}
+                >
+                  {app.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-100">
+                    {app.label}
+                  </p>
+                  <p className="text-xs text-gray-400 truncate">{app.desc}</p>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-900/40 text-green-400 border border-green-700/40 mr-2">
+                  Active
+                </span>
+                <ChevronRight
+                  className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+                />
+              </button>
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-5 py-4 bg-cyan-950/20 border-t border-cyan-900/40 space-y-3">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                          <Key className="w-3 h-3 text-cyan-500" />
+                          API Connection
+                        </p>
+                        <code className="text-xs text-cyan-300 bg-cyan-950/50 px-2 py-1 rounded font-mono block">
+                          {info.api}
+                        </code>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                          <Zap className="w-3 h-3 text-violet-500" />
+                          Use Cases
+                        </p>
+                        <ul className="space-y-1">
+                          {info.uses.map((u) => (
+                            <li
+                              key={u}
+                              className="text-xs text-gray-600 flex items-start gap-1.5"
+                            >
+                              <Circle
+                                className="w-1.5 h-1.5 mt-1 text-cyan-400 flex-shrink-0"
+                                fill="currentColor"
+                              />
+                              {u}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          type="button"
+                          className="text-xs px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-600 text-white font-semibold transition-all"
+                          style={{ boxShadow: "0 0 10px rgba(6,182,212,0.4)" }}
+                          data-ocid="installed.api.button"
+                        >
+                          Connect API
+                        </button>
+                        <button
+                          type="button"
+                          className="text-xs px-3 py-1.5 rounded-lg border border-gray-700 text-gray-300 hover:bg-gray-800 font-semibold transition-all"
+                          data-ocid="installed.docs.button"
+                        >
+                          View Docs
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1780,7 +2096,7 @@ function PriceAlertsPanel() {
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{
-              background: "oklch(0.14 0.03 60)",
+              background: "#fef3c7",
               boxShadow: "0 0 16px rgba(251,191,36,0.3)",
             }}
           >
@@ -1788,7 +2104,7 @@ function PriceAlertsPanel() {
           </div>
           <div>
             <h2 className="font-semibold">Price Alerts</h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-500">
               Real-time notifications via CoinGecko
             </p>
           </div>
@@ -1813,19 +2129,17 @@ function PriceAlertsPanel() {
       <div
         className="rounded-xl p-4 border border-cyan-500/20"
         style={{
-          background: "oklch(0.09 0.015 240)",
+          background: "#ffffff",
           boxShadow: "0 0 16px rgba(6,182,212,0.08)",
         }}
       >
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
           Live Prices
         </h3>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {ALERT_COINS.map((coin) => (
             <div key={coin.id} className="text-center">
-              <div className="text-[10px] text-muted-foreground">
-                {coin.symbol}
-              </div>
+              <div className="text-[10px] text-gray-500">{coin.symbol}</div>
               <div className="text-xs font-bold text-cyan-300">
                 {prices[coin.id] ? `$${prices[coin.id].toLocaleString()}` : "—"}
               </div>
@@ -1838,7 +2152,7 @@ function PriceAlertsPanel() {
       <div
         className="rounded-xl p-4 border border-amber-500/20 space-y-4"
         style={{
-          background: "oklch(0.09 0.015 240)",
+          background: "#ffffff",
           boxShadow: "0 0 16px rgba(251,191,36,0.08)",
         }}
       >
@@ -1848,11 +2162,11 @@ function PriceAlertsPanel() {
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Coin</Label>
+            <Label className="text-xs text-gray-500">Coin</Label>
             <select
               value={selectedCoin}
               onChange={(e) => setSelectedCoin(e.target.value)}
-              className="w-full h-9 text-sm rounded-lg border border-white/10 px-3"
+              className="w-full h-9 text-sm rounded-lg border border-gray-200 px-3"
               style={{ background: "oklch(0.12 0.015 240)", color: "white" }}
               data-ocid="pricealerts.coin.select"
             >
@@ -1865,13 +2179,13 @@ function PriceAlertsPanel() {
             </select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Condition</Label>
+            <Label className="text-xs text-gray-500">Condition</Label>
             <select
               value={condition}
               onChange={(e) =>
                 setCondition(e.target.value as "above" | "below")
               }
-              className="w-full h-9 text-sm rounded-lg border border-white/10 px-3"
+              className="w-full h-9 text-sm rounded-lg border border-gray-200 px-3"
               style={{ background: "oklch(0.12 0.015 240)", color: "white" }}
               data-ocid="pricealerts.condition.select"
             >
@@ -1880,15 +2194,13 @@ function PriceAlertsPanel() {
             </select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">
-              Target Price (USD)
-            </Label>
+            <Label className="text-xs text-gray-500">Target Price (USD)</Label>
             <Input
               type="number"
               placeholder="e.g. 50000"
               value={targetPrice}
               onChange={(e) => setTargetPrice(e.target.value)}
-              className="h-9 text-sm border-white/10"
+              className="h-9 text-sm border-gray-200"
               style={{ background: "oklch(0.12 0.015 240)" }}
               data-ocid="pricealerts.target.input"
             />
@@ -1911,20 +2223,18 @@ function PriceAlertsPanel() {
 
       {/* Active Alerts List */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
           Active Alerts ({alerts.length})
         </h3>
         {alerts.length === 0 ? (
           <div
-            className="rounded-xl p-8 border border-white/10 text-center"
-            style={{ background: "oklch(0.09 0.015 240)" }}
+            className="rounded-xl p-8 border border-gray-200 text-center"
+            style={{ background: "#ffffff" }}
             data-ocid="pricealerts.empty_state"
           >
-            <Bell className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              No price alerts set.
-            </p>
-            <p className="text-xs text-muted-foreground/60">
+            <Bell className="w-8 h-8 text-gray-500/30 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">No price alerts set.</p>
+            <p className="text-xs text-gray-500/60">
               Create one above to get notified.
             </p>
           </div>
@@ -1947,7 +2257,7 @@ function PriceAlertsPanel() {
                   data-ocid={`pricealerts.item.${idx + 1}`}
                   className="rounded-xl p-3 border flex items-center gap-3"
                   style={{
-                    background: "oklch(0.09 0.015 240)",
+                    background: "#ffffff",
                     borderColor,
                     boxShadow: `0 0 16px ${glowColor}`,
                     opacity: alert.active ? 1 : 0.5,
@@ -1990,14 +2300,14 @@ function PriceAlertsPanel() {
                       )}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-gray-500">
                         Target:{" "}
                         <span className="text-foreground font-medium">
                           ${alert.target.toLocaleString()}
                         </span>
                       </span>
                       {currentPrice && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-gray-500">
                           Current:{" "}
                           <span className="text-cyan-300">
                             ${currentPrice.toLocaleString()}
@@ -2027,7 +2337,7 @@ function PriceAlertsPanel() {
                     <button
                       type="button"
                       onClick={() => deleteAlert(alert.id)}
-                      className="p-1.5 rounded text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="p-1.5 rounded text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       data-ocid={`pricealerts.delete_button.${idx + 1}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -2168,7 +2478,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b border-white/10">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-xl">
             🤖
@@ -2185,7 +2495,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
           variant="ghost"
           size="sm"
           onClick={() => setShowSettings(!showSettings)}
-          className="text-muted-foreground"
+          className="text-gray-500"
           data-ocid="clawbot.settings.button"
         >
           <Settings className="w-4 h-4 mr-1" />
@@ -2199,12 +2509,9 @@ function ClawBotPanel({ handle }: { handle: string }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-b border-white/10 overflow-hidden"
+            className="border-b border-gray-200 overflow-hidden"
           >
-            <div
-              className="p-4 space-y-4"
-              style={{ background: "oklch(0.09 0.015 240)" }}
-            >
+            <div className="p-4 space-y-4" style={{ background: "#ffffff" }}>
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-400" />
                 AI Brain Settings
@@ -2214,7 +2521,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
                   <p className="text-sm font-medium text-cyan-400">
                     OpenClaw.ai
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-500">
                     Default brain (always available)
                   </p>
                 </div>
@@ -2230,9 +2537,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
                     <p className="text-sm font-medium text-violet-400">
                       OpenAI / ChatGPT
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      GPT-3.5 / GPT-4
-                    </p>
+                    <p className="text-xs text-gray-500">GPT-3.5 / GPT-4</p>
                   </div>
                   <Switch
                     checked={openaiEnabled}
@@ -2242,7 +2547,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
                 </div>
                 {openaiEnabled && (
                   <div className="flex items-center gap-2">
-                    <Key className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Key className="w-3.5 h-3.5 text-gray-500" />
                     <Input
                       type="password"
                       placeholder="sk-..."
@@ -2260,7 +2565,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
                     <p className="text-sm font-medium text-blue-400">
                       Google Gemini
                     </p>
-                    <p className="text-xs text-muted-foreground">Gemini Pro</p>
+                    <p className="text-xs text-gray-500">Gemini Pro</p>
                   </div>
                   <Switch
                     checked={geminiEnabled}
@@ -2270,7 +2575,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
                 </div>
                 {geminiEnabled && (
                   <div className="flex items-center gap-2">
-                    <Key className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Key className="w-3.5 h-3.5 text-gray-500" />
                     <Input
                       type="password"
                       placeholder="AIza..."
@@ -2297,7 +2602,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
               className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 text-sm ${
                 msg.role === "user"
                   ? "bg-cyan-600/80 text-white rounded-br-sm"
-                  : "rounded-bl-sm border border-white/10"
+                  : "rounded-bl-sm border border-gray-200"
               }`}
               style={
                 msg.role === "bot"
@@ -2315,7 +2620,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
         {isTyping && (
           <div className="flex justify-start">
             <div
-              className="border border-white/10 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
+              className="border border-gray-200 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
               style={{ background: "oklch(0.12 0.015 240)" }}
             >
               <div className="flex gap-1">
@@ -2337,7 +2642,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
         )}
       </div>
 
-      <div className="p-3 border-t border-white/10">
+      <div className="p-3 border-t border-gray-200">
         <div className="flex gap-2">
           <Input
             value={input}
@@ -2398,25 +2703,21 @@ function WhatsAppPanel() {
         </div>
         <div>
           <h2 className="font-semibold">WhatsApp Bot</h2>
-          <p className="text-xs text-muted-foreground">
-            Automate WhatsApp messages
-          </p>
+          <p className="text-xs text-gray-500">Automate WhatsApp messages</p>
         </div>
       </div>
 
       <div
-        className="rounded-xl border border-white/10 p-4 space-y-4"
+        className="rounded-xl border border-gray-200 p-4 space-y-4"
         style={{
-          background: "oklch(0.09 0.015 240)",
+          background: "#ffffff",
           boxShadow: "0 0 20px rgba(34,197,94,0.06)",
         }}
       >
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">Bot Status</p>
-            <p className="text-xs text-muted-foreground">
-              Enable or disable the bot
-            </p>
+            <p className="text-xs text-gray-500">Enable or disable the bot</p>
           </div>
           <Switch
             checked={enabled}
@@ -2461,8 +2762,8 @@ function WhatsAppPanel() {
       </div>
 
       <div
-        className="rounded-xl border border-white/10 p-4"
-        style={{ background: "oklch(0.09 0.015 240)" }}
+        className="rounded-xl border border-gray-200 p-4"
+        style={{ background: "#ffffff" }}
       >
         <h3 className="text-sm font-semibold mb-3">Recent Activity</h3>
         <div className="space-y-2">
@@ -2477,10 +2778,8 @@ function WhatsAppPanel() {
               >
                 {log.from}:
               </span>
-              <span className="text-muted-foreground">{log.msg}</span>
-              <span className="ml-auto text-muted-foreground/60">
-                {log.time}
-              </span>
+              <span className="text-gray-500">{log.msg}</span>
+              <span className="ml-auto text-gray-500/60">{log.time}</span>
             </div>
           ))}
         </div>
@@ -2505,14 +2804,14 @@ function TelegramPanel() {
         </div>
         <div>
           <h2 className="font-semibold">Telegram Bot</h2>
-          <p className="text-xs text-muted-foreground">BotFather integration</p>
+          <p className="text-xs text-gray-500">BotFather integration</p>
         </div>
       </div>
 
       <div
-        className="rounded-xl border border-white/10 p-4 space-y-4"
+        className="rounded-xl border border-gray-200 p-4 space-y-4"
         style={{
-          background: "oklch(0.09 0.015 240)",
+          background: "#ffffff",
           boxShadow: "0 0 20px rgba(59,130,246,0.06)",
         }}
       >
@@ -2546,8 +2845,8 @@ function TelegramPanel() {
       </div>
 
       <div
-        className="rounded-xl border border-white/10 p-4"
-        style={{ background: "oklch(0.09 0.015 240)" }}
+        className="rounded-xl border border-gray-200 p-4"
+        style={{ background: "#ffffff" }}
       >
         <h3 className="text-sm font-semibold mb-3">Recent Commands</h3>
         <div className="space-y-2">
@@ -2558,10 +2857,8 @@ function TelegramPanel() {
           ].map((log) => (
             <div key={log.cmd} className="flex items-center gap-2 text-xs">
               <span className="font-mono text-blue-400">{log.cmd}</span>
-              <span className="text-muted-foreground">by {log.user}</span>
-              <span className="ml-auto text-muted-foreground/60">
-                {log.time}
-              </span>
+              <span className="text-gray-500">by {log.user}</span>
+              <span className="ml-auto text-gray-500/60">{log.time}</span>
             </div>
           ))}
         </div>
@@ -2657,7 +2954,7 @@ function ChatGPTPanel() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-white/10 space-y-3">
+      <div className="p-4 border-b border-gray-200 space-y-3">
         <div className="flex items-center gap-3">
           <Sparkles className="w-5 h-5 text-emerald-400" />
           <h2 className="font-semibold text-sm">ChatGPT Integration</h2>
@@ -2674,7 +2971,7 @@ function ChatGPTPanel() {
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="h-8 text-xs rounded-md border border-white/10 px-2"
+            className="h-8 text-xs rounded-md border border-gray-200 px-2"
             style={{ background: "oklch(0.12 0.015 240)", color: "white" }}
             data-ocid="chatgpt.model.select"
           >
@@ -2689,7 +2986,7 @@ function ChatGPTPanel() {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
             <Sparkles className="w-8 h-8 text-emerald-400/50" />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-gray-500">
               Enter your API key and start chatting with ChatGPT
             </p>
           </div>
@@ -2703,7 +3000,7 @@ function ChatGPTPanel() {
               className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 text-sm ${
                 msg.role === "user"
                   ? "bg-emerald-600/80 text-white rounded-br-sm"
-                  : "rounded-bl-sm border border-white/10"
+                  : "rounded-bl-sm border border-gray-200"
               }`}
               style={
                 msg.role === "bot"
@@ -2721,16 +3018,16 @@ function ChatGPTPanel() {
         {isTyping && (
           <div className="flex justify-start">
             <div
-              className="border border-white/10 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
+              className="border border-gray-200 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
               style={{ background: "oklch(0.12 0.015 240)" }}
             >
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+              <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
             </div>
           </div>
         )}
       </div>
 
-      <div className="p-3 border-t border-white/10">
+      <div className="p-3 border-t border-gray-200">
         <div className="flex gap-2">
           <Input
             value={input}
@@ -2809,16 +3106,14 @@ function SettingsPanel({
         </div>
         <div>
           <h2 className="font-semibold">Profile Settings</h2>
-          <p className="text-xs text-muted-foreground">
-            Update your account details
-          </p>
+          <p className="text-xs text-gray-500">Update your account details</p>
         </div>
       </div>
 
       <div
-        className="rounded-xl border border-white/10 p-4 space-y-4"
+        className="rounded-xl border border-gray-200 p-4 space-y-4"
         style={{
-          background: "oklch(0.09 0.015 240)",
+          background: "#ffffff",
           boxShadow: "0 0 20px rgba(167,139,250,0.06)",
         }}
       >
@@ -2826,7 +3121,7 @@ function SettingsPanel({
           <div className="space-y-2">
             <Label className="text-sm">Handle Name</Label>
             <div className="flex items-center gap-1">
-              <span className="text-muted-foreground text-sm">@</span>
+              <span className="text-gray-500 text-sm">@</span>
               <Input
                 value={newHandle}
                 onChange={(e) => setNewHandle(e.target.value)}
@@ -2880,16 +3175,14 @@ function SettingsPanel({
       </div>
 
       <div
-        className="rounded-xl border border-white/10 p-4 space-y-4"
-        style={{ background: "oklch(0.09 0.015 240)" }}
+        className="rounded-xl border border-gray-200 p-4 space-y-4"
+        style={{ background: "#ffffff" }}
       >
         <h3 className="text-sm font-semibold">Preferences</h3>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">Notifications</p>
-            <p className="text-xs text-muted-foreground">
-              Receive app notifications
-            </p>
+            <p className="text-xs text-gray-500">Receive app notifications</p>
           </div>
           <Switch
             checked={notifs}
@@ -2900,9 +3193,7 @@ function SettingsPanel({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium">Auto-save</p>
-            <p className="text-xs text-muted-foreground">
-              Automatically save configs
-            </p>
+            <p className="text-xs text-gray-500">Automatically save configs</p>
           </div>
           <Switch
             checked={autoSave}
@@ -2998,16 +3289,16 @@ function ActivityPanel({ handle }: { handle: string }) {
         </div>
         <div>
           <h2 className="font-semibold">Activity Feed</h2>
-          <p className="text-xs text-muted-foreground">Your recent actions</p>
+          <p className="text-xs text-gray-500">Your recent actions</p>
         </div>
       </div>
       <div className="space-y-2">
         {ACTIVITY_ITEMS.map((item) => (
           <div
             key={item.id}
-            className="flex items-start gap-3 p-3 rounded-xl border border-white/5 hover:border-white/10 transition-colors"
+            className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
             style={{
-              background: "oklch(0.09 0.012 240)",
+              background: "#f8fafc",
               borderLeft: `3px solid ${item.color}`,
             }}
             data-ocid={`activity.item.${item.id}`}
@@ -3015,9 +3306,7 @@ function ActivityPanel({ handle }: { handle: string }) {
             <span className="text-lg flex-shrink-0">{item.icon}</span>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-foreground">{item.text}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {item.time}
-              </p>
+              <p className="text-xs text-gray-500 mt-0.5">{item.time}</p>
             </div>
             <div
               className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5"
@@ -3094,7 +3383,7 @@ function StatsPanel() {
         </div>
         <div>
           <h2 className="font-semibold">Your Stats</h2>
-          <p className="text-xs text-muted-foreground">Performance overview</p>
+          <p className="text-xs text-gray-500">Performance overview</p>
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -3105,11 +3394,11 @@ function StatsPanel() {
       <div
         className="rounded-xl p-4 border border-indigo-500/20 space-y-3"
         style={{
-          background: "oklch(0.09 0.015 270)",
+          background: "#faf8ff",
           boxShadow: "0 0 20px rgba(99,102,241,0.08)",
         }}
       >
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
           Weekly Activity
         </h3>
         <div className="flex items-end gap-1 h-16">
@@ -3131,7 +3420,7 @@ function StatsPanel() {
                   boxShadow: "0 0 4px rgba(129,140,248,0.4)",
                 }}
               />
-              <span className="text-[9px] text-muted-foreground">{d[0]}</span>
+              <span className="text-[9px] text-gray-500">{d[0]}</span>
             </div>
           ))}
         </div>
@@ -3174,9 +3463,9 @@ function AnimatedStatCard({
 
   return (
     <div
-      className="rounded-xl p-4 border border-white/10 text-center"
+      className="rounded-xl p-4 border border-gray-200 text-center"
       style={{
-        background: "oklch(0.09 0.015 240)",
+        background: "#ffffff",
         boxShadow: `0 0 16px ${stat.glow}`,
       }}
       data-ocid={`stats.${stat.label.toLowerCase().replace(/ /g, "_")}.card`}
@@ -3188,7 +3477,7 @@ function AnimatedStatCard({
       >
         {displayed.toLocaleString()}
       </div>
-      <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+      <div className="text-xs text-gray-500 mt-0.5">{stat.label}</div>
     </div>
   );
 }
@@ -3253,7 +3542,7 @@ function TasksPanel() {
         </div>
         <div>
           <h2 className="font-semibold">Task Manager</h2>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-gray-500">
             {pending.length} pending · {done.length} done
           </p>
         </div>
@@ -3265,7 +3554,7 @@ function TasksPanel() {
       >
         <input
           type="text"
-          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-gray-500 outline-none"
           placeholder="Add a new task..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -3288,7 +3577,7 @@ function TasksPanel() {
 
       {tasks.length === 0 && (
         <div
-          className="text-center py-8 text-muted-foreground text-sm"
+          className="text-center py-8 text-gray-500 text-sm"
           data-ocid="tasks.empty_state"
         >
           No tasks yet. Add one above!
@@ -3305,7 +3594,7 @@ function TasksPanel() {
               exit={{ opacity: 0, x: 16 }}
               transition={{ duration: 0.15 }}
               className="flex items-center gap-3 p-3 rounded-xl border border-teal-500/15 hover:border-teal-500/30 transition-colors"
-              style={{ background: "oklch(0.09 0.012 240)" }}
+              style={{ background: "#f8fafc" }}
               data-ocid={`tasks.item.${i + 1}`}
             >
               <button
@@ -3322,7 +3611,7 @@ function TasksPanel() {
               <button
                 type="button"
                 onClick={() => remove(task.id)}
-                className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
+                className="p-1 text-gray-500 hover:text-red-400 transition-colors"
                 data-ocid={`tasks.delete_button.${i + 1}`}
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -3334,7 +3623,7 @@ function TasksPanel() {
 
       {done.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+          <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
             Completed
           </p>
           <AnimatePresence>
@@ -3344,20 +3633,20 @@ function TasksPanel() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-3 p-3 rounded-xl border border-white/5 opacity-60"
+                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 opacity-60"
                 style={{ background: "oklch(0.08 0.008 240)" }}
                 data-ocid={`tasks.done.item.${i + 1}`}
               >
                 <div className="w-5 h-5 rounded border-2 border-teal-400/40 flex items-center justify-center flex-shrink-0">
                   <Circle className="w-2 h-2 fill-teal-400 text-teal-400" />
                 </div>
-                <span className="flex-1 text-sm line-through text-muted-foreground">
+                <span className="flex-1 text-sm line-through text-gray-500">
                   {task.text}
                 </span>
                 <button
                   type="button"
                   onClick={() => remove(task.id)}
-                  className="p-1 text-muted-foreground hover:text-red-400 transition-colors"
+                  className="p-1 text-gray-500 hover:text-red-400 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -3485,7 +3774,7 @@ function StatusPanel() {
           </div>
           <div>
             <h2 className="font-semibold">System Status</h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-500">
               {lastChecked
                 ? `Last checked: ${lastChecked.toLocaleTimeString()}`
                 : "Checking..."}
@@ -3545,7 +3834,7 @@ function StatusPanel() {
           <div
             key={s.name}
             className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 hover:border-white/15 transition-colors"
-            style={{ background: "oklch(0.09 0.012 240)" }}
+            style={{ background: "#f8fafc" }}
             data-ocid={`status.item.${i + 1}`}
           >
             <div
@@ -3586,7 +3875,7 @@ function StatusPanel() {
                             : "#ef4444",
                     }}
                   />
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[10px] text-gray-500">
                     {s.latency}ms
                   </span>
                 </div>
@@ -3914,7 +4203,7 @@ function LeaderboardPanel() {
             Leaderboard
           </h2>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-gray-500">
           Top ClawPro members by activity score
         </p>
       </div>
@@ -3922,15 +4211,15 @@ function LeaderboardPanel() {
         {members.map((m) => (
           <div
             key={m.rank}
-            className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-white/20 transition-all"
+            className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-gray-300 transition-all"
             style={{
-              background: "oklch(0.09 0.015 240)",
+              background: "#ffffff",
               boxShadow:
                 m.rank <= 3 ? "0 0 12px rgba(245,158,11,0.1)" : undefined,
             }}
           >
             <span className="text-lg w-7 text-center">{m.badge}</span>
-            <span className="text-xs font-bold text-muted-foreground w-4">
+            <span className="text-xs font-bold text-gray-500 w-4">
               {m.rank}
             </span>
             <span className="flex-1 text-sm font-semibold">@{m.handle}</span>
@@ -4021,25 +4310,23 @@ function NotificationsPanel() {
             Notifications
           </h2>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Recent activity and alerts
-        </p>
+        <p className="text-sm text-gray-500">Recent activity and alerts</p>
       </div>
       <div className="space-y-2">
         {notifs.map((n) => (
           <div
             key={n.id}
-            className="flex items-start gap-3 p-4 rounded-xl border border-white/10 hover:border-white/20 transition-all cursor-pointer"
-            style={{ background: "oklch(0.09 0.015 240)" }}
+            className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
+            style={{ background: "#ffffff" }}
           >
             <span className="text-xl mt-0.5">{n.icon}</span>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold" style={{ color: n.color }}>
                 {n.title}
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">{n.desc}</p>
+              <p className="text-xs text-gray-500 mt-0.5">{n.desc}</p>
             </div>
-            <span className="text-[10px] text-muted-foreground flex-shrink-0">
+            <span className="text-[10px] text-gray-500 flex-shrink-0">
               {n.time}
             </span>
           </div>
@@ -4085,7 +4372,7 @@ function DynamicIntegrationPanel({
             <h2 className="text-xl font-bold" style={{ color: app.color }}>
               {app.name}
             </h2>
-            <p className="text-sm text-muted-foreground">{app.desc}</p>
+            <p className="text-sm text-gray-500">{app.desc}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -4099,21 +4386,17 @@ function DynamicIntegrationPanel({
           >
             ● Active
           </span>
-          <span className="text-xs text-muted-foreground">
-            Installed & Ready
-          </span>
+          <span className="text-xs text-gray-500">Installed & Ready</span>
         </div>
       </div>
       <div
-        className="rounded-xl p-5 border border-white/10"
-        style={{ background: "oklch(0.09 0.015 240)" }}
+        className="rounded-xl p-5 border border-gray-200"
+        style={{ background: "#ffffff" }}
       >
         <h3 className="text-sm font-semibold mb-4">Configuration</h3>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Enable Integration
-            </span>
+            <span className="text-sm text-gray-500">Enable Integration</span>
             <div
               className="w-10 h-5 rounded-full relative cursor-pointer"
               style={{ background: app.color }}
@@ -4122,11 +4405,9 @@ function DynamicIntegrationPanel({
             </div>
           </div>
           <div className="pt-2">
-            <Label className="text-sm text-muted-foreground">
-              API Webhook URL
-            </Label>
+            <Label className="text-sm text-gray-500">API Webhook URL</Label>
             <Input
-              className="mt-1 bg-background/50 border-white/10 text-sm"
+              className="mt-1 bg-background/50 border-gray-200 text-sm"
               placeholder="https://api.example.com/webhook"
             />
           </div>
@@ -4201,7 +4482,7 @@ function InstallIntegrationsPanel({
             >
               Install &amp; Integrations
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-gray-500">
               Connect ClawPro with your favorite apps and services
             </p>
           </div>
@@ -4288,7 +4569,7 @@ function InstallIntegrationsPanel({
                 <p className="text-xs font-semibold leading-tight">
                   {item.name}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
+                <p className="text-[10px] text-gray-500 mt-0.5 leading-tight">
                   {item.desc}
                 </p>
               </div>
