@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { useCallback, useEffect, useState } from "react";
 import { MembershipTier } from "./backend.d";
+import { AdminDashboardPanel } from "./components/AdminDashboardPanel";
 import { CreateAccountModal } from "./components/CreateAccountModal";
 import { CryptoMarketPage } from "./components/CryptoMarketPage";
 import { DotsBackground } from "./components/DotsBackground";
@@ -41,6 +42,7 @@ function isLeaderboardHash(hash: string): boolean {
 function AppInner() {
   const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showCryptoMarket, setShowCryptoMarket] = useState(false);
   const [showTierLanding, setShowTierLanding] = useState(false);
@@ -125,6 +127,7 @@ function AppInner() {
         isDark={isDark}
         toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
+        onAdminDashboardClick={() => setShowAdminDashboard(true)}
         onCreateAccountClick={() => setShowCreateAccount(true)}
         onLoginClick={() => setShowLogin(true)}
         onDashboardClick={
@@ -179,6 +182,10 @@ function AppInner() {
 
       {showAdmin && isAdmin && (
         <AdminPanel onClose={() => setShowAdmin(false)} />
+      )}
+
+      {showAdminDashboard && (
+        <AdminDashboardPanel onClose={() => setShowAdminDashboard(false)} />
       )}
 
       {showDashboard && (

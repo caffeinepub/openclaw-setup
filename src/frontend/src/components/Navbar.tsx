@@ -45,6 +45,7 @@ interface NavbarProps {
   isDark: boolean;
   toggleTheme: () => void;
   onAdminClick: () => void;
+  onAdminDashboardClick: () => void;
   onCreateAccountClick: () => void;
   onDashboardClick?: () => void;
   onMarketsClick: () => void;
@@ -56,6 +57,7 @@ export function Navbar({
   isDark,
   toggleTheme,
   onAdminClick,
+  onAdminDashboardClick,
   onCreateAccountClick,
   onDashboardClick,
   onMarketsClick,
@@ -266,6 +268,22 @@ export function Navbar({
                       Dashboard
                     </Button>
                   )}
+                  {/* Admin Dashboard Button - Red */}
+                  <Button
+                    size="sm"
+                    onClick={onAdminDashboardClick}
+                    className="font-semibold shadow-sm"
+                    style={{
+                      background: "linear-gradient(135deg, #dc2626, #b91c1c)",
+                      color: "white",
+                      border: "none",
+                      boxShadow: "0 2px 8px rgba(220,38,38,0.4)",
+                    }}
+                    data-ocid="nav.admin_dashboard.button"
+                  >
+                    <Shield className="w-4 h-4 mr-1.5" />
+                    Admin
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -399,6 +417,22 @@ export function Navbar({
                     </div>
                   ) : (
                     <div className="flex-1 flex flex-col gap-2">
+                      {/* Admin Dashboard mobile */}
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setIsMobileOpen(false);
+                          onAdminDashboardClick();
+                        }}
+                        className="w-full font-semibold text-white"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #dc2626, #b91c1c)",
+                        }}
+                      >
+                        <Shield className="w-4 h-4 mr-1.5" />
+                        Admin
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
