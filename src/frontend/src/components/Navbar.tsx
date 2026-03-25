@@ -5,9 +5,7 @@ import {
   LogIn,
   LogOut,
   Menu,
-  Moon,
   Shield,
-  Sun,
   TrendingUp,
   UserPlus,
   X,
@@ -17,8 +15,6 @@ import { useEffect, useState } from "react";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import { MembershipTier, useMyMembership } from "../hooks/useMembership";
 import { useIsAdmin } from "../hooks/useQueries";
-import { useLanguage } from "../i18n/LanguageContext";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 
 const MEMBERSHIP_BADGE: Record<
   MembershipTier,
@@ -41,21 +37,26 @@ const MEMBERSHIP_BADGE: Record<
   },
 };
 
+const NAV_LINKS = [
+  { label: "Home", href: "#hero" },
+  { label: "Features", href: "#features" },
+  { label: "Integrations", href: "#integrations" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Setup", href: "#setup" },
+  { label: "Docs", href: "#docs" },
+];
+
 interface NavbarProps {
-  isDark: boolean;
-  toggleTheme: () => void;
   onAdminClick: () => void;
   onAdminDashboardClick: () => void;
   onCreateAccountClick: () => void;
-  onDashboardClick?: () => void;
+  onDashboardClick: () => void;
   onMarketsClick: () => void;
   onLoginClick?: () => void;
   onLogout?: () => void;
 }
 
 export function Navbar({
-  isDark,
-  toggleTheme,
   onAdminClick,
   onAdminDashboardClick,
   onCreateAccountClick,
@@ -69,16 +70,6 @@ export function Navbar({
   const { login, clear, identity, isLoggingIn } = useInternetIdentity();
   const { data: isAdmin } = useIsAdmin();
   const { data: myMembership } = useMyMembership();
-  const { t } = useLanguage();
-
-  const NAV_LINKS = [
-    { label: t.nav.home, href: "#hero" },
-    { label: t.nav.features, href: "#features" },
-    { label: t.nav.integrations, href: "#integrations" },
-    { label: t.nav.pricing, href: "#pricing" },
-    { label: t.nav.setup, href: "#setup" },
-    { label: t.nav.docs, href: "#docs" },
-  ];
 
   useEffect(() => {
     const handler = () => setIsScrolled(window.scrollY > 20);
@@ -168,7 +159,7 @@ export function Navbar({
               </div>
             </motion.div>
 
-            {/* Desktop Nav */}
+            {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-1">
               {NAV_LINKS.map((link) => (
                 <button
@@ -180,7 +171,6 @@ export function Navbar({
                   {link.label}
                 </button>
               ))}
-              {/* Markets link */}
               <button
                 type="button"
                 onClick={onMarketsClick}
@@ -192,7 +182,7 @@ export function Navbar({
               </button>
             </div>
 
-            {/* Right Actions */}
+            {/* Desktop Right Actions — always show all 4 */}
             <div className="hidden md:flex items-center gap-2">
               {isAdmin && (
                 <Button
@@ -202,111 +192,81 @@ export function Navbar({
                   className="text-amber-400 hover:text-amber-300 hover:bg-amber-400/10"
                 >
                   <Shield className="w-4 h-4 mr-1.5" />
-                  {t.nav.admin}
+                  Admin ICP
                 </Button>
               )}
-              <LanguageSwitcher />
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="p-2 rounded-md text-muted-foreground hover:text-cyan hover:bg-accent/50 transition-colors"
-                aria-label="Toggle theme"
+              {identity && myMembership && (
+                <Badge
+                  className={`border ${
+                    MEMBERSHIP_BADGE[myMembership.tier].className
+                  }`}
+                >
+                  {MEMBERSHIP_BADGE[myMembership.tier].label}
+                </Badge>
+              )}
+              {/* Admin Dashboard - red */}
+              <Button
+                size="sm"
+                onClick={onAdminDashboardClick}
+                className="font-semibold shadow-sm"
+                style={{
+                  background: "linear-gradient(135deg, #dc2626, #b91c1c)",
+                  color: "white",
+                  border: "none",
+                  boxShadow: "0 2px 8px rgba(220,38,38,0.4)",
+                }}
+                data-ocid="nav.admin_dashboard.button"
               >
-                {isDark ? (
-                  <Sun className="w-4 h-4" />
-                ) : (
-                  <Moon className="w-4 h-4" />
-                )}
-              </button>
+                <Shield className="w-4 h-4 mr-1.5" />
+                Admin
+              </Button>
+              {/* Dashboard - cyan */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onDashboardClick}
+                className="border-cyan/40 text-cyan hover:bg-cyan/10 font-semibold"
+                data-ocid="nav.dashboard.button"
+              >
+                <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                Dashboard
+              </Button>
+              {/* Create Account */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onCreateAccountClick}
+                className="border-cyan/40 text-cyan hover:bg-cyan/10 hover:border-cyan/70 font-semibold"
+                data-ocid="nav.create_account.button"
+              >
+                <UserPlus className="w-4 h-4 mr-1.5" />
+                Create Account
+              </Button>
+              {/* Login / Logout */}
               {identity ? (
-                <div className="flex items-center gap-2">
-                  {myMembership && (
-                    <Badge
-                      className={`border ${
-                        MEMBERSHIP_BADGE[myMembership.tier].className
-                      }`}
-                    >
-                      {MEMBERSHIP_BADGE[myMembership.tier].label}
-                    </Badge>
-                  )}
-                  {onDashboardClick && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={onDashboardClick}
-                      className="border-cyan/40 text-cyan hover:bg-cyan/10 font-semibold"
-                      data-ocid="nav.dashboard.button"
-                    >
-                      <LayoutDashboard className="w-4 h-4 mr-1.5" />
-                      Dashboard
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      clear();
-                      onLogout?.();
-                    }}
-                    className="border-cyan/30 text-cyan hover:bg-cyan/10 hover:border-cyan/60"
-                  >
-                    <LogOut className="w-4 h-4 mr-1.5" />
-                    {t.nav.logout}
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    clear();
+                    onLogout?.();
+                  }}
+                  className="border-cyan/30 text-cyan hover:bg-cyan/10 hover:border-cyan/60"
+                >
+                  <LogOut className="w-4 h-4 mr-1.5" />
+                  Logout
+                </Button>
               ) : (
-                <div className="flex items-center gap-2">
-                  {onDashboardClick && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={onDashboardClick}
-                      className="border-cyan/40 text-cyan hover:bg-cyan/10 font-semibold"
-                      data-ocid="nav.dashboard.button"
-                    >
-                      <LayoutDashboard className="w-4 h-4 mr-1.5" />
-                      Dashboard
-                    </Button>
-                  )}
-                  {/* Admin Dashboard Button - Red */}
-                  <Button
-                    size="sm"
-                    onClick={onAdminDashboardClick}
-                    className="font-semibold shadow-sm"
-                    style={{
-                      background: "linear-gradient(135deg, #dc2626, #b91c1c)",
-                      color: "white",
-                      border: "none",
-                      boxShadow: "0 2px 8px rgba(220,38,38,0.4)",
-                    }}
-                    data-ocid="nav.admin_dashboard.button"
-                  >
-                    <Shield className="w-4 h-4 mr-1.5" />
-                    Admin
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={onCreateAccountClick}
-                    className="border-cyan/40 text-cyan hover:bg-cyan/10 hover:border-cyan/70 font-semibold"
-                    data-ocid="nav.create_account.button"
-                  >
-                    <UserPlus className="w-4 h-4 mr-1.5" />
-                    {t.nav.createAccount}
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={onLoginClick ?? login}
-                    disabled={isLoggingIn && !onLoginClick}
-                    className="bg-cyan text-background hover:bg-cyan-bright font-semibold shadow-glow-sm"
-                    data-ocid="nav.login.button"
-                  >
-                    <LogIn className="w-4 h-4 mr-1.5" />
-                    {isLoggingIn && !onLoginClick
-                      ? t.nav.connecting
-                      : t.nav.login}
-                  </Button>
-                </div>
+                <Button
+                  size="sm"
+                  onClick={onLoginClick ?? login}
+                  disabled={isLoggingIn && !onLoginClick}
+                  className="bg-cyan text-background hover:bg-cyan-bright font-semibold shadow-glow-sm"
+                  data-ocid="nav.login.button"
+                >
+                  <LogIn className="w-4 h-4 mr-1.5" />
+                  {isLoggingIn && !onLoginClick ? "Connecting..." : "Login"}
+                </Button>
               )}
             </div>
 
@@ -348,7 +308,6 @@ export function Navbar({
                   {link.label}
                 </button>
               ))}
-              {/* Markets mobile */}
               <button
                 type="button"
                 onClick={() => {
@@ -361,6 +320,7 @@ export function Navbar({
                 <TrendingUp className="w-4 h-4" />
                 Markets
               </button>
+
               <div className="pt-2 border-t border-border space-y-2">
                 {identity && myMembership && (
                   <div className="px-1 pb-1">
@@ -373,91 +333,75 @@ export function Navbar({
                     </Badge>
                   </div>
                 )}
-                <div className="px-1 pb-1">
-                  <LanguageSwitcher />
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={toggleTheme}
-                    className="flex-1 flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-cyan rounded-md hover:bg-accent/50 transition-colors"
+                {/* Admin - red */}
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    onAdminDashboardClick();
+                  }}
+                  className="w-full font-semibold text-white"
+                  style={{
+                    background: "linear-gradient(135deg, #dc2626, #b91c1c)",
+                  }}
+                  data-ocid="nav.admin_dashboard.button"
+                >
+                  <Shield className="w-4 h-4 mr-1.5" />
+                  Admin
+                </Button>
+                {/* Dashboard */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    onDashboardClick();
+                  }}
+                  className="w-full border-cyan/40 text-cyan"
+                  data-ocid="nav.dashboard.button"
+                >
+                  <LayoutDashboard className="w-4 h-4 mr-1.5" />
+                  Dashboard
+                </Button>
+                {/* Create Account */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    onCreateAccountClick();
+                  }}
+                  className="w-full border-cyan/40 text-cyan"
+                  data-ocid="nav.create_account.button"
+                >
+                  <UserPlus className="w-4 h-4 mr-1.5" />
+                  Create Account
+                </Button>
+                {/* Login / Logout */}
+                {identity ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsMobileOpen(false);
+                      clear();
+                      onLogout?.();
+                    }}
+                    className="w-full border-cyan/30 text-cyan"
                   >
-                    {isDark ? (
-                      <Sun className="w-4 h-4" />
-                    ) : (
-                      <Moon className="w-4 h-4" />
-                    )}
-                    {isDark ? t.nav.lightMode : t.nav.darkMode}
-                  </button>
-                  {identity ? (
-                    <div className="flex-1 flex flex-col gap-2">
-                      {onDashboardClick && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setIsMobileOpen(false);
-                            onDashboardClick();
-                          }}
-                          className="w-full border-cyan/40 text-cyan"
-                          data-ocid="nav.dashboard.button"
-                        >
-                          <LayoutDashboard className="w-4 h-4 mr-1.5" />
-                          Dashboard
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clear}
-                        className="w-full border-cyan/30 text-cyan"
-                      >
-                        <LogOut className="w-4 h-4 mr-1.5" /> {t.nav.logout}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex-1 flex flex-col gap-2">
-                      {/* Admin Dashboard mobile */}
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setIsMobileOpen(false);
-                          onAdminDashboardClick();
-                        }}
-                        className="w-full font-semibold text-white"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #dc2626, #b91c1c)",
-                        }}
-                      >
-                        <Shield className="w-4 h-4 mr-1.5" />
-                        Admin
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setIsMobileOpen(false);
-                          onCreateAccountClick();
-                        }}
-                        className="w-full border-cyan/40 text-cyan"
-                        data-ocid="nav.create_account.button"
-                      >
-                        <UserPlus className="w-4 h-4 mr-1.5" />{" "}
-                        {t.nav.createAccount}
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={onLoginClick ?? login}
-                        disabled={isLoggingIn && !onLoginClick}
-                        className="w-full bg-cyan text-background"
-                        data-ocid="nav.login.button"
-                      >
-                        <LogIn className="w-4 h-4 mr-1.5" /> {t.nav.login}
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                    <LogOut className="w-4 h-4 mr-1.5" /> Logout
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={onLoginClick ?? login}
+                    disabled={isLoggingIn && !onLoginClick}
+                    className="w-full bg-cyan text-background"
+                    data-ocid="nav.login.button"
+                  >
+                    <LogIn className="w-4 h-4 mr-1.5" /> Login
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>

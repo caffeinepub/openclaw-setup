@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import {
   Activity,
+  ArrowLeft,
   BarChart3,
   Bell,
   Bot,
@@ -765,10 +766,12 @@ export function MemberDashboard({
                     style={
                       isActive
                         ? {
-                            background: "rgba(6,182,212,0.08)",
+                            background: "rgba(6,182,212,0.12)",
                             boxShadow: "inset 0 0 12px rgba(6,182,212,0.05)",
                           }
-                        : {}
+                        : {
+                            background: "#13131e",
+                          }
                     }
                   >
                     <span className={isActive ? item.color : ""}>
@@ -868,6 +871,20 @@ export function MemberDashboard({
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Logout</span>
+              </button>
+              <button
+                type="button"
+                data-ocid="dashboard.close_button"
+                onClick={onClose}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-red-500/20 hover:text-red-400"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  color: "rgba(255,255,255,0.6)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Back</span>
               </button>
             </div>
           </div>

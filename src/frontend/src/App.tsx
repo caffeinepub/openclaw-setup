@@ -40,7 +40,6 @@ function isLeaderboardHash(hash: string): boolean {
 }
 
 function AppInner() {
-  const [isDark, setIsDark] = useState(true);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -101,40 +100,30 @@ function AppInner() {
     setShowPublicLeaderboard(false);
   }, []);
 
-  useEffect(() => {
-    const html = document.documentElement;
-    if (isDark) {
-      html.classList.add("dark");
-      html.style.colorScheme = "dark";
-    } else {
-      html.classList.remove("dark");
-      html.style.colorScheme = "light";
-    }
-  }, [isDark]);
-
+  // Always force dark mode
   useEffect(() => {
     document.documentElement.classList.add("dark");
     document.documentElement.style.colorScheme = "dark";
   }, []);
 
-  const toggleTheme = () => setIsDark((prev) => !prev);
+  const handleDashboardClick = () => {
+    if (localAccount || (identity && userAccount)) {
+      setShowDashboard(true);
+    } else {
+      setShowLogin(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
       <DotsBackground fixed />
 
       <Navbar
-        isDark={isDark}
-        toggleTheme={toggleTheme}
         onAdminClick={() => setShowAdmin(true)}
         onAdminDashboardClick={() => setShowAdminDashboard(true)}
         onCreateAccountClick={() => setShowCreateAccount(true)}
         onLoginClick={() => setShowLogin(true)}
-        onDashboardClick={
-          (identity && userAccount) || localAccount
-            ? () => setShowDashboard(true)
-            : undefined
-        }
+        onDashboardClick={handleDashboardClick}
         onMarketsClick={() => setShowCryptoMarket(true)}
         onLogout={() => {
           setLocalAccount(null);
