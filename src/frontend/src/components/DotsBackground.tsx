@@ -12,7 +12,8 @@ interface Dot {
 
 /**
  * Lightweight single global animated moving dots background.
- * Renders 25 tiny dots that drift slowly. Use once in App layout.
+ * Renders 25 tiny dots that drift slowly + pentagon paving block tiles.
+ * Use once in App layout.
  */
 export function DotsBackground({ fixed = false }: { fixed?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,10 +45,57 @@ export function DotsBackground({ fixed = false }: { fixed?: boolean }) {
       isCyan: Math.random() > 0.4,
     }));
 
+    // Draw pentagon at (cx, cy) with outer radius r
+    const drawPentagon = (cx: number, cy: number, r: number) => {
+      ctx.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const angle = (i * (2 * Math.PI)) / 5 - Math.PI / 2;
+        const x = cx + r * Math.cos(angle);
+        const y = cy + r * Math.sin(angle);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    };
+
+    const drawPentagons = () => {
+      const R = 44; // pentagon circumradius
+      // For a tiling pattern, use a grid with offset rows
+      // Pentagon tiling: horizontal spacing ~= 2*R*cos(18°) ≈ 1.902*R
+      // vertical spacing uses sin values
+      const hSpacing = R * 1.55;
+      const vSpacing = R * 1.52;
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(180,180,210,0.13)";
+      ctx.lineWidth = 1;
+      // subtle glow via shadow
+      ctx.shadowColor = "rgba(180,180,255,0.2)";
+      ctx.shadowBlur = 3;
+
+      const cols = Math.ceil(canvas.width / hSpacing) + 3;
+      const rows = Math.ceil(canvas.height / vSpacing) + 3;
+
+      for (let row = -2; row < rows; row++) {
+        for (let col = -2; col < cols; col++) {
+          const offsetX = row % 2 === 0 ? 0 : hSpacing * 0.5;
+          const cx = col * hSpacing + offsetX;
+          const cy = row * vSpacing;
+          drawPentagon(cx, cy, R);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    };
+
     const draw = () => {
       if (!canvas || !ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Draw pentagons first (below dots)
+      drawPentagons();
+
+      // Draw dots on top
       for (const dot of dots) {
         dot.x += dot.dx;
         dot.y += dot.dy;

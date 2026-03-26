@@ -341,6 +341,210 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
     { id: "platinum", label: "Platinum", color: "#a78bfa" },
   ];
 
+  // When not logged in, render only a centered login card (no two-column layout)
+  if (!isLoggedIn) {
+    return (
+      <>
+        <style>{`
+          @keyframes adminBtnGlow {
+            0%,100% { box-shadow: 0 4px 15px rgba(220,38,38,0.25); }
+            50% { box-shadow: 0 6px 25px rgba(220,38,38,0.45), 0 0 35px rgba(220,38,38,0.15); }
+          }
+          .admin-glow-btn { animation: adminBtnGlow 2.5s ease-in-out infinite; }
+        `}</style>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{
+            background: "rgba(0,0,0,0.92)",
+            backdropFilter: "blur(8px)",
+          }}
+          data-ocid="admin.modal"
+        >
+          {/* Back / close button at top right */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-red-500/20"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              color: "rgba(255,255,255,0.7)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            data-ocid="admin.close_button"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="w-full max-w-sm"
+          >
+            <div
+              className="rounded-2xl p-8"
+              style={{
+                background: "#0f0f1a",
+                border: "1px solid rgba(220,38,38,0.25)",
+                boxShadow:
+                  "0 25px 80px rgba(220,38,38,0.2), 0 8px 32px rgba(0,0,0,0.6)",
+              }}
+            >
+              <div className="text-center mb-6">
+                <div
+                  className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                  style={{
+                    background: "linear-gradient(135deg, #dc2626, #991b1b)",
+                    boxShadow: "0 8px 24px rgba(220,38,38,0.4)",
+                  }}
+                >
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white">Admin Login</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  ClawPro.ai Control Panel
+                </p>
+              </div>
+
+              {forgotStep === "none" ? (
+                <div className="space-y-4">
+                  <div>
+                    <label
+                      htmlFor="admin-login-username-2"
+                      className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide"
+                    >
+                      Username
+                    </label>
+                    <Input
+                      id="admin-login-username-2"
+                      placeholder="Admin username"
+                      value={loginUsername}
+                      onChange={(e) => setLoginUsername(e.target.value)}
+                      className="text-white placeholder:text-gray-600"
+                      style={{
+                        background: "#1a1a2e",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                      }}
+                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                      data-ocid="admin.input"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="admin-login-password-2"
+                      className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide"
+                    >
+                      Password
+                    </label>
+                    <div className="relative">
+                      <Input
+                        id="admin-login-password-2"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Admin password"
+                        value={loginPassword}
+                        onChange={(e) => setLoginPassword(e.target.value)}
+                        className="text-white placeholder:text-gray-600 pr-10"
+                        style={{
+                          background: "#1a1a2e",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                        }}
+                        onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                        data-ocid="admin.input"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {loginError && (
+                    <p
+                      className="text-sm text-red-400 text-center"
+                      data-ocid="admin.error_state"
+                    >
+                      {loginError}
+                    </p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleLogin}
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all admin-glow-btn"
+                    style={{
+                      background: "linear-gradient(135deg, #dc2626, #b91c1c)",
+                    }}
+                    data-ocid="admin.submit_button"
+                  >
+                    <LogIn className="w-4 h-4 inline mr-2" />
+                    Login to Admin Panel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep("recover")}
+                    className="w-full text-xs text-gray-500 hover:text-gray-300 py-1 transition-colors"
+                  >
+                    Forgot credentials? Use recovery code
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-400 text-center">
+                    Enter your recovery code to retrieve credentials.
+                  </p>
+                  <Input
+                    placeholder="Recovery code"
+                    value={recoverCode}
+                    onChange={(e) => setRecoverCode(e.target.value)}
+                    className="text-white placeholder:text-gray-600 text-center tracking-widest font-mono"
+                    style={{
+                      background: "#1a1a2e",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleForgotSubmit()}
+                    data-ocid="admin.input"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleForgotSubmit}
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all"
+                    style={{
+                      background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+                    }}
+                    data-ocid="admin.submit_button"
+                  >
+                    <Key className="w-4 h-4 inline mr-2" />
+                    Recover Access
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setForgotStep("none")}
+                    className="w-full text-xs text-gray-500 hover:text-gray-300 py-1 transition-colors"
+                  >
+                    Back to login
+                  </button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.div>
+      </>
+    );
+  }
+
   return (
     <>
       <style>{`

@@ -14,6 +14,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useActor } from "../hooks/useActor";
 
 interface LocalAccount {
   handle: string;
@@ -28,6 +29,14 @@ interface LoginModalProps {
   onClose: () => void;
   onLoginSuccess: (account: LocalAccount) => void;
   onSwitchToRegister: () => void;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(`${password}clawpro_salt_2026`);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 function GlowCorner({ position }: { position: "tl" | "tr" | "bl" | "br" }) {
@@ -100,6 +109,7 @@ export function LoginModal({
   onLoginSuccess,
   onSwitchToRegister,
 }: LoginModalProps) {
+  const { actor } = useActor();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -177,6 +187,34 @@ export function LoginModal({
     }
     setIsSubmitting(true);
     try {
+      // Try backend login first (cross-device)
+      if (actor) {
+        try {
+          const hashedPwd = await hashPassword(password);
+          // @ts-ignore - backend functions may not be in type defs yet
+          const result = await (actor as any).loginLocalAccount(
+            trimHandle,
+            hashedPwd,
+          );
+          if (result && result !== null) {
+            const accountData = result as any;
+            const account: LocalAccount = {
+              handle: accountData.handle || trimHandle,
+              password: password,
+              email: accountData.email || "",
+              phone: accountData.phone || "",
+              fullName: accountData.fullName || trimHandle,
+            };
+            toast.success(`Selamat datang, @${account.handle}!`);
+            onLoginSuccess(account);
+            return;
+          }
+        } catch {
+          // Backend login failed, fall through to localStorage
+        }
+      }
+
+      // Fallback: localStorage login (for old accounts without hash)
       const raw = localStorage.getItem("clawpro_local_accounts");
       const accounts: LocalAccount[] = raw ? JSON.parse(raw) : [];
       const found = accounts.find(

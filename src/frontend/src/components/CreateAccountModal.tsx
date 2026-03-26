@@ -19,8 +19,17 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { SiGoogle } from "react-icons/si";
 import { toast } from "sonner";
+import { useActor } from "../hooks/useActor";
 import { useSaveUserAccount } from "../hooks/useForumQueries";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
+
+async function hashPassword(password: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(`${password}clawpro_salt_2026`);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 interface CreateAccountModalProps {
   open: boolean;
@@ -165,6 +174,7 @@ export function CreateAccountModal({
   prefillFullName = "",
 }: CreateAccountModalProps) {
   const { login, isLoggingIn, identity } = useInternetIdentity();
+  const { actor } = useActor();
   const saveAccount = useSaveUserAccount();
 
   const [email, setEmail] = useState("");
@@ -209,18 +219,32 @@ export function CreateAccountModal({
 
   const PENDING_ACCOUNT_KEY = "clawpro_pending_account";
 
-  const checkHandleAvailability = (val: string) => {
+  const checkHandleAvailability = async (val: string) => {
     if (val.length < 3) {
       setHandleTaken(null);
       return;
     }
+    // Try backend first
+    if (actor) {
+      try {
+        // @ts-ignore
+        const available = await (actor as any).isHandleAvailable(val);
+        setHandleTaken(available ? "available" : "taken");
+        return;
+      } catch {
+        // fall through to localStorage
+      }
+    }
+    // Fallback: localStorage
     try {
       const accounts: Array<{ handle?: string; username?: string }> =
         JSON.parse(localStorage.getItem("clawpro_accounts") || "[]");
-      const taken = accounts.some(
-        (a) =>
-          a.handle?.toLowerCase() === val.toLowerCase() ||
-          a.username?.toLowerCase() === val.toLowerCase(),
+      const localAccounts: Array<{ handle?: string }> = JSON.parse(
+        localStorage.getItem("clawpro_local_accounts") || "[]",
+      );
+      const allAccounts = [...accounts, ...localAccounts];
+      const taken = allAccounts.some(
+        (a) => a.handle?.toLowerCase() === val.toLowerCase(),
       );
       setHandleTaken(taken ? "taken" : "available");
     } catch {
@@ -248,6 +272,90 @@ export function CreateAccountModal({
       return;
     }
 
+    // Check handle availability one more time before submitting
+    if (actor) {
+      try {
+        // @ts-ignore
+        const isAvail = await (actor as any).isHandleAvailable(trimHandle);
+        if (!isAvail) {
+          toast.error("Username sudah digunakan, pilih yang lain.");
+          setHandleTaken("taken");
+          return;
+        }
+      } catch {
+        // fallback check localStorage
+        const localAccRaw = localStorage.getItem("clawpro_local_accounts");
+        const localAcc: Array<{ handle: string }> = localAccRaw
+          ? JSON.parse(localAccRaw)
+          : [];
+        const taken = localAcc.some(
+          (a) => a.handle.toLowerCase() === trimHandle.toLowerCase(),
+        );
+        if (taken) {
+          toast.error("Username sudah digunakan, pilih yang lain.");
+          setHandleTaken("taken");
+          return;
+        }
+      }
+    }
+
+    const hashedPwd = await hashPassword(password);
+
+    // Try backend registration first
+    if (actor) {
+      try {
+        // @ts-ignore
+        const regResult = await (actor as any).registerLocalAccount(
+          trimHandle,
+          hashedPwd,
+          email.trim(),
+          phone.trim(),
+          fullName.trim(),
+        );
+        if (
+          regResult &&
+          ("handleTaken" in regResult || "alreadyExists" in regResult)
+        ) {
+          toast.error("Username sudah digunakan, pilih yang lain.");
+          setHandleTaken("taken");
+          return;
+        }
+        // Success from backend - also save to localStorage as backup
+        const existingRaw = localStorage.getItem("clawpro_local_accounts");
+        const existing = existingRaw ? JSON.parse(existingRaw) : [];
+        const filtered = existing.filter(
+          (a: { handle: string }) =>
+            a.handle.toLowerCase() !== trimHandle.toLowerCase(),
+        );
+        filtered.push({
+          handle: trimHandle,
+          password,
+          email: email.trim(),
+          phone: phone.trim(),
+          fullName: fullName.trim(),
+        });
+        localStorage.setItem(
+          "clawpro_local_accounts",
+          JSON.stringify(filtered),
+        );
+        // Also update handle list
+        const accRaw = localStorage.getItem("clawpro_accounts");
+        const acc: Array<{ handle: string }> = accRaw ? JSON.parse(accRaw) : [];
+        if (
+          !acc.some((a) => a.handle.toLowerCase() === trimHandle.toLowerCase())
+        ) {
+          acc.push({ handle: trimHandle });
+          localStorage.setItem("clawpro_accounts", JSON.stringify(acc));
+        }
+        setSubmitted(true);
+        toast.success("Account created successfully! Welcome to ClawPro.");
+        setTimeout(onClose, 1500);
+        return;
+      } catch {
+        // Fall through to ICP identity flow
+      }
+    }
+
     if (!identity) {
       // User not logged in — store data and trigger login
       localStorage.setItem(
@@ -263,7 +371,8 @@ export function CreateAccountModal({
       const existingRaw1 = localStorage.getItem("clawpro_local_accounts");
       const existing1 = existingRaw1 ? JSON.parse(existingRaw1) : [];
       const newAccounts1 = existing1.filter(
-        (a: { handle: string }) => a.handle !== trimHandle,
+        (a: { handle: string }) =>
+          a.handle.toLowerCase() !== trimHandle.toLowerCase(),
       );
       newAccounts1.push({
         handle: trimHandle,
@@ -293,7 +402,8 @@ export function CreateAccountModal({
       const existingRaw2 = localStorage.getItem("clawpro_local_accounts");
       const existing2 = existingRaw2 ? JSON.parse(existingRaw2) : [];
       const newAccounts2 = existing2.filter(
-        (a: { handle: string }) => a.handle !== trimHandle,
+        (a: { handle: string }) =>
+          a.handle.toLowerCase() !== trimHandle.toLowerCase(),
       );
       newAccounts2.push({
         handle: trimHandle,
@@ -484,7 +594,7 @@ export function CreateAccountModal({
                               "",
                             );
                             setHandle(v);
-                            checkHandleAvailability(v);
+                            void checkHandleAvailability(v);
                           }}
                           placeholder="your-handle"
                           required

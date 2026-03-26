@@ -278,6 +278,7 @@ export function MemberDashboard({
   } | null;
 }) {
   const [active, setActive] = useState<SidebarItem>("home");
+  const [navHistory, setNavHistory] = useState<SidebarItem[]>([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [glowingId, setGlowingId] = useState<string | null>(null);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
@@ -302,12 +303,26 @@ export function MemberDashboard({
     toast.success(`${item?.name ?? "App"} installed successfully!`);
   };
 
-  const handleNavClick = useCallback((id: SidebarItem) => {
-    setActive(id);
-    setMobileSidebarOpen(false);
-    setGlowingId(id);
-    setTimeout(() => setGlowingId(null), 800);
-  }, []);
+  const handleNavClick = useCallback(
+    (id: SidebarItem) => {
+      setNavHistory((prev) => [...prev, active]);
+      setActive(id);
+      setMobileSidebarOpen(false);
+      setGlowingId(id);
+      setTimeout(() => setGlowingId(null), 800);
+    },
+    [active],
+  );
+
+  const handleBack = () => {
+    if (navHistory.length > 0) {
+      const prev = navHistory[navHistory.length - 1];
+      setNavHistory((h) => h.slice(0, -1));
+      setActive(prev);
+    } else {
+      onClose();
+    }
+  };
 
   // Listen for navigation events from overview market buttons
   useEffect(() => {
@@ -576,7 +591,20 @@ export function MemberDashboard({
       }
       .nav-glow-ring { animation: glowRingPulse 0.7s ease-out forwards; }
     `}</style>
-      <div className="fixed inset-0 z-50 flex bg-[#0a0a0f]">
+      <div
+        className="fixed inset-0 z-50 flex"
+        style={{ background: "#05050f" }}
+      >
+        {/* Pentagon paving-block subtle overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='84'%3E%3Cpolygon points='44,2 82,28 68,72 20,72 6,28' fill='none' stroke='rgba(180,180,220,0.07)' stroke-width='1'/%3E%3Cpolygon points='0,28 20,72 -44,72 -58,28 -18,2' fill='none' stroke='rgba(180,180,220,0.07)' stroke-width='1'/%3E%3Cpolygon points='88,28 106,72 44,72 30,28 70,2' fill='none' stroke='rgba(180,180,220,0.07)' stroke-width='1'/%3E%3C/svg%3E")`,
+            backgroundSize: "88px 84px",
+            zIndex: 0,
+            opacity: 1,
+          }}
+        />
         {/* Mobile overlay */}
         {mobileSidebarOpen && (
           <div
@@ -600,7 +628,12 @@ export function MemberDashboard({
               ? "translate-x-0"
               : "-translate-x-full md:translate-x-0",
           ].join(" ")}
-          style={{ background: "#0d0d1a", borderRight: "1px solid #1f2937" }}
+          style={{
+            background:
+              "linear-gradient(180deg, #080812 0%, #0c0c20 50%, #080818 100%)",
+            borderRight: "1px solid rgba(0,212,255,0.15)",
+            boxShadow: "4px 0 32px rgba(0,0,0,0.5)",
+          }}
         >
           {/* Profile Header */}
           <div className="p-5 pb-4">
@@ -875,7 +908,7 @@ export function MemberDashboard({
               <button
                 type="button"
                 data-ocid="dashboard.close_button"
-                onClick={onClose}
+                onClick={handleBack}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-red-500/20 hover:text-red-400"
                 style={{
                   background: "rgba(255,255,255,0.06)",
@@ -890,7 +923,10 @@ export function MemberDashboard({
           </div>
 
           {/* Panel content */}
-          <div className="flex-1 overflow-auto bg-[#0a0a0f]">
+          <div
+            className="flex-1 overflow-auto"
+            style={{ background: "#05050f" }}
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
@@ -978,7 +1014,7 @@ export function MemberDashboard({
           <div
             className="relative w-full max-w-lg rounded-2xl p-6 border border-amber-500/30"
             style={{
-              background: "#ffffff",
+              background: "#0a0a0f",
               boxShadow: "0 0 40px rgba(251,191,36,0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
@@ -1000,7 +1036,7 @@ export function MemberDashboard({
               <div
                 className="rounded-xl p-4 border border-slate-400/30 flex flex-col items-center gap-2"
                 style={{
-                  background: "#f8fafc",
+                  background: "#0d0d1a",
                   boxShadow: "0 0 16px rgba(148,163,184,0.15)",
                 }}
               >
@@ -2113,7 +2149,7 @@ function PriceAlertsPanel() {
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center"
             style={{
-              background: "#fef3c7",
+              background: "rgba(251,191,36,0.08)",
               boxShadow: "0 0 16px rgba(251,191,36,0.3)",
             }}
           >
@@ -2146,7 +2182,7 @@ function PriceAlertsPanel() {
       <div
         className="rounded-xl p-4 border border-cyan-500/20"
         style={{
-          background: "#ffffff",
+          background: "#0a0a0f",
           boxShadow: "0 0 16px rgba(6,182,212,0.08)",
         }}
       >
@@ -2169,7 +2205,7 @@ function PriceAlertsPanel() {
       <div
         className="rounded-xl p-4 border border-amber-500/20 space-y-4"
         style={{
-          background: "#ffffff",
+          background: "#0a0a0f",
           boxShadow: "0 0 16px rgba(251,191,36,0.08)",
         }}
       >
@@ -2246,7 +2282,7 @@ function PriceAlertsPanel() {
         {alerts.length === 0 ? (
           <div
             className="rounded-xl p-8 border border-gray-200 text-center"
-            style={{ background: "#ffffff" }}
+            style={{ background: "#0a0a0f" }}
             data-ocid="pricealerts.empty_state"
           >
             <Bell className="w-8 h-8 text-gray-500/30 mx-auto mb-2" />
@@ -2274,7 +2310,7 @@ function PriceAlertsPanel() {
                   data-ocid={`pricealerts.item.${idx + 1}`}
                   className="rounded-xl p-3 border flex items-center gap-3"
                   style={{
-                    background: "#ffffff",
+                    background: "#0a0a0f",
                     borderColor,
                     boxShadow: `0 0 16px ${glowColor}`,
                     opacity: alert.active ? 1 : 0.5,
@@ -2528,7 +2564,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
             exit={{ height: 0, opacity: 0 }}
             className="border-b border-gray-200 overflow-hidden"
           >
-            <div className="p-4 space-y-4" style={{ background: "#ffffff" }}>
+            <div className="p-4 space-y-4" style={{ background: "#0a0a0f" }}>
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Zap className="w-4 h-4 text-amber-400" />
                 AI Brain Settings
@@ -2727,7 +2763,7 @@ function WhatsAppPanel() {
       <div
         className="rounded-xl border border-gray-200 p-4 space-y-4"
         style={{
-          background: "#ffffff",
+          background: "#0a0a0f",
           boxShadow: "0 0 20px rgba(34,197,94,0.06)",
         }}
       >
@@ -2780,7 +2816,7 @@ function WhatsAppPanel() {
 
       <div
         className="rounded-xl border border-gray-200 p-4"
-        style={{ background: "#ffffff" }}
+        style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold mb-3">Recent Activity</h3>
         <div className="space-y-2">
@@ -2828,7 +2864,7 @@ function TelegramPanel() {
       <div
         className="rounded-xl border border-gray-200 p-4 space-y-4"
         style={{
-          background: "#ffffff",
+          background: "#0a0a0f",
           boxShadow: "0 0 20px rgba(59,130,246,0.06)",
         }}
       >
@@ -2863,7 +2899,7 @@ function TelegramPanel() {
 
       <div
         className="rounded-xl border border-gray-200 p-4"
-        style={{ background: "#ffffff" }}
+        style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold mb-3">Recent Commands</h3>
         <div className="space-y-2">
@@ -3130,7 +3166,7 @@ function SettingsPanel({
       <div
         className="rounded-xl border border-gray-200 p-4 space-y-4"
         style={{
-          background: "#ffffff",
+          background: "#0a0a0f",
           boxShadow: "0 0 20px rgba(167,139,250,0.06)",
         }}
       >
@@ -3193,7 +3229,7 @@ function SettingsPanel({
 
       <div
         className="rounded-xl border border-gray-200 p-4 space-y-4"
-        style={{ background: "#ffffff" }}
+        style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold">Preferences</h3>
         <div className="flex items-center justify-between">
@@ -3315,7 +3351,7 @@ function ActivityPanel({ handle }: { handle: string }) {
             key={item.id}
             className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
             style={{
-              background: "#f8fafc",
+              background: "#0d0d1a",
               borderLeft: `3px solid ${item.color}`,
             }}
             data-ocid={`activity.item.${item.id}`}
@@ -3411,7 +3447,7 @@ function StatsPanel() {
       <div
         className="rounded-xl p-4 border border-indigo-500/20 space-y-3"
         style={{
-          background: "#faf8ff",
+          background: "#0d0d1a",
           boxShadow: "0 0 20px rgba(99,102,241,0.08)",
         }}
       >
@@ -3482,7 +3518,7 @@ function AnimatedStatCard({
     <div
       className="rounded-xl p-4 border border-gray-200 text-center"
       style={{
-        background: "#ffffff",
+        background: "#0a0a0f",
         boxShadow: `0 0 16px ${stat.glow}`,
       }}
       data-ocid={`stats.${stat.label.toLowerCase().replace(/ /g, "_")}.card`}
@@ -3611,7 +3647,7 @@ function TasksPanel() {
               exit={{ opacity: 0, x: 16 }}
               transition={{ duration: 0.15 }}
               className="flex items-center gap-3 p-3 rounded-xl border border-teal-500/15 hover:border-teal-500/30 transition-colors"
-              style={{ background: "#f8fafc" }}
+              style={{ background: "#0d0d1a" }}
               data-ocid={`tasks.item.${i + 1}`}
             >
               <button
@@ -3851,7 +3887,7 @@ function StatusPanel() {
           <div
             key={s.name}
             className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 hover:border-white/15 transition-colors"
-            style={{ background: "#f8fafc" }}
+            style={{ background: "#0d0d1a" }}
             data-ocid={`status.item.${i + 1}`}
           >
             <div
@@ -4230,7 +4266,7 @@ function LeaderboardPanel() {
             key={m.rank}
             className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-gray-300 transition-all"
             style={{
-              background: "#ffffff",
+              background: "#0a0a0f",
               boxShadow:
                 m.rank <= 3 ? "0 0 12px rgba(245,158,11,0.1)" : undefined,
             }}
@@ -4334,7 +4370,7 @@ function NotificationsPanel() {
           <div
             key={n.id}
             className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
-            style={{ background: "#ffffff" }}
+            style={{ background: "#0a0a0f" }}
           >
             <span className="text-xl mt-0.5">{n.icon}</span>
             <div className="flex-1 min-w-0">
@@ -4408,7 +4444,7 @@ function DynamicIntegrationPanel({
       </div>
       <div
         className="rounded-xl p-5 border border-gray-200"
-        style={{ background: "#ffffff" }}
+        style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold mb-4">Configuration</h3>
         <div className="space-y-3">

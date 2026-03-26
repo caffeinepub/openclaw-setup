@@ -110,6 +110,14 @@ actor {
     handle : Text;
   };
 
+  public type LocalAccountData = {
+    handle : Text;
+    passwordHash : Text;
+    email : Text;
+    phone : Text;
+    fullName : Text;
+  };
+
   public type BlogPost = {
     id : Nat;
     title : Text;
@@ -177,6 +185,7 @@ actor {
   // New State
   let userAccounts = Map.empty<Principal, UserAccount>();
   let handles = Set.empty<Text>();
+  let localAccounts = Map.empty<Text, LocalAccountData>();
   let blogPosts = Map.empty<Nat, BlogPost>();
   let forumTopics = Map.empty<Nat, ForumTopic>();
   let forumThreads = Map.empty<Nat, ForumThread>();
@@ -930,4 +939,44 @@ actor {
   public query ({ caller }) func getTotalConfigsCount() : async Nat {
     savedConfigs.size();
   };
+  // Public registration (no ICP auth needed) - stores password hash for cross-device login
+  public func registerLocalAccount(handle : Text, passwordHash : Text, email : Text, phone : Text, fullName : Text) : async { #ok; #handleTaken; #alreadyExists } {
+    let normalized = handle;
+    if (localAccounts.get(normalized) != null) {
+      return #alreadyExists;
+    };
+    if (handles.contains(normalized)) {
+      return #handleTaken;
+    };
+    let data : LocalAccountData = { handle = normalized; passwordHash; email; phone; fullName };
+    localAccounts.add(normalized, data);
+    handles.add(normalized);
+    #ok;
+  };
+
+  // Login with username + password hash - returns account data if match
+  public query func loginLocalAccount(handle : Text, passwordHash : Text) : async ?LocalAccountData {
+    switch (localAccounts.get(handle)) {
+      case (null) { null };
+      case (?acc) {
+        if (acc.passwordHash == passwordHash) { ?acc } else { null };
+      };
+    };
+  };
+
+  // Check if handle is available
+  public query func isHandleAvailable(handle : Text) : async Bool {
+    not (handles.contains(handle));
+  };
+
+  // Get account by handle (public - for admin/display)
+  public query func getLocalAccountByHandle(handle : Text) : async ?LocalAccountData {
+    localAccounts.get(handle);
+  };
+
+  // Get all local accounts (admin only - just count and handle list)
+  public query func getAllLocalAccounts() : async [LocalAccountData] {
+    localAccounts.values().toArray();
+  };
+
 };
