@@ -46,6 +46,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useActor } from "../hooks/useActor";
 import { StarBackground } from "./StarBackground";
 
 const ADMIN_USERNAME = "clawpro_admin";
@@ -169,8 +170,25 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
   const [bannedUsers, setBannedUsers] = useState<Set<string>>(new Set());
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<AdminSection>("users");
+  const [sectionHistory, setSectionHistory] = useState<AdminSection[]>([]);
 
-  const loadAccounts = useCallback(() => {
+  const { actor } = useActor();
+  const [isLive, setIsLive] = useState(false);
+
+  const loadAccounts = useCallback(async () => {
+    if (actor) {
+      try {
+        const backendAccounts = await (actor as any).getAllLocalAccounts();
+        if (backendAccounts && Array.isArray(backendAccounts)) {
+          setAccounts(backendAccounts);
+          setIsLive(true);
+          return;
+        }
+      } catch (e) {
+        console.warn("Backend fetch failed, using localStorage", e);
+      }
+    }
+    setIsLive(false);
     try {
       const raw = localStorage.getItem("clawpro_local_accounts");
       const data: LocalAccount[] = raw ? JSON.parse(raw) : [];
@@ -178,10 +196,13 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
     } catch {
       setAccounts([]);
     }
-  }, []);
+  }, [actor]);
 
   useEffect(() => {
-    if (isLoggedIn) loadAccounts();
+    if (!isLoggedIn) return;
+    loadAccounts();
+    const interval = setInterval(loadAccounts, 30000);
+    return () => clearInterval(interval);
   }, [isLoggedIn, loadAccounts]);
 
   const handleLogin = () => {
@@ -566,14 +587,22 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
             </button>
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                if (sectionHistory.length > 0) {
+                  const prev = sectionHistory[sectionHistory.length - 1];
+                  setSectionHistory((h) => h.slice(0, -1));
+                  setActiveSection(prev);
+                } else {
+                  setActiveSection("users");
+                }
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
               style={{
                 background: "rgba(255,255,255,0.06)",
                 color: "rgba(255,255,255,0.6)",
                 border: "1px solid rgba(255,255,255,0.1)",
               }}
-              data-ocid="admin.close_button"
+              data-ocid="admin.back_button"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Back</span>
@@ -625,6 +654,7 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                     key={item.id}
                     type="button"
                     onClick={() => {
+                      setSectionHistory((prev) => [...prev, activeSection]);
                       setActiveSection(item.id);
                       setMobileSidebarOpen(false);
                     }}
@@ -678,9 +708,29 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
             {activeSection === "users" && (
               <div className="px-3 pb-2 flex-shrink-0">
                 <div className="h-px bg-white/5 mb-3" />
-                <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-2 mb-2">
-                  User List
-                </p>
+                <div className="flex items-center justify-between px-2 mb-2">
+                  <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-widest">
+                    User List
+                  </p>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full inline-block"
+                      style={{
+                        background: isLive ? "#22c55e" : "#f59e0b",
+                        boxShadow: isLive
+                          ? "0 0 4px #22c55e"
+                          : "0 0 4px #f59e0b",
+                        animation: "healthDot 1.5s infinite",
+                      }}
+                    />
+                    <span
+                      className="text-[9px] font-semibold"
+                      style={{ color: isLive ? "#22c55e" : "#f59e0b" }}
+                    >
+                      {isLive ? "🔴 LIVE" : "LOCAL"}
+                    </span>
+                  </div>
+                </div>
                 <div className="relative mb-2">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
                   <Input

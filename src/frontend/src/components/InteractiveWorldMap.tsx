@@ -863,58 +863,135 @@ export function InteractiveWorldMap() {
 
       {/* Leaderboard */}
       <div
-        className="mt-6 rounded-2xl p-4"
+        className="mt-8 rounded-2xl overflow-hidden"
         style={{
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "linear-gradient(135deg, #0d0d1f 0%, #0a0a18 100%)",
+          border: "1px solid rgba(6,182,212,0.2)",
+          boxShadow:
+            "0 0 40px rgba(6,182,212,0.06), inset 0 0 60px rgba(0,0,0,0.4)",
         }}
       >
-        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-          <span>🏆</span> Top Countries by Registrations
-        </h3>
-        <div className="space-y-2">
-          {leaderboard.map((country, idx) => {
+        {/* Header */}
+        <div
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-lg">🏆</span>
+            <h3 className="text-sm font-bold text-white tracking-wide">
+              Top Countries by Registrations
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-widest">
+              Live Data
+            </span>
+          </div>
+        </div>
+
+        {/* Country rows */}
+        <div className="p-4 space-y-2">
+          {leaderboard.slice(0, 10).map((country, idx) => {
             const color = CONTINENT_COLORS[country.continent] || "#06b6d4";
             const maxReg = leaderboard[0]?.registrations || 1;
-            const pct = (country.registrations / maxReg) * 100;
+            const pct = Math.max(4, (country.registrations / maxReg) * 100);
+            const barColor =
+              idx === 0
+                ? "linear-gradient(90deg, #f59e0b, #fbbf24)"
+                : idx === 1
+                  ? "linear-gradient(90deg, #94a3b8, #cbd5e1)"
+                  : idx === 2
+                    ? "linear-gradient(90deg, #b45309, #d97706)"
+                    : `linear-gradient(90deg, ${color}88, ${color})`;
+            const rankLabel =
+              idx === 0
+                ? "👑"
+                : idx === 1
+                  ? "🥈"
+                  : idx === 2
+                    ? "🥉"
+                    : String(idx + 1);
+            const rowGlow =
+              idx === 0
+                ? "rgba(245,158,11,0.1)"
+                : idx === 1
+                  ? "rgba(148,163,184,0.08)"
+                  : idx === 2
+                    ? "rgba(180,83,9,0.1)"
+                    : "transparent";
             return (
               <div
                 key={country.name}
-                className="flex items-center gap-3"
+                className="group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-default hover:bg-white/5"
+                style={{
+                  background: idx < 3 ? rowGlow : "transparent",
+                  border:
+                    idx < 3 ? `1px solid ${color}18` : "1px solid transparent",
+                }}
                 data-ocid={`map.item.${idx + 1}`}
               >
                 <span
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{
-                    background: idx < 3 ? color : "rgba(255,255,255,0.08)",
-                    color: idx < 3 ? "#fff" : "rgba(255,255,255,0.5)",
-                    fontSize: "10px",
+                    background:
+                      idx < 3
+                        ? "rgba(255,255,255,0.06)"
+                        : "rgba(255,255,255,0.04)",
+                    border:
+                      idx < 3
+                        ? `1px solid ${color}40`
+                        : "1px solid rgba(255,255,255,0.06)",
+                    fontSize: idx < 3 ? "14px" : "11px",
+                    color: idx < 3 ? "#fff" : "rgba(255,255,255,0.4)",
                   }}
                 >
-                  {idx + 1}
+                  {rankLabel}
                 </span>
-                <span className="text-sm w-4 flex-shrink-0">
+                <span className="text-base flex-shrink-0">
                   {FLAG_EMOJI[country.name] || "🌍"}
                 </span>
-                <span className="text-xs text-gray-300 flex-shrink-0 w-32 truncate">
+                <span className="text-xs font-medium text-gray-200 flex-shrink-0 w-28 truncate group-hover:text-white transition-colors">
                   {country.name}
                 </span>
-                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-1000"
                     style={{
                       width: `${pct}%`,
-                      background: `linear-gradient(90deg, ${color}88, ${color})`,
-                      boxShadow: `0 0 4px ${color}88`,
+                      background: barColor,
+                      boxShadow: `0 0 8px ${color}60`,
                     }}
                   />
                 </div>
-                <span className="text-xs text-gray-400 flex-shrink-0 w-14 text-right">
+                <span
+                  className="text-xs font-bold flex-shrink-0 w-12 text-right"
+                  style={{ color: idx < 3 ? color : "rgba(255,255,255,0.5)" }}
+                >
                   {country.registrations.toLocaleString()}
                 </span>
               </div>
             );
           })}
+          {leaderboard.length === 0 && (
+            <div className="py-8 text-center" data-ocid="map.empty_state">
+              <span className="text-3xl mb-2 block">🌐</span>
+              <p className="text-xs text-gray-500">
+                No registrations yet. Be the first!
+              </p>
+            </div>
+          )}
+        </div>
+        <div
+          className="px-5 py-3"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
+        >
+          <p className="text-[10px] text-gray-600 text-center">
+            Updated every 10 minutes · Based on member registrations
+          </p>
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ import {
   BarChart3,
   Bell,
   Bot,
+  Brain,
   CheckSquare2,
   ChevronRight,
   ChevronUp,
@@ -28,6 +29,7 @@ import {
   Send,
   Settings,
   Sparkles,
+  Star,
   Trash2,
   TrendingDown,
   TrendingUp,
@@ -111,7 +113,11 @@ type SidebarItem =
   | "tasks"
   | "status"
   | "leaderboard"
-  | "notifications";
+  | "notifications"
+  | "wallet"
+  | "forum"
+  | "docs"
+  | "profile";
 
 interface ChatMessage {
   id: string;
@@ -162,6 +168,7 @@ const NAV_ITEMS: {
   icon: React.ReactNode;
   color: string;
   glow: string;
+  colorHex: string;
 }[] = [
   {
     id: "home",
@@ -169,6 +176,7 @@ const NAV_ITEMS: {
     icon: <Home className="w-4 h-4" />,
     color: "text-cyan-400",
     glow: "border-cyan-500/60",
+    colorHex: "#06b6d4",
   },
   {
     id: "integrations",
@@ -176,6 +184,7 @@ const NAV_ITEMS: {
     icon: <Puzzle className="w-4 h-4" />,
     color: "text-violet-400",
     glow: "border-violet-500/60",
+    colorHex: "#8b5cf6",
   },
   {
     id: "clawbot",
@@ -183,6 +192,7 @@ const NAV_ITEMS: {
     icon: <Bot className="w-4 h-4" />,
     color: "text-red-400",
     glow: "border-red-500/60",
+    colorHex: "#ef4444",
   },
   {
     id: "whatsapp",
@@ -190,6 +200,7 @@ const NAV_ITEMS: {
     icon: <SiWhatsapp className="w-4 h-4" />,
     color: "text-green-400",
     glow: "border-green-500/60",
+    colorHex: "#22c55e",
   },
   {
     id: "telegram",
@@ -197,6 +208,7 @@ const NAV_ITEMS: {
     icon: <SiTelegram className="w-4 h-4" />,
     color: "text-blue-400",
     glow: "border-blue-500/60",
+    colorHex: "#3b82f6",
   },
   {
     id: "chatgpt",
@@ -204,6 +216,7 @@ const NAV_ITEMS: {
     icon: <Sparkles className="w-4 h-4" />,
     color: "text-emerald-400",
     glow: "border-emerald-500/60",
+    colorHex: "#10b981",
   },
   {
     id: "pricealerts",
@@ -211,6 +224,7 @@ const NAV_ITEMS: {
     icon: <Bell className="w-4 h-4" />,
     color: "text-amber-400",
     glow: "border-amber-500/60",
+    colorHex: "#f59e0b",
   },
   {
     id: "settings",
@@ -218,6 +232,7 @@ const NAV_ITEMS: {
     icon: <Settings className="w-4 h-4" />,
     color: "text-violet-400",
     glow: "border-violet-500/60",
+    colorHex: "#7c3aed",
   },
   {
     id: "activity",
@@ -225,6 +240,7 @@ const NAV_ITEMS: {
     icon: <Activity className="w-4 h-4" />,
     color: "text-pink-400",
     glow: "border-pink-500/60",
+    colorHex: "#ec4899",
   },
   {
     id: "stats",
@@ -232,6 +248,7 @@ const NAV_ITEMS: {
     icon: <BarChart3 className="w-4 h-4" />,
     color: "text-indigo-400",
     glow: "border-indigo-500/60",
+    colorHex: "#6366f1",
   },
   {
     id: "tasks",
@@ -239,6 +256,7 @@ const NAV_ITEMS: {
     icon: <CheckSquare2 className="w-4 h-4" />,
     color: "text-teal-400",
     glow: "border-teal-500/60",
+    colorHex: "#14b8a6",
   },
   {
     id: "status",
@@ -246,6 +264,7 @@ const NAV_ITEMS: {
     icon: <Cpu className="w-4 h-4" />,
     color: "text-orange-400",
     glow: "border-orange-500/60",
+    colorHex: "#f97316",
   },
   {
     id: "leaderboard",
@@ -253,6 +272,7 @@ const NAV_ITEMS: {
     icon: <Trophy className="w-4 h-4" />,
     color: "text-yellow-400",
     glow: "border-yellow-500/60",
+    colorHex: "#eab308",
   },
   {
     id: "notifications",
@@ -260,6 +280,39 @@ const NAV_ITEMS: {
     icon: <Bell className="w-4 h-4" />,
     color: "text-pink-400",
     glow: "border-pink-500/60",
+    colorHex: "#ec4899",
+  },
+  {
+    id: "wallet",
+    label: "Wallet & Portfolio",
+    icon: <span className="text-base">💎</span>,
+    color: "text-amber-400",
+    glow: "border-amber-500/60",
+    colorHex: "#f59e0b",
+  },
+  {
+    id: "forum",
+    label: "Community Forum",
+    icon: <span className="text-base">💬</span>,
+    color: "text-teal-400",
+    glow: "border-teal-500/60",
+    colorHex: "#14b8a6",
+  },
+  {
+    id: "docs",
+    label: "Documentation",
+    icon: <span className="text-base">📖</span>,
+    color: "text-blue-400",
+    glow: "border-blue-500/60",
+    colorHex: "#3b82f6",
+  },
+  {
+    id: "profile",
+    label: "My Profile",
+    icon: <span className="text-base">👤</span>,
+    color: "text-purple-400",
+    glow: "border-purple-500/60",
+    colorHex: "#a855f7",
   },
 ];
 
@@ -772,9 +825,15 @@ export function MemberDashboard({
             className="px-3 py-3"
             style={{ height: "50%", overflowY: "auto", minHeight: 0 }}
           >
-            <nav className="space-y-1">
-              {NAV_ITEMS.map((item) => {
+            {/* Group: Main */}
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600 px-2 mb-1.5">
+              Main
+            </p>
+            <nav className="space-y-0.5 mb-3">
+              {NAV_ITEMS.slice(0, 7).map((item) => {
                 const isActive = active === item.id;
+                const isGlowing = glowingId === item.id;
+                const colorHex = item.colorHex || "#06b6d4";
                 return (
                   <button
                     key={item.id}
@@ -782,35 +841,169 @@ export function MemberDashboard({
                     data-ocid={`dashboard.${item.id}.tab`}
                     onClick={() => handleNavClick(item.id)}
                     className={[
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
-                      "transition-all duration-200 relative border-l-2",
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium",
+                      "transition-all duration-200 relative",
                       isActive
-                        ? `${item.color} ${item.glow}`
-                        : "text-gray-400 hover:text-gray-100 border-transparent",
-                      glowingId === item.id ? "nav-glow-ring" : "",
+                        ? item.color
+                        : "text-gray-500 hover:text-gray-200",
                     ].join(" ")}
-                    style={
-                      isActive
-                        ? {
-                            background: "rgba(6,182,212,0.12)",
-                            boxShadow: "inset 0 0 12px rgba(6,182,212,0.05)",
-                          }
-                        : {
-                            background: "#13131e",
-                          }
-                    }
+                    style={{
+                      borderLeft: isActive
+                        ? `3px solid ${colorHex}`
+                        : "3px solid transparent",
+                      background: isActive
+                        ? `linear-gradient(135deg, ${colorHex}18, ${colorHex}08)`
+                        : isGlowing
+                          ? `${colorHex}20`
+                          : "transparent",
+                      boxShadow: isActive
+                        ? `inset 0 0 20px ${colorHex}10, 0 0 0 1px ${colorHex}20`
+                        : isGlowing
+                          ? `0 0 16px ${colorHex}40, 0 0 0 1px ${colorHex}50`
+                          : "none",
+                      transform: isGlowing ? "scale(1.01)" : "scale(1)",
+                    }}
                   >
-                    <span className={isActive ? item.color : ""}>
+                    <span
+                      className={`flex-shrink-0 transition-all duration-200 ${isActive ? item.color : ""}`}
+                      style={
+                        isGlowing
+                          ? { filter: `drop-shadow(0 0 6px ${colorHex})` }
+                          : {}
+                      }
+                    >
                       {item.icon}
                     </span>
-                    <span>{item.label}</span>
+                    <span className="truncate">{item.label}</span>
                     {item.id === "settings" && unreadCount > 0 && (
                       <span className="ml-auto flex items-center justify-center w-4 h-4 rounded-full bg-red-500 text-[10px] font-bold text-white">
                         {unreadCount}
                       </span>
                     )}
                     {isActive && (
-                      <ChevronRight className="ml-auto w-3 h-3 opacity-60" />
+                      <ChevronRight className="ml-auto w-3 h-3 opacity-60 flex-shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Divider */}
+            <div
+              className="mx-2 mb-3 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
+              }}
+            />
+
+            {/* Group: Tools */}
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600 px-2 mb-1.5">
+              Tools
+            </p>
+            <nav className="space-y-0.5 mb-3">
+              {NAV_ITEMS.slice(7, 14).map((item) => {
+                const isActive = active === item.id;
+                const isGlowing = glowingId === item.id;
+                const colorHex = item.colorHex || "#06b6d4";
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    data-ocid={`dashboard.${item.id}.tab`}
+                    onClick={() => handleNavClick(item.id)}
+                    className={[
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium",
+                      "transition-all duration-200 relative",
+                      isActive
+                        ? item.color
+                        : "text-gray-500 hover:text-gray-200",
+                    ].join(" ")}
+                    style={{
+                      borderLeft: isActive
+                        ? `3px solid ${colorHex}`
+                        : "3px solid transparent",
+                      background: isActive
+                        ? `linear-gradient(135deg, ${colorHex}18, ${colorHex}08)`
+                        : isGlowing
+                          ? `${colorHex}20`
+                          : "transparent",
+                      boxShadow: isActive
+                        ? `inset 0 0 20px ${colorHex}10, 0 0 0 1px ${colorHex}20`
+                        : isGlowing
+                          ? `0 0 16px ${colorHex}40`
+                          : "none",
+                    }}
+                  >
+                    <span
+                      className={`flex-shrink-0 ${isActive ? item.color : ""}`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                    {isActive && (
+                      <ChevronRight className="ml-auto w-3 h-3 opacity-60 flex-shrink-0" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {/* Divider */}
+            <div
+              className="mx-2 mb-3 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)",
+              }}
+            />
+
+            {/* Group: Community */}
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-600 px-2 mb-1.5">
+              Community
+            </p>
+            <nav className="space-y-0.5">
+              {NAV_ITEMS.slice(14).map((item) => {
+                const isActive = active === item.id;
+                const isGlowing = glowingId === item.id;
+                const colorHex = item.colorHex || "#06b6d4";
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    data-ocid={`dashboard.${item.id}.tab`}
+                    onClick={() => handleNavClick(item.id)}
+                    className={[
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium",
+                      "transition-all duration-200 relative",
+                      isActive
+                        ? item.color
+                        : "text-gray-500 hover:text-gray-200",
+                    ].join(" ")}
+                    style={{
+                      borderLeft: isActive
+                        ? `3px solid ${colorHex}`
+                        : "3px solid transparent",
+                      background: isActive
+                        ? `linear-gradient(135deg, ${colorHex}18, ${colorHex}08)`
+                        : isGlowing
+                          ? `${colorHex}20`
+                          : "transparent",
+                      boxShadow: isActive
+                        ? `inset 0 0 20px ${colorHex}10, 0 0 0 1px ${colorHex}20`
+                        : isGlowing
+                          ? `0 0 16px ${colorHex}40`
+                          : "none",
+                    }}
+                  >
+                    <span
+                      className={`flex-shrink-0 ${isActive ? item.color : ""}`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span className="truncate">{item.label}</span>
+                    {isActive && (
+                      <ChevronRight className="ml-auto w-3 h-3 opacity-60 flex-shrink-0" />
                     )}
                   </button>
                 );
@@ -835,7 +1028,7 @@ export function MemberDashboard({
         </aside>
 
         {/* Main content */}
-        <div className="flex-1 flex flex-col min-w-0 h-full">
+        <div className="flex-1 flex flex-col min-w-0 h-full relative z-10">
           {/* Top bar */}
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-800 bg-[#0d0d1a]">
             <button
@@ -963,6 +1156,261 @@ export function MemberDashboard({
                 )}
                 {active === "leaderboard" && <LeaderboardPanel />}
                 {active === "notifications" && <NotificationsPanel />}
+                {active === "wallet" && (
+                  <div className="p-6 space-y-4">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <span>💎</span> Wallet &amp; Portfolio
+                    </h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div
+                        className="rounded-2xl p-5"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #1a1a2e, #0f1729)",
+                          border: "1px solid rgba(245,158,11,0.3)",
+                          boxShadow: "0 0 24px rgba(245,158,11,0.08)",
+                        }}
+                      >
+                        <p className="text-xs text-amber-400 font-semibold uppercase tracking-widest mb-1">
+                          ClawPro Tokens
+                        </p>
+                        <p className="text-3xl font-bold text-white">2,450</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          ≈ $24.50 USD
+                        </p>
+                      </div>
+                      <div
+                        className="rounded-2xl p-5"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #1a1a2e, #0f1729)",
+                          border: "1px solid rgba(6,182,212,0.2)",
+                        }}
+                      >
+                        <p className="text-xs text-cyan-400 font-semibold uppercase tracking-widest mb-1">
+                          Portfolio Value
+                        </p>
+                        <p className="text-3xl font-bold text-white">$0.00</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          No holdings yet
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className="rounded-2xl p-5"
+                      style={{
+                        background: "#0d0d1a",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                      }}
+                    >
+                      <p className="text-sm font-semibold text-white mb-3">
+                        Quick Actions
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {["Buy Tokens", "Transfer", "Withdraw", "History"].map(
+                          (action) => (
+                            <button
+                              key={action}
+                              type="button"
+                              className="px-4 py-2 rounded-lg text-xs font-medium text-white transition-all hover:scale-105"
+                              style={{
+                                background:
+                                  "linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.1))",
+                                border: "1px solid rgba(245,158,11,0.3)",
+                              }}
+                            >
+                              {action}
+                            </button>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {active === "forum" && (
+                  <div className="p-6 space-y-4">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <span>💬</span> Community Forum
+                    </h2>
+                    <div
+                      className="rounded-2xl p-8 text-center"
+                      style={{
+                        background: "linear-gradient(135deg, #0d1520, #0a0f1a)",
+                        border: "1px solid rgba(20,184,166,0.2)",
+                        boxShadow: "0 0 30px rgba(20,184,166,0.06)",
+                      }}
+                    >
+                      <div
+                        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, rgba(20,184,166,0.2), rgba(20,184,166,0.05))",
+                          border: "1px solid rgba(20,184,166,0.3)",
+                        }}
+                      >
+                        <span className="text-3xl">💬</span>
+                      </div>
+                      <h3 className="text-base font-bold text-white mb-2">
+                        Coming Soon
+                      </h3>
+                      <p className="text-sm text-gray-400 max-w-xs mx-auto">
+                        The ClawPro Community Forum is launching soon. Connect,
+                        share, and grow with thousands of members worldwide.
+                      </p>
+                      <button
+                        type="button"
+                        className="mt-4 px-6 py-2 rounded-xl text-sm font-semibold text-white"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #14b8a6, #0d9488)",
+                          boxShadow: "0 4px 16px rgba(20,184,166,0.3)",
+                        }}
+                      >
+                        Notify Me
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {active === "docs" && (
+                  <div className="p-6 space-y-4">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <span>📖</span> Documentation
+                    </h2>
+                    {[
+                      {
+                        title: "Getting Started",
+                        desc: "Set up your ClawPro account and integrations",
+                        tag: "Beginner",
+                        color: "#3b82f6",
+                      },
+                      {
+                        title: "API Reference",
+                        desc: "Complete API docs for all integrations",
+                        tag: "Developer",
+                        color: "#8b5cf6",
+                      },
+                      {
+                        title: "Bot Configuration",
+                        desc: "Configure WhatsApp, Telegram & ClawBot",
+                        tag: "Setup",
+                        color: "#06b6d4",
+                      },
+                      {
+                        title: "Payment Guide",
+                        desc: "How to top up tokens and manage billing",
+                        tag: "Finance",
+                        color: "#f59e0b",
+                      },
+                    ].map((doc) => (
+                      <div
+                        key={doc.title}
+                        className="flex items-start gap-4 p-4 rounded-2xl cursor-pointer transition-all hover:scale-[1.01]"
+                        style={{
+                          background: "#0d0d1a",
+                          border: `1px solid ${doc.color}20`,
+                        }}
+                      >
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                          style={{
+                            background: `${doc.color}20`,
+                            border: `1px solid ${doc.color}30`,
+                          }}
+                        >
+                          <span className="text-lg">📄</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-sm font-semibold text-white">
+                              {doc.title}
+                            </span>
+                            <span
+                              className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                              style={{
+                                background: `${doc.color}20`,
+                                color: doc.color,
+                              }}
+                            >
+                              {doc.tag}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-400">{doc.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {active === "profile" && (
+                  <div className="p-6 space-y-4">
+                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                      <span>👤</span> My Profile
+                    </h2>
+                    <div
+                      className="rounded-2xl p-6"
+                      style={{
+                        background: "linear-gradient(135deg, #0d0d1f, #0a0a18)",
+                        border: "1px solid rgba(168,85,247,0.2)",
+                        boxShadow: "0 0 30px rgba(168,85,247,0.06)",
+                      }}
+                    >
+                      <div className="flex items-center gap-4 mb-6">
+                        <div
+                          className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold text-white"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, #7c3aed, #a855f7)",
+                            boxShadow: "0 0 20px rgba(168,85,247,0.4)",
+                          }}
+                        >
+                          {localAccount?.fullName?.[0]?.toUpperCase() || "U"}
+                        </div>
+                        <div>
+                          <p className="font-bold text-white text-base">
+                            {localAccount?.fullName || "User"}
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            @{localAccount?.handle || "username"}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {localAccount?.email || "No email"}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        {[
+                          {
+                            label: "Full Name",
+                            value: localAccount?.fullName || "—",
+                          },
+                          {
+                            label: "Username",
+                            value: `@${localAccount?.handle || "—"}`,
+                          },
+                          { label: "Email", value: localAccount?.email || "—" },
+                          {
+                            label: "Phone",
+                            value: (localAccount as any)?.phone || "—",
+                          },
+                        ].map((field) => (
+                          <div
+                            key={field.label}
+                            className="flex items-center justify-between py-2"
+                            style={{
+                              borderBottom: "1px solid rgba(255,255,255,0.04)",
+                            }}
+                          >
+                            <span className="text-xs text-gray-500 font-medium">
+                              {field.label}
+                            </span>
+                            <span className="text-xs text-gray-200">
+                              {field.value}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {(() => {
                   const KNOWN = [
                     "home",
@@ -979,6 +1427,10 @@ export function MemberDashboard({
                     "settings",
                     "leaderboard",
                     "notifications",
+                    "wallet",
+                    "forum",
+                    "docs",
+                    "profile",
                   ];
                   if (!KNOWN.includes(active)) {
                     const app = INTEGRATIONS.find((i) => i.id === active);
@@ -1319,6 +1771,72 @@ function HomePanel({
             {tierStyle.label} Member
           </Badge>
           <span className="text-xs text-gray-500">Active</span>
+        </div>
+      </div>
+
+      {/* Stats Bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div
+          className="rounded-xl p-4 border border-cyan-800/40 flex flex-col gap-1"
+          style={{
+            background: "linear-gradient(135deg, #0d1420, #0a1628)",
+            boxShadow: "0 0 16px rgba(6,182,212,0.1)",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Coins className="w-4 h-4 text-cyan-400" />
+            <span className="text-xs text-gray-500">Tokens</span>
+          </div>
+          <p className="text-xl font-bold text-cyan-300">
+            {tokenBalance.toLocaleString()}
+          </p>
+          <p className="text-[10px] text-cyan-600">ClawPro Credits</p>
+        </div>
+        <div
+          className="rounded-xl p-4 border border-amber-800/40 flex flex-col gap-1"
+          style={{
+            background: "linear-gradient(135deg, #0d1420, #1a1005)",
+            boxShadow: "0 0 16px rgba(245,158,11,0.1)",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Star className="w-4 h-4 text-amber-400" />
+            <span className="text-xs text-gray-500">Tier</span>
+          </div>
+          <p className="text-xl font-bold" style={{ color: tierStyle.color }}>
+            {tierStyle.label}
+          </p>
+          <p className="text-[10px] text-amber-700">Membership</p>
+        </div>
+        <div
+          className="rounded-xl p-4 border border-violet-800/40 flex flex-col gap-1"
+          style={{
+            background: "linear-gradient(135deg, #0d1420, #0e0a1a)",
+            boxShadow: "0 0 16px rgba(139,92,246,0.1)",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Puzzle className="w-4 h-4 text-violet-400" />
+            <span className="text-xs text-gray-500">Apps</span>
+          </div>
+          <p className="text-xl font-bold text-violet-300">
+            {installedApps.length}
+          </p>
+          <p className="text-[10px] text-violet-700">Installed</p>
+        </div>
+        <div
+          className="rounded-xl p-4 border border-green-800/40 flex flex-col gap-1"
+          style={{
+            background: "linear-gradient(135deg, #0d1420, #0a1a0a)",
+            boxShadow: "0 0 16px rgba(34,197,94,0.1)",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-green-400" />
+            <span className="text-xs text-gray-500">Active</span>
+          </div>
+          <p className="text-xl font-bold text-green-300">14</p>
+          <p className="text-[10px] text-green-700">Days Active</p>
         </div>
       </div>
 
@@ -2408,6 +2926,8 @@ function ClawBotPanel({ handle }: { handle: string }) {
   const [openaiKey, setOpenaiKey] = useState("");
   const [geminiEnabled, setGeminiEnabled] = useState(false);
   const [geminiKey, setGeminiKey] = useState("");
+  const [hermesEnabled, setHermesEnabled] = useState(false);
+  const [hermesKey, setHermesKey] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -2415,6 +2935,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
   void openclawEnabled;
   void geminiEnabled;
   void geminiKey;
+  void hermesEnabled;
 
   const BOT_RESPONSES = [
     `Hi! I'm ${botName}, your personal ClawPro AI assistant. How can I help you today?`,
@@ -2503,6 +3024,50 @@ function ClawBotPanel({ handle }: { handle: string }) {
       }
     }
 
+    if (hermesEnabled && hermesKey) {
+      try {
+        const res = await fetch(
+          "https://api.together.xyz/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${hermesKey}`,
+            },
+            body: JSON.stringify({
+              model: "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO",
+              messages: [
+                {
+                  role: "system",
+                  content: `You are ${botName}, a helpful ClawPro AI assistant powered by Hermes.`,
+                },
+                { role: "user", content: input },
+              ],
+              max_tokens: 200,
+            }),
+          },
+        );
+        const data = await res.json();
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: "bot",
+            text:
+              data.choices?.[0]?.message?.content ??
+              "Sorry, couldn't process that.",
+            time: new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          },
+        ]);
+        return;
+      } catch {
+        // fall through
+      }
+    }
     await new Promise((r) => setTimeout(r, 1000));
     setIsTyping(false);
     const reply =
@@ -2631,6 +3196,43 @@ function ClawBotPanel({ handle }: { handle: string }) {
                     />
                   </div>
                 )}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p
+                        className="text-sm font-medium flex items-center gap-2"
+                        style={{ color: "#a78bfa" }}
+                      >
+                        <Brain
+                          className="w-4 h-4"
+                          style={{ color: "#8b5cf6" }}
+                        />
+                        Hermes AI
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Nous Hermes 2 (Together.ai)
+                      </p>
+                    </div>
+                    <Switch
+                      checked={hermesEnabled}
+                      onCheckedChange={setHermesEnabled}
+                      data-ocid="clawbot.hermes.switch"
+                    />
+                  </div>
+                  {hermesEnabled && (
+                    <div className="flex items-center gap-2">
+                      <Key className="w-3.5 h-3.5 text-gray-500" />
+                      <Input
+                        type="password"
+                        placeholder="Together.ai API key..."
+                        value={hermesKey}
+                        onChange={(e) => setHermesKey(e.target.value)}
+                        className="h-8 text-xs"
+                        data-ocid="clawbot.hermes.input"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -3982,6 +4584,14 @@ const INTEGRATIONS: {
     icon: <SiGooglegemini className="w-6 h-6" style={{ color: "#4285f4" }} />,
     color: "#4285f4",
     desc: "Google AI assistant",
+  },
+  {
+    id: "hermes",
+    name: "Hermes AI",
+    category: "AI",
+    icon: <Brain className="w-6 h-6" style={{ color: "#8b5cf6" }} />,
+    color: "#8b5cf6",
+    desc: "Nous Hermes 2 via Together.ai",
   },
   {
     id: "claude",

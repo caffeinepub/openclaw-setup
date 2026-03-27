@@ -140,6 +140,14 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export interface LocalAccountData {
+    handle: string;
+    passwordHash: string;
+    email: string;
+    phone: string;
+    fullName: string;
+    createdAt?: string;
+}
 export interface backendInterface {
     addBlogPost(title: string, body: string, authorName: string, category: string, tags: Array<string>, coverImageUrl: string): Promise<BlogPost>;
     addChangelog(version: string, releaseDate: string, title: string, description: string, changesList: Array<string>, changeType: string): Promise<void>;
@@ -186,4 +194,9 @@ export interface backendInterface {
     saveChatbotConfig(phoneNumber: string, enabled: boolean): Promise<void>;
     saveConfig(name: string, os: string, configData: string): Promise<bigint>;
     saveUserAccount(email: string, phone: string, fullName: string, handle: string): Promise<void>;
+    registerLocalAccount(handle: string, passwordHash: string, email: string, phone: string, fullName: string): Promise<{ok: null} | {handleTaken: null} | {alreadyExists: null}>;
+    loginLocalAccount(handle: string, passwordHash: string): Promise<LocalAccountData | null>;
+    isHandleAvailable(handle: string): Promise<boolean>;
+    getLocalAccountByHandle(handle: string): Promise<LocalAccountData | null>;
+    getAllLocalAccounts(): Promise<Array<LocalAccountData>>;
 }
