@@ -94,6 +94,7 @@ import {
   useCallerUserProfile,
   useSaveCallerUserProfile,
 } from "../hooks/useQueries";
+import { StarBackground } from "./StarBackground";
 
 // ---- Types ----
 type SidebarItem =
@@ -320,7 +321,7 @@ export function MemberDashboard({
       setNavHistory((h) => h.slice(0, -1));
       setActive(prev);
     } else {
-      onClose();
+      setActive("home");
     }
   };
 
@@ -593,24 +594,17 @@ export function MemberDashboard({
     `}</style>
       <div
         className="fixed inset-0 z-50 flex"
-        style={{ background: "#05050f" }}
+        style={{ background: "#04040e" }}
       >
-        {/* Pentagon paving-block subtle overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='84'%3E%3Cpolygon points='44,2 82,28 68,72 20,72 6,28' fill='none' stroke='rgba(180,180,220,0.07)' stroke-width='1'/%3E%3Cpolygon points='0,28 20,72 -44,72 -58,28 -18,2' fill='none' stroke='rgba(180,180,220,0.07)' stroke-width='1'/%3E%3Cpolygon points='88,28 106,72 44,72 30,28 70,2' fill='none' stroke='rgba(180,180,220,0.07)' stroke-width='1'/%3E%3C/svg%3E")`,
-            backgroundSize: "88px 84px",
-            zIndex: 0,
-            opacity: 1,
-          }}
-        />
+        {/* Hexagon animated background */}
+        <StarBackground />
         {/* Mobile overlay */}
         {mobileSidebarOpen && (
           <div
             role="button"
             tabIndex={0}
-            className="fixed inset-0 bg-black/60 z-40 md:hidden"
+            className="fixed inset-0 z-40 md:hidden"
+            style={{ background: "#000000cc" }}
             onClick={() => setMobileSidebarOpen(false)}
             onKeyDown={(e) => e.key === "Escape" && setMobileSidebarOpen(false)}
             aria-label="Close sidebar"
@@ -629,8 +623,7 @@ export function MemberDashboard({
               : "-translate-x-full md:translate-x-0",
           ].join(" ")}
           style={{
-            background:
-              "linear-gradient(180deg, #080812 0%, #0c0c20 50%, #080818 100%)",
+            background: "#080812",
             borderRight: "1px solid rgba(0,212,255,0.15)",
             boxShadow: "4px 0 32px rgba(0,0,0,0.5)",
           }}
@@ -925,7 +918,7 @@ export function MemberDashboard({
           {/* Panel content */}
           <div
             className="flex-1 overflow-auto"
-            style={{ background: "#05050f" }}
+            style={{ background: "#04040e" }}
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -1004,8 +997,7 @@ export function MemberDashboard({
         <div
           className="fixed inset-0 z-[200] flex items-center justify-center p-4"
           style={{
-            background: "rgba(0,0,0,0.75)",
-            backdropFilter: "blur(6px)",
+            background: "rgba(0,0,0,0.97)",
           }}
           onClick={() => setShowTopUpModal(false)}
           onKeyDown={() => setShowTopUpModal(false)}

@@ -36,6 +36,7 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { StarBackground } from "./StarBackground";
 
 const ADMIN_USERNAME = "clawpro_admin";
 const ADMIN_PASSWORD = "ClawPro@Admin2026";
@@ -358,8 +359,7 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{
-            background: "rgba(0,0,0,0.92)",
-            backdropFilter: "blur(8px)",
+            background: "rgba(0,0,0,0.97)",
           }}
           data-ocid="admin.modal"
         >
@@ -571,7 +571,7 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-3"
-        style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(6px)" }}
+        style={{ background: "#000000" }}
         data-ocid="admin.modal"
       >
         <motion.div
@@ -589,11 +589,14 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
             animation: "adminPulse 4s ease-in-out infinite",
           }}
         >
+          {/* Hexagon animated background */}
+          <StarBackground />
           {/* ── MOBILE SIDEBAR TOGGLE ── */}
           {isLoggedIn && (
             <button
               type="button"
-              className="md:hidden absolute top-4 left-4 z-10 w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all"
+              className="md:hidden absolute top-4 left-4 z-10 w-8 h-8 rounded-lg hover:bg-red-900 flex items-center justify-center text-white transition-all"
+              style={{ background: "#1a1a2e" }}
               onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
               data-ocid="admin.button"
             >
@@ -630,7 +633,10 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
               }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: "#1a0a0a" }}
+                >
                   <Shield className="w-5 h-5 text-white" />
                 </div>
                 <div>
@@ -895,12 +901,18 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                 {/* Back button - always visible */}
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={() => {
+                    if (selectedUser) {
+                      setSelectedUser(null);
+                    } else {
+                      onClose();
+                    }
+                  }}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-red-500/20"
                   style={{
-                    background: "rgba(255,255,255,0.06)",
-                    color: "rgba(255,255,255,0.7)",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "#1a0808",
+                    color: "rgba(255,200,200,0.9)",
+                    border: "1px solid rgba(220,38,38,0.3)",
                   }}
                   data-ocid="admin.close_button"
                 >

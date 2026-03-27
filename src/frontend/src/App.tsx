@@ -4,13 +4,13 @@ import { MembershipTier } from "./backend.d";
 import { AdminDashboardPanel } from "./components/AdminDashboardPanel";
 import { CreateAccountModal } from "./components/CreateAccountModal";
 import { CryptoMarketPage } from "./components/CryptoMarketPage";
-import { DotsBackground } from "./components/DotsBackground";
 import { Footer } from "./components/Footer";
 import { LoginModal } from "./components/LoginModal";
 import { MemberDashboard } from "./components/MemberDashboard";
 import { Navbar } from "./components/Navbar";
 import { PublicLeaderboardPage } from "./components/PublicLeaderboardPage";
 import { PublicProfilePage } from "./components/PublicProfilePage";
+import { StarBackground } from "./components/StarBackground";
 import { TierLandingPage } from "./components/TierLandingPage";
 import { AdminPanel } from "./components/sections/AdminPanel";
 import { AvailableWorldwideSection } from "./components/sections/AvailableWorldwideSection";
@@ -116,7 +116,7 @@ function AppInner() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative">
-      <DotsBackground fixed />
+      <StarBackground fixed />
 
       <Navbar
         onAdminClick={() => setShowAdmin(true)}

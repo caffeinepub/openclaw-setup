@@ -40,6 +40,7 @@ import {
   YAxis,
 } from "recharts";
 import { toast } from "sonner";
+import { StarBackground } from "./StarBackground";
 
 // ---- Types ----
 interface CoinData {
@@ -330,11 +331,11 @@ function CoinIcon({
 function GlobalStatsBar({ data }: { data: GlobalMarketData | null }) {
   if (!data) {
     return (
-      <div className="flex items-center gap-4 px-6 py-2.5 bg-black/40 border-b border-white/5 overflow-x-auto flex-shrink-0">
+      <div className="flex items-center gap-4 px-6 py-2.5 bg-[#0a0a0f] border-b border-[#1a1a2a] overflow-x-auto flex-shrink-0">
         {["s1", "s2", "s3", "s4"].map((k) => (
           <div
             key={k}
-            className="h-4 w-28 rounded bg-white/5 animate-pulse flex-shrink-0"
+            className="h-4 w-28 rounded bg-[#111120] animate-pulse flex-shrink-0"
           />
         ))}
       </div>
@@ -363,10 +364,10 @@ function GlobalStatsBar({ data }: { data: GlobalMarketData | null }) {
     },
   ];
   return (
-    <div className="flex items-center gap-0 px-4 py-2 bg-black/50 border-b border-white/5 overflow-x-auto flex-shrink-0">
+    <div className="flex items-center gap-0 px-4 py-2 bg-[#080810] border-b border-[#1a1a2a] overflow-x-auto flex-shrink-0">
       {stats.map((s, i) => (
         <div key={s.label} className="flex items-center flex-shrink-0">
-          {i > 0 && <div className="w-px h-4 bg-white/10 mx-4" />}
+          {i > 0 && <div className="w-px h-4 bg-[#131328] mx-4" />}
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground/50 whitespace-nowrap">
               {s.label}
@@ -393,11 +394,11 @@ function GlobalStatsBar({ data }: { data: GlobalMarketData | null }) {
 function FearGreedWidget({ data }: { data: FearGreedData | null }) {
   if (!data) {
     return (
-      <div className="rounded-xl border border-white/8 bg-black/30 p-4 flex items-center gap-3 animate-pulse">
-        <div className="w-12 h-12 rounded-full bg-white/5" />
+      <div className="rounded-xl border border-[#1a1a2e] bg-[#0d0d18] p-4 flex items-center gap-3 animate-pulse">
+        <div className="w-12 h-12 rounded-full bg-[#111120]" />
         <div className="flex-1 space-y-2">
-          <div className="h-3 w-24 bg-white/5 rounded" />
-          <div className="h-4 w-16 bg-white/5 rounded" />
+          <div className="h-3 w-24 bg-[#111120] rounded" />
+          <div className="h-4 w-16 bg-[#111120] rounded" />
         </div>
       </div>
     );
@@ -423,7 +424,7 @@ function FearGreedWidget({ data }: { data: FearGreedData | null }) {
   const ny = cy + r * Math.sin(rad);
 
   return (
-    <div className="rounded-xl border border-white/8 bg-black/30 p-4 flex flex-col items-center gap-2">
+    <div className="rounded-xl border border-[#1a1a2e] bg-[#0d0d18] p-4 flex flex-col items-center gap-2">
       <h3 className="text-xs font-semibold text-muted-foreground mb-1">
         Fear &amp; Greed Index
       </h3>
@@ -480,7 +481,7 @@ function FearGreedWidget({ data }: { data: FearGreedData | null }) {
 // ---- Trending Coins Row ----
 function TrendingCoinsRow({ coins }: { coins: TrendingCoin[] }) {
   return (
-    <div className="rounded-xl border border-white/8 bg-black/30 p-4 flex-1 min-w-0">
+    <div className="rounded-xl border border-[#1a1a2e] bg-[#0d0d18] p-4 flex-1 min-w-0">
       <h3 className="text-xs font-semibold text-muted-foreground mb-3 flex items-center gap-1.5">
         <span>🔥</span> Trending Now
       </h3>
@@ -489,13 +490,13 @@ function TrendingCoinsRow({ coins }: { coins: TrendingCoin[] }) {
           ? ["t1", "t2", "t3", "t4", "t5", "t6", "t7"].map((k) => (
               <div
                 key={k}
-                className="flex-shrink-0 h-12 w-20 rounded-lg bg-white/5 animate-pulse"
+                className="flex-shrink-0 h-12 w-20 rounded-lg bg-[#111120] animate-pulse"
               />
             ))
           : coins.map((c) => (
               <div
                 key={c.id}
-                className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2 rounded-lg border border-white/8 bg-black/20 hover:border-amber-500/40 hover:bg-amber-500/5 transition-all cursor-pointer group"
+                className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2 rounded-lg border border-[#1a1a2e] bg-[#0a0a14] hover:border-amber-500/40 hover:bg-amber-500/5 transition-all cursor-pointer group"
               >
                 {c.thumb ? (
                   <img
@@ -564,7 +565,7 @@ function MarketHeatmap({ coins }: { coins: CoinData[] }) {
   };
 
   return (
-    <div className="rounded-xl border border-white/8 bg-black/30 p-4">
+    <div className="rounded-xl border border-[#1a1a2e] bg-[#0d0d18] p-4">
       <h3 className="text-xs font-semibold text-muted-foreground mb-3">
         📊 Market Heatmap
       </h3>
@@ -876,22 +877,15 @@ export function CryptoMarketPage({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-[oklch(0.06_0.012_240)] text-foreground overflow-hidden">
-      {/* Dot pattern overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, oklch(0.7 0.15 200 / 0.5) 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-        }}
-      />
+      {/* Batik teal ornamental background */}
+      <StarBackground />
 
       {/* Glow accents */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-emerald-500/5 blur-[80px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-teal-500/5 blur-[80px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[400px] h-[200px] bg-cyan-500/5 blur-[80px] pointer-events-none" />
 
       {/* Header */}
-      <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-white/8 bg-black/20 backdrop-blur-sm flex-shrink-0">
+      <div className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-[#1a1a2e] bg-[#0a0a14]  flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
             <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -939,7 +933,7 @@ export function CryptoMarketPage({ onClose }: { onClose: () => void }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/8 transition-colors"
+            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-[#111122] transition-colors"
             aria-label="Close"
             data-ocid="crypto.close.button"
           >
@@ -955,7 +949,7 @@ export function CryptoMarketPage({ onClose }: { onClose: () => void }) {
 
       {/* Live Ticker Strip */}
       <div
-        className="relative z-10 bg-black/30 border-b border-white/5 overflow-hidden flex-shrink-0"
+        className="relative z-10 bg-[#0d0d18] border-b border-[#1a1a2a] overflow-hidden flex-shrink-0"
         style={{
           maskImage:
             "linear-gradient(90deg, transparent, black 3%, black 97%, transparent)",
@@ -972,7 +966,7 @@ export function CryptoMarketPage({ onClose }: { onClose: () => void }) {
             return (
               <div
                 key={`${coin.id}-${i}`}
-                className="flex items-center gap-2 px-4 py-2 border-r border-white/5 shrink-0"
+                className="flex items-center gap-2 px-4 py-2 border-r border-[#1a1a2a] shrink-0"
               >
                 <CoinIcon symbol={coin.symbol} image={coin.image} size={18} />
                 <span className="text-[11px] font-bold text-foreground/80 uppercase font-mono">
@@ -1004,8 +998,8 @@ export function CryptoMarketPage({ onClose }: { onClose: () => void }) {
             className={[
               "flex items-center gap-1.5 px-4 py-2 rounded-t-lg text-sm font-medium transition-all border-b-2",
               activeTab === tab.id
-                ? "bg-white/8 text-emerald-400 border-emerald-500"
-                : "text-muted-foreground hover:text-foreground border-transparent hover:bg-white/5",
+                ? "bg-[#111122] text-emerald-400 border-emerald-500"
+                : "text-muted-foreground hover:text-foreground border-transparent hover:bg-[#111120]",
             ].join(" ")}
           >
             <span>{tab.icon}</span>
@@ -1122,10 +1116,10 @@ function MarketTab({
       <MarketHeatmap coins={coins} />
 
       {/* Price Table */}
-      <div className="rounded-xl border border-white/8 bg-black/20 overflow-hidden">
+      <div className="rounded-xl border border-[#1a1a2e] bg-[#0a0a14] overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-white/8 hover:bg-transparent">
+            <TableRow className="border-[#1a1a2e] hover:bg-transparent">
               <TableHead className="w-12 text-muted-foreground/50 text-xs">
                 <button
                   type="button"
@@ -1195,11 +1189,11 @@ function MarketTab({
                   "s14",
                   "s15",
                 ].map((sk) => (
-                  <TableRow key={sk} className="border-white/5">
+                  <TableRow key={sk} className="border-[#1a1a2a]">
                     <TableCell colSpan={6}>
                       <div
                         data-ocid="crypto.market.loading_state"
-                        className="h-10 rounded-lg bg-white/5 animate-pulse"
+                        className="h-10 rounded-lg bg-[#111120] animate-pulse"
                       />
                     </TableCell>
                   </TableRow>
@@ -1210,7 +1204,7 @@ function MarketTab({
                     <TableRow
                       key={coin.id}
                       data-ocid={`crypto.coin.item.${idx + 1}`}
-                      className="border-white/5 hover:bg-white/3 transition-colors"
+                      className="border-[#1a1a2a] hover:bg-white/3 transition-colors"
                     >
                       <TableCell className="text-muted-foreground/40 text-xs font-mono w-12">
                         {coin.market_cap_rank}
@@ -1298,7 +1292,7 @@ function ChartsTab({
           className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             chartMode === "marketcap"
               ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
-              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              : "text-muted-foreground hover:text-foreground hover:bg-[#111120]"
           }`}
         >
           Market Cap
@@ -1310,14 +1304,14 @@ function ChartsTab({
           className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             chartMode === "change24h"
               ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-              : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+              : "text-muted-foreground hover:text-foreground hover:bg-[#111120]"
           }`}
         >
           24h Change %
         </button>
       </div>
 
-      <div className="rounded-xl border border-white/8 bg-black/20 p-4">
+      <div className="rounded-xl border border-[#1a1a2e] bg-[#0a0a14] p-4">
         <h3 className="text-sm font-semibold mb-4 text-muted-foreground">
           {chartMode === "marketcap"
             ? "Market Cap (Billions USD)"
@@ -1414,7 +1408,7 @@ function AlertsTab({
   return (
     <div className="p-6 space-y-6">
       {/* Add Alert Form */}
-      <div className="rounded-xl border border-white/8 bg-black/20 p-5">
+      <div className="rounded-xl border border-[#1a1a2e] bg-[#0a0a14] p-5">
         <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
           <Bell className="w-4 h-4 text-amber-400" />
           Create Price Alert
@@ -1425,7 +1419,7 @@ function AlertsTab({
             <Select value={alertCoin} onValueChange={setAlertCoin}>
               <SelectTrigger
                 data-ocid="crypto.alert_coin.select"
-                className="bg-black/30 border-white/10"
+                className="bg-[#0d0d18] border-white/10"
               >
                 <SelectValue placeholder="Select coin..." />
               </SelectTrigger>
@@ -1446,7 +1440,7 @@ function AlertsTab({
             >
               <SelectTrigger
                 data-ocid="crypto.alert_dir.select"
-                className="bg-black/30 border-white/10"
+                className="bg-[#0d0d18] border-white/10"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -1465,7 +1459,7 @@ function AlertsTab({
               placeholder="e.g. 50000"
               value={alertPrice}
               onChange={(e) => setAlertPrice(e.target.value)}
-              className="bg-black/30 border-white/10"
+              className="bg-[#0d0d18] border-white/10"
               data-ocid="crypto.alert_price.input"
             />
           </div>
@@ -1489,7 +1483,7 @@ function AlertsTab({
         {alerts.length === 0 ? (
           <div
             data-ocid="crypto.alerts.empty_state"
-            className="flex flex-col items-center justify-center py-12 gap-3 rounded-xl border border-white/5 bg-black/10"
+            className="flex flex-col items-center justify-center py-12 gap-3 rounded-xl border border-[#1a1a2a] bg-black/10"
           >
             <BellOff className="w-8 h-8 text-muted-foreground/30" />
             <p className="text-sm text-muted-foreground/50">
@@ -1506,7 +1500,7 @@ function AlertsTab({
                   "flex items-center gap-3 p-3.5 rounded-xl border transition-colors",
                   alert.triggered
                     ? "bg-emerald-500/5 border-emerald-500/20"
-                    : "bg-black/20 border-white/8 hover:border-amber-500/20",
+                    : "bg-[#0a0a14] border-[#1a1a2e] hover:border-amber-500/20",
                 ].join(" ")}
               >
                 <Bell
@@ -1587,7 +1581,7 @@ function SwapTab({
         </div>
 
         {/* From */}
-        <div className="rounded-xl border border-white/10 bg-black/30 p-4 space-y-2">
+        <div className="rounded-xl border border-white/10 bg-[#0d0d18] p-4 space-y-2">
           <Label className="text-xs text-muted-foreground">From</Label>
           <div className="flex items-center gap-3">
             <Select
@@ -1599,7 +1593,7 @@ function SwapTab({
               }}
             >
               <SelectTrigger
-                className="flex-1 bg-transparent border-white/8"
+                className="flex-1 bg-transparent border-[#1a1a2e]"
                 data-ocid="crypto.swap_from.select"
               >
                 <SelectValue />
@@ -1619,7 +1613,7 @@ function SwapTab({
                 setSwapAmount(e.target.value);
                 setSwapConfirm(false);
               }}
-              className="w-28 bg-transparent border-white/8 text-right font-mono"
+              className="w-28 bg-transparent border-[#1a1a2e] text-right font-mono"
               min="0"
               data-ocid="crypto.swap_amount.input"
             />
@@ -1636,13 +1630,13 @@ function SwapTab({
 
         {/* Arrow */}
         <div className="flex justify-center">
-          <div className="w-8 h-8 rounded-full bg-white/5 border border-white/8 flex items-center justify-center text-muted-foreground">
+          <div className="w-8 h-8 rounded-full bg-[#111120] border border-[#1a1a2e] flex items-center justify-center text-muted-foreground">
             ↕
           </div>
         </div>
 
         {/* To */}
-        <div className="rounded-xl border border-white/10 bg-black/30 p-4 space-y-2">
+        <div className="rounded-xl border border-white/10 bg-[#0d0d18] p-4 space-y-2">
           <Label className="text-xs text-muted-foreground">To</Label>
           <div className="flex items-center gap-3">
             <Select
@@ -1653,7 +1647,7 @@ function SwapTab({
               }}
             >
               <SelectTrigger
-                className="flex-1 bg-transparent border-white/8"
+                className="flex-1 bg-transparent border-[#1a1a2e]"
                 data-ocid="crypto.swap_to.select"
               >
                 <SelectValue />

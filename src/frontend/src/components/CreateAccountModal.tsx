@@ -333,6 +333,7 @@ export function CreateAccountModal({
           email: email.trim(),
           phone: phone.trim(),
           fullName: fullName.trim(),
+          createdAt: new Date().toISOString(),
         });
         localStorage.setItem(
           "clawpro_local_accounts",
@@ -380,6 +381,7 @@ export function CreateAccountModal({
         email: email.trim(),
         phone: phone.trim(),
         fullName: fullName.trim(),
+        createdAt: new Date().toISOString(),
       });
       localStorage.setItem(
         "clawpro_local_accounts",
