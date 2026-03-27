@@ -676,7 +676,7 @@ export function MemberDashboard({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-800 border border-gray-300 flex items-center justify-center hover:bg-gray-700 transition-colors"
+                  className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-gray-800 border border-white/15 flex items-center justify-center hover:bg-gray-700 transition-colors"
                   title="Upload photo"
                   data-ocid="dashboard.avatar.upload_button"
                 >
@@ -699,7 +699,7 @@ export function MemberDashboard({
                   <button
                     type="button"
                     onClick={handleRemovePhoto}
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-gray-300 flex items-center justify-center hover:bg-red-500 transition-colors"
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 border border-white/15 flex items-center justify-center hover:bg-red-500 transition-colors"
                     title="Remove photo"
                     data-ocid="dashboard.avatar.delete_button"
                   >
@@ -2211,7 +2211,7 @@ function PriceAlertsPanel() {
             <select
               value={selectedCoin}
               onChange={(e) => setSelectedCoin(e.target.value)}
-              className="w-full h-9 text-sm rounded-lg border border-gray-200 px-3"
+              className="w-full h-9 text-sm rounded-lg border border-white/10 px-3"
               style={{ background: "oklch(0.12 0.015 240)", color: "white" }}
               data-ocid="pricealerts.coin.select"
             >
@@ -2230,7 +2230,7 @@ function PriceAlertsPanel() {
               onChange={(e) =>
                 setCondition(e.target.value as "above" | "below")
               }
-              className="w-full h-9 text-sm rounded-lg border border-gray-200 px-3"
+              className="w-full h-9 text-sm rounded-lg border border-white/10 px-3"
               style={{ background: "oklch(0.12 0.015 240)", color: "white" }}
               data-ocid="pricealerts.condition.select"
             >
@@ -2245,7 +2245,7 @@ function PriceAlertsPanel() {
               placeholder="e.g. 50000"
               value={targetPrice}
               onChange={(e) => setTargetPrice(e.target.value)}
-              className="h-9 text-sm border-gray-200"
+              className="h-9 text-sm border-white/10"
               style={{ background: "oklch(0.12 0.015 240)" }}
               data-ocid="pricealerts.target.input"
             />
@@ -2273,7 +2273,7 @@ function PriceAlertsPanel() {
         </h3>
         {alerts.length === 0 ? (
           <div
-            className="rounded-xl p-8 border border-gray-200 text-center"
+            className="rounded-xl p-8 border border-white/10 text-center"
             style={{ background: "#0a0a0f" }}
             data-ocid="pricealerts.empty_state"
           >
@@ -2523,7 +2523,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-white/10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-xl">
             🤖
@@ -2554,7 +2554,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="border-b border-gray-200 overflow-hidden"
+            className="border-b border-white/10 overflow-hidden"
           >
             <div className="p-4 space-y-4" style={{ background: "#0a0a0f" }}>
               <h3 className="text-sm font-semibold flex items-center gap-2">
@@ -2647,7 +2647,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
               className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 text-sm ${
                 msg.role === "user"
                   ? "bg-cyan-600/80 text-white rounded-br-sm"
-                  : "rounded-bl-sm border border-gray-200"
+                  : "rounded-bl-sm border border-white/10"
               }`}
               style={
                 msg.role === "bot"
@@ -2665,7 +2665,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
         {isTyping && (
           <div className="flex justify-start">
             <div
-              className="border border-gray-200 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
+              className="border border-white/10 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
               style={{ background: "oklch(0.12 0.015 240)" }}
             >
               <div className="flex gap-1">
@@ -2687,7 +2687,7 @@ function ClawBotPanel({ handle }: { handle: string }) {
         )}
       </div>
 
-      <div className="p-3 border-t border-gray-200">
+      <div className="p-3 border-t border-white/10">
         <div className="flex gap-2">
           <Input
             value={input}
@@ -2753,7 +2753,7 @@ function WhatsAppPanel() {
       </div>
 
       <div
-        className="rounded-xl border border-gray-200 p-4 space-y-4"
+        className="rounded-xl border border-white/10 p-4 space-y-4"
         style={{
           background: "#0a0a0f",
           boxShadow: "0 0 20px rgba(34,197,94,0.06)",
@@ -2807,7 +2807,7 @@ function WhatsAppPanel() {
       </div>
 
       <div
-        className="rounded-xl border border-gray-200 p-4"
+        className="rounded-xl border border-white/10 p-4"
         style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold mb-3">Recent Activity</h3>
@@ -2854,7 +2854,7 @@ function TelegramPanel() {
       </div>
 
       <div
-        className="rounded-xl border border-gray-200 p-4 space-y-4"
+        className="rounded-xl border border-white/10 p-4 space-y-4"
         style={{
           background: "#0a0a0f",
           boxShadow: "0 0 20px rgba(59,130,246,0.06)",
@@ -2890,7 +2890,7 @@ function TelegramPanel() {
       </div>
 
       <div
-        className="rounded-xl border border-gray-200 p-4"
+        className="rounded-xl border border-white/10 p-4"
         style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold mb-3">Recent Commands</h3>
@@ -2999,7 +2999,7 @@ function ChatGPTPanel() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-gray-200 space-y-3">
+      <div className="p-4 border-b border-white/10 space-y-3">
         <div className="flex items-center gap-3">
           <Sparkles className="w-5 h-5 text-emerald-400" />
           <h2 className="font-semibold text-sm">ChatGPT Integration</h2>
@@ -3016,7 +3016,7 @@ function ChatGPTPanel() {
           <select
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="h-8 text-xs rounded-md border border-gray-200 px-2"
+            className="h-8 text-xs rounded-md border border-white/10 px-2"
             style={{ background: "oklch(0.12 0.015 240)", color: "white" }}
             data-ocid="chatgpt.model.select"
           >
@@ -3045,7 +3045,7 @@ function ChatGPTPanel() {
               className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 text-sm ${
                 msg.role === "user"
                   ? "bg-emerald-600/80 text-white rounded-br-sm"
-                  : "rounded-bl-sm border border-gray-200"
+                  : "rounded-bl-sm border border-white/10"
               }`}
               style={
                 msg.role === "bot"
@@ -3063,7 +3063,7 @@ function ChatGPTPanel() {
         {isTyping && (
           <div className="flex justify-start">
             <div
-              className="border border-gray-200 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
+              className="border border-white/10 rounded-2xl rounded-bl-sm px-3.5 py-2.5"
               style={{ background: "oklch(0.12 0.015 240)" }}
             >
               <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
@@ -3072,7 +3072,7 @@ function ChatGPTPanel() {
         )}
       </div>
 
-      <div className="p-3 border-t border-gray-200">
+      <div className="p-3 border-t border-white/10">
         <div className="flex gap-2">
           <Input
             value={input}
@@ -3156,7 +3156,7 @@ function SettingsPanel({
       </div>
 
       <div
-        className="rounded-xl border border-gray-200 p-4 space-y-4"
+        className="rounded-xl border border-white/10 p-4 space-y-4"
         style={{
           background: "#0a0a0f",
           boxShadow: "0 0 20px rgba(167,139,250,0.06)",
@@ -3220,7 +3220,7 @@ function SettingsPanel({
       </div>
 
       <div
-        className="rounded-xl border border-gray-200 p-4 space-y-4"
+        className="rounded-xl border border-white/10 p-4 space-y-4"
         style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold">Preferences</h3>
@@ -3341,7 +3341,7 @@ function ActivityPanel({ handle }: { handle: string }) {
         {ACTIVITY_ITEMS.map((item) => (
           <div
             key={item.id}
-            className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
+            className="flex items-start gap-3 p-3 rounded-xl border border-white/8 hover:border-white/10 transition-colors"
             style={{
               background: "#0d0d1a",
               borderLeft: `3px solid ${item.color}`,
@@ -3508,7 +3508,7 @@ function AnimatedStatCard({
 
   return (
     <div
-      className="rounded-xl p-4 border border-gray-200 text-center"
+      className="rounded-xl p-4 border border-white/10 text-center"
       style={{
         background: "#0a0a0f",
         boxShadow: `0 0 16px ${stat.glow}`,
@@ -3678,7 +3678,7 @@ function TasksPanel() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 opacity-60"
+                className="flex items-center gap-3 p-3 rounded-xl border border-white/8 opacity-60"
                 style={{ background: "oklch(0.08 0.008 240)" }}
                 data-ocid={`tasks.done.item.${i + 1}`}
               >
@@ -4256,7 +4256,7 @@ function LeaderboardPanel() {
         {members.map((m) => (
           <div
             key={m.rank}
-            className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-gray-300 transition-all"
+            className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-white/15 transition-all"
             style={{
               background: "#0a0a0f",
               boxShadow:
@@ -4361,7 +4361,7 @@ function NotificationsPanel() {
         {notifs.map((n) => (
           <div
             key={n.id}
-            className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 hover:border-gray-300 transition-all cursor-pointer"
+            className="flex items-start gap-3 p-4 rounded-xl border border-white/10 hover:border-white/15 transition-all cursor-pointer"
             style={{ background: "#0a0a0f" }}
           >
             <span className="text-xl mt-0.5">{n.icon}</span>
@@ -4435,7 +4435,7 @@ function DynamicIntegrationPanel({
         </div>
       </div>
       <div
-        className="rounded-xl p-5 border border-gray-200"
+        className="rounded-xl p-5 border border-white/10"
         style={{ background: "#0a0a0f" }}
       >
         <h3 className="text-sm font-semibold mb-4">Configuration</h3>
@@ -4452,7 +4452,7 @@ function DynamicIntegrationPanel({
           <div className="pt-2">
             <Label className="text-sm text-gray-500">API Webhook URL</Label>
             <Input
-              className="mt-1 bg-background/50 border-gray-200 text-sm"
+              className="mt-1 bg-background/50 border-white/10 text-sm"
               placeholder="https://api.example.com/webhook"
             />
           </div>

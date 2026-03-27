@@ -2,10 +2,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Activity,
+  AlertTriangle,
   ArrowLeft,
   Ban,
+  BarChart3,
+  Bell,
   CheckCircle,
   Clock,
   Crown,
@@ -13,22 +18,27 @@ import {
   Download,
   Eye,
   EyeOff,
+  Globe,
   Key,
   Lock,
-  LogIn,
   LogOut,
   Mail,
   Menu,
+  MessageSquare,
   Package,
   Phone,
   RefreshCw,
   Search,
+  Send,
   Server,
+  Settings,
   Shield,
   Star,
+  Terminal,
   TrendingUp,
   User,
   UserCheck,
+  UserCog,
   Users,
   X,
   Zap,
@@ -73,36 +83,71 @@ const INTEGRATION_LABELS: Record<string, { name: string; color: string }> = {
   "personal-bot": { name: "Personal Bot", color: "#f59e0b" },
 };
 
-const TIER_CONFIG: Record<
-  string,
-  {
-    label: string;
-    color: string;
-    glow: string;
-    icon: React.ReactNode;
-  }
-> = {
-  silver: {
-    label: "Silver",
-    color: "#94a3b8",
-    glow: "0 0 12px rgba(148,163,184,0.4)",
-    icon: <Star className="w-3 h-3" />,
-  },
-  gold: {
-    label: "Gold",
-    color: "#d97706",
-    glow: "0 0 12px rgba(217,119,6,0.5)",
-    icon: <Crown className="w-3 h-3" />,
-  },
-  platinum: {
-    label: "Platinum",
-    color: "#a78bfa",
-    glow: "0 0 12px rgba(167,139,250,0.5)",
-    icon: <Shield className="w-3 h-3" />,
-  },
-};
+type AdminSection =
+  | "users"
+  | "analytics"
+  | "notifications"
+  | "broadcast"
+  | "logs"
+  | "roles"
+  | "settings"
+  | "health";
 
-type TierFilter = "all" | "silver" | "gold" | "platinum";
+const ADMIN_NAV: {
+  id: AdminSection;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+}[] = [
+  {
+    id: "users",
+    label: "Users",
+    icon: <Users className="w-4 h-4" />,
+    color: "#dc2626",
+  },
+  {
+    id: "analytics",
+    label: "Analytics",
+    icon: <BarChart3 className="w-4 h-4" />,
+    color: "#3b82f6",
+  },
+  {
+    id: "notifications",
+    label: "Notifications",
+    icon: <Bell className="w-4 h-4" />,
+    color: "#f59e0b",
+  },
+  {
+    id: "broadcast",
+    label: "Broadcast",
+    icon: <MessageSquare className="w-4 h-4" />,
+    color: "#8b5cf6",
+  },
+  {
+    id: "logs",
+    label: "System Logs",
+    icon: <Terminal className="w-4 h-4" />,
+    color: "#10b981",
+  },
+  {
+    id: "roles",
+    label: "User Roles",
+    icon: <UserCog className="w-4 h-4" />,
+    color: "#06b6d4",
+  },
+  {
+    id: "health",
+    label: "System Health",
+    icon: <Server className="w-4 h-4" />,
+    color: "#22c55e",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: <Settings className="w-4 h-4" />,
+    color: "#a78bfa",
+  },
+];
 
 interface AdminDashboardPanelProps {
   onClose: () => void;
@@ -121,9 +166,9 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<LocalAccount | null>(null);
   const [loginError, setLoginError] = useState("");
-  const [tierFilter, setTierFilter] = useState<TierFilter>("all");
   const [bannedUsers, setBannedUsers] = useState<Set<string>>(new Set());
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<AdminSection>("users");
 
   const loadAccounts = useCallback(() => {
     try {
@@ -146,7 +191,7 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
       setIsLoggedIn(true);
       toast.success("Welcome, Admin!");
     } else {
-      setLoginError("Invalid username or password.");
+      setLoginError("Invalid credentials.");
     }
   };
 
@@ -155,6 +200,9 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
     setIsLoggedIn(false);
     setLoginUsername("");
     setLoginPassword("");
+    setLoginError("");
+    setForgotStep("none");
+    setSelectedUser(null);
     toast("Admin logged out.");
   };
 
@@ -169,7 +217,6 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
 
   const getInstalledApps = (handle: string): string[] => {
     try {
-      // In a real app this would be per-user; using global for demo
       const raw = localStorage.getItem("clawpro_installed_integrations");
       return handle ? (raw ? JSON.parse(raw) : []) : [];
     } catch {
@@ -181,13 +228,12 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
 
   const filteredAccounts = accounts.filter((a) => {
     const q = searchQuery.toLowerCase();
-    const matchSearch =
+    return (
       !q ||
       a.fullName?.toLowerCase().includes(q) ||
       a.handle?.toLowerCase().includes(q) ||
-      a.email?.toLowerCase().includes(q);
-    const matchTier = tierFilter === "all" || getUserTier() === tierFilter;
-    return matchSearch && matchTier;
+      a.email?.toLowerCase().includes(q)
+    );
   });
 
   const exportCSV = () => {
@@ -228,121 +274,10 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
       "linear-gradient(135deg, #059669, #047857)",
       "linear-gradient(135deg, #d97706, #b45309)",
     ];
-    const idx = name.charCodeAt(0) % gradients.length;
-    return gradients[idx];
+    return gradients[name.charCodeAt(0) % gradients.length];
   };
 
-  const totalUsers = accounts.length;
-  const activeToday = Math.max(1, Math.floor(accounts.length * 0.4));
-  const avgTierScore = Math.round(60 + Math.random() * 20);
-
-  const statsData = [
-    {
-      label: "Total Users",
-      value: totalUsers,
-      icon: <Users className="w-4 h-4" />,
-      color: "#dc2626",
-      glow: "rgba(220,38,38,0.3)",
-    },
-    {
-      label: "Active Today",
-      value: activeToday,
-      icon: <Activity className="w-4 h-4" />,
-      color: "#10b981",
-      glow: "rgba(16,185,129,0.3)",
-    },
-    {
-      label: "Silver Tier",
-      value: accounts.filter((_, i) => i % 3 === 0).length || 0,
-      icon: <Star className="w-4 h-4" />,
-      color: "#94a3b8",
-      glow: "rgba(148,163,184,0.3)",
-    },
-    {
-      label: "Gold / Plat",
-      value: accounts.filter((_, i) => i % 3 !== 0).length || 0,
-      icon: <Crown className="w-4 h-4" />,
-      color: "#d97706",
-      glow: "rgba(217,119,6,0.3)",
-    },
-    {
-      label: "Avg Tier Score",
-      value: `${avgTierScore}%`,
-      icon: <TrendingUp className="w-4 h-4" />,
-      color: "#a78bfa",
-      glow: "rgba(167,139,250,0.3)",
-    },
-    {
-      label: "Integrations",
-      value: getInstalledApps("").length,
-      icon: <Zap className="w-4 h-4" />,
-      color: "#06b6d4",
-      glow: "rgba(6,182,212,0.3)",
-    },
-  ];
-
-  const systemHealth = [
-    {
-      name: "Database",
-      icon: <Database className="w-4 h-4" />,
-      status: "Healthy",
-      color: "#10b981",
-    },
-    {
-      name: "API Server",
-      icon: <Server className="w-4 h-4" />,
-      status: "Healthy",
-      color: "#10b981",
-    },
-    {
-      name: "Auth Service",
-      icon: <Lock className="w-4 h-4" />,
-      status: "Healthy",
-      color: "#10b981",
-    },
-    {
-      name: "Storage",
-      icon: <Key className="w-4 h-4" />,
-      status: "Healthy",
-      color: "#10b981",
-    },
-  ];
-
-  const activityTimeline = [
-    {
-      icon: <UserCheck className="w-3.5 h-3.5" />,
-      event: "Account Created",
-      time: "2 days ago",
-      color: "#10b981",
-    },
-    {
-      icon: <LogIn className="w-3.5 h-3.5" />,
-      event: "First Login",
-      time: "2 days ago",
-      color: "#06b6d4",
-    },
-    {
-      icon: <Zap className="w-3.5 h-3.5" />,
-      event: "Integration Installed",
-      time: "1 day ago",
-      color: "#a78bfa",
-    },
-    {
-      icon: <Crown className="w-3.5 h-3.5" />,
-      event: "Tier Upgraded",
-      time: "12 hours ago",
-      color: "#d97706",
-    },
-  ];
-
-  const TIER_FILTERS: { id: TierFilter; label: string; color: string }[] = [
-    { id: "all", label: "All", color: "#dc2626" },
-    { id: "silver", label: "Silver", color: "#94a3b8" },
-    { id: "gold", label: "Gold", color: "#d97706" },
-    { id: "platinum", label: "Platinum", color: "#a78bfa" },
-  ];
-
-  // When not logged in, render only a centered login card (no two-column layout)
+  // ── Login View ──
   if (!isLoggedIn) {
     return (
       <>
@@ -358,12 +293,10 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{
-            background: "rgba(0,0,0,0.97)",
-          }}
+          style={{ background: "rgba(0,0,0,0.97)" }}
           data-ocid="admin.modal"
         >
-          {/* Back / close button at top right */}
+          <StarBackground />
           <button
             type="button"
             onClick={onClose}
@@ -382,9 +315,7 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="w-full max-w-sm"
+            className="w-full max-w-sm relative z-10"
           >
             <div
               className="rounded-2xl p-8"
@@ -415,13 +346,13 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                 <div className="space-y-4">
                   <div>
                     <label
-                      htmlFor="admin-login-username-2"
+                      htmlFor="admin-username"
                       className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide"
                     >
                       Username
                     </label>
                     <Input
-                      id="admin-login-username-2"
+                      id="admin-username"
                       placeholder="Admin username"
                       value={loginUsername}
                       onChange={(e) => setLoginUsername(e.target.value)}
@@ -436,14 +367,14 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                   </div>
                   <div>
                     <label
-                      htmlFor="admin-login-password-2"
+                      htmlFor="admin-password"
                       className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide"
                     >
                       Password
                     </label>
                     <div className="relative">
                       <Input
-                        id="admin-login-password-2"
+                        id="admin-password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Admin password"
                         value={loginPassword}
@@ -469,35 +400,29 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                       </button>
                     </div>
                   </div>
-
                   {loginError && (
-                    <p
-                      className="text-sm text-red-400 text-center"
-                      data-ocid="admin.error_state"
-                    >
-                      {loginError}
-                    </p>
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                      <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      <p className="text-xs text-red-400">{loginError}</p>
+                    </div>
                   )}
-
                   <button
                     type="button"
                     onClick={handleLogin}
-                    className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all admin-glow-btn"
+                    className="w-full py-3 rounded-xl font-bold text-sm text-white admin-glow-btn transition-all"
                     style={{
                       background: "linear-gradient(135deg, #dc2626, #b91c1c)",
                     }}
                     data-ocid="admin.submit_button"
                   >
-                    <LogIn className="w-4 h-4 inline mr-2" />
                     Login to Admin Panel
                   </button>
-
                   <button
                     type="button"
                     onClick={() => setForgotStep("recover")}
-                    className="w-full text-xs text-gray-500 hover:text-gray-300 py-1 transition-colors"
+                    className="w-full text-center text-xs text-gray-500 hover:text-gray-300 transition-colors"
                   >
-                    Forgot credentials? Use recovery code
+                    Forgot password?
                   </button>
                 </div>
               ) : (
@@ -509,12 +434,11 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                     placeholder="Recovery code"
                     value={recoverCode}
                     onChange={(e) => setRecoverCode(e.target.value)}
-                    className="text-white placeholder:text-gray-600 text-center tracking-widest font-mono"
+                    className="text-white placeholder:text-gray-600"
                     style={{
                       background: "#1a1a2e",
                       border: "1px solid rgba(255,255,255,0.1)",
                     }}
-                    onKeyDown={(e) => e.key === "Enter" && handleForgotSubmit()}
                     data-ocid="admin.input"
                   />
                   <button
@@ -522,19 +446,19 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                     onClick={handleForgotSubmit}
                     className="w-full py-3 rounded-xl font-bold text-sm text-white transition-all"
                     style={{
-                      background: "linear-gradient(135deg, #7c3aed, #5b21b6)",
+                      background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+                      boxShadow: "0 4px 15px rgba(124,58,237,0.4)",
                     }}
                     data-ocid="admin.submit_button"
                   >
-                    <Key className="w-4 h-4 inline mr-2" />
-                    Recover Access
+                    Recover
                   </button>
                   <button
                     type="button"
                     onClick={() => setForgotStep("none")}
-                    className="w-full text-xs text-gray-500 hover:text-gray-300 py-1 transition-colors"
+                    className="w-full text-center text-xs text-gray-500 hover:text-gray-300"
                   >
-                    Back to login
+                    ← Back to login
                   </button>
                 </div>
               )}
@@ -545,226 +469,247 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
     );
   }
 
+  // ── Logged In: Full Dashboard ──
+  const totalUsers = accounts.length;
+  const activeToday = Math.max(1, Math.floor(accounts.length * 0.4));
+
   return (
     <>
       <style>{`
         @keyframes adminPulse {
-          0%,100% { box-shadow: 0 0 0 1px rgba(220,38,38,0.15), 0 2px 20px rgba(220,38,38,0.06); }
-          50% { box-shadow: 0 0 0 2px rgba(220,38,38,0.3), 0 4px 30px rgba(220,38,38,0.12); }
+          0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.4); }
+          50% { box-shadow: 0 0 0 8px rgba(220,38,38,0); }
         }
-        @keyframes adminBtnGlow {
-          0%,100% { box-shadow: 0 4px 15px rgba(220,38,38,0.25); }
-          50% { box-shadow: 0 6px 25px rgba(220,38,38,0.45), 0 0 35px rgba(220,38,38,0.15); }
+        @keyframes healthDot {
+          0%,100% { opacity: 1; } 50% { opacity: 0.4; }
         }
-        @keyframes healthPulse {
-          0%,100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.85); }
+        .admin-nav-active {
+          background: rgba(220,38,38,0.15) !important;
+          border-left: 3px solid #dc2626 !important;
+          color: #fca5a5;
         }
-        .admin-glow-btn { animation: adminBtnGlow 2.5s ease-in-out infinite; }
-        .admin-user-row:hover { background: rgba(220,38,38,0.06) !important; }
-        .admin-user-row.active { background: rgba(220,38,38,0.1) !important; border-left: 3px solid #dc2626 !important; }
-        .health-dot { animation: healthPulse 2s ease-in-out infinite; }
+        .admin-nav-item:hover { background: rgba(255,255,255,0.04); }
       `}</style>
-
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-3"
-        style={{ background: "#000000" }}
+        className="fixed inset-0 z-50 flex flex-col"
+        style={{ background: "#04040e" }}
         data-ocid="admin.modal"
       >
-        <motion.div
-          initial={{ scale: 0.97, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.97, opacity: 0 }}
-          transition={{ duration: 0.25 }}
-          className="flex flex-col md:flex-row w-full h-full rounded-2xl overflow-hidden"
+        <StarBackground />
+
+        {/* Top Bar */}
+        <div
+          className="flex items-center justify-between px-4 py-3 flex-shrink-0 relative z-10"
           style={{
-            background: "#0a0a0f",
-            maxWidth: "calc(100vw - 16px)",
-            maxHeight: "calc(100vh - 16px)",
-            boxShadow:
-              "0 25px 80px rgba(220,38,38,0.25), 0 8px 32px rgba(0,0,0,0.6)",
-            animation: "adminPulse 4s ease-in-out infinite",
+            background: "#0f0f1a",
+            borderBottom: "1px solid rgba(220,38,38,0.2)",
+            boxShadow: "0 2px 20px rgba(220,38,38,0.12)",
           }}
         >
-          {/* Hexagon animated background */}
-          <StarBackground />
-          {/* ── MOBILE SIDEBAR TOGGLE ── */}
-          {isLoggedIn && (
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              className="md:hidden absolute top-4 left-4 z-10 w-8 h-8 rounded-lg hover:bg-red-900 flex items-center justify-center text-white transition-all"
-              style={{ background: "#1a1a2e" }}
+              className="md:hidden p-1.5 rounded text-gray-400 hover:text-white"
               onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
               data-ocid="admin.button"
             >
               <Menu className="w-4 h-4" />
             </button>
-          )}
-
-          {/* ── LEFT SIDEBAR ── */}
-          <div
-            className={[
-              "flex flex-col transition-all duration-300",
-              "md:relative md:translate-x-0",
-              isLoggedIn
-                ? mobileSidebarOpen
-                  ? "absolute inset-y-0 left-0 z-20 translate-x-0"
-                  : "absolute inset-y-0 left-0 z-20 -translate-x-full md:translate-x-0"
-                : "w-full md:w-80",
-            ].join(" ")}
-            style={{
-              width: isLoggedIn ? undefined : "100%",
-              minWidth: isLoggedIn ? "280px" : undefined,
-              maxWidth: isLoggedIn ? "320px" : undefined,
-              background: "#0f0f18",
-              borderRight: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "4px 0 24px rgba(0,0,0,0.4)",
-            }}
-          >
-            {/* Sidebar Header */}
             <div
-              className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
               style={{
-                background: "linear-gradient(135deg, #dc2626 0%, #7c1d1d 100%)",
-                boxShadow: "0 4px 20px rgba(220,38,38,0.3)",
+                background: "linear-gradient(135deg, #dc2626, #991b1b)",
+                boxShadow: "0 0 12px rgba(220,38,38,0.5)",
               }}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center"
-                  style={{ background: "#1a0a0a" }}
-                >
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-base text-white leading-tight">
-                    Admin Panel
-                  </h2>
-                  <p className="text-xs text-red-200/70">ClawPro.ai Control</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {isLoggedIn && (
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-white">Admin Panel</h1>
+              <p className="text-[10px] text-red-400/70">
+                ClawPro.ai Control Center
+              </p>
+            </div>
+            <Badge className="ml-2 bg-red-500/15 text-red-300 border-red-500/30 border text-xs hidden sm:flex">
+              {totalUsers} Users
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <div
+                className="w-2 h-2 rounded-full bg-green-400"
+                style={{
+                  animation: "healthDot 2s infinite",
+                  boxShadow: "0 0 6px rgba(34,197,94,0.8)",
+                }}
+              />
+              <span className="text-xs text-gray-500 hidden sm:inline">
+                System Online
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-red-500/20"
+              style={{
+                background: "rgba(220,38,38,0.1)",
+                color: "#fca5a5",
+                border: "1px solid rgba(220,38,38,0.3)",
+              }}
+              data-ocid="admin.close_button"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                color: "rgba(255,255,255,0.6)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.close_button"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Main Layout */}
+        <div className="flex flex-1 overflow-hidden relative z-10">
+          {/* Mobile overlay */}
+          {mobileSidebarOpen && (
+            <div
+              role="button"
+              tabIndex={0}
+              className="fixed inset-0 z-30 md:hidden"
+              style={{ background: "rgba(0,0,0,0.7)" }}
+              onClick={() => setMobileSidebarOpen(false)}
+              onKeyDown={(e) =>
+                e.key === "Escape" && setMobileSidebarOpen(false)
+              }
+              aria-label="Close sidebar"
+            />
+          )}
+
+          {/* Left Sidebar */}
+          <aside
+            className={[
+              "flex flex-col z-40 md:relative flex-shrink-0",
+              "transition-transform duration-300",
+              mobileSidebarOpen
+                ? "fixed inset-y-0 left-0 translate-x-0 pt-14"
+                : "fixed inset-y-0 left-0 -translate-x-full md:translate-x-0 md:static md:pt-0",
+            ].join(" ")}
+            style={{
+              width: "260px",
+              background: "#0c0c18",
+              borderRight: "1px solid rgba(255,255,255,0.07)",
+              boxShadow: "4px 0 24px rgba(0,0,0,0.5)",
+            }}
+          >
+            {/* Admin section nav */}
+            <div className="p-3 flex-shrink-0">
+              <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-2 mb-2">
+                Navigation
+              </p>
+              <div className="space-y-0.5">
+                {ADMIN_NAV.map((item) => (
                   <button
+                    key={item.id}
                     type="button"
-                    onClick={handleLogout}
-                    className="w-8 h-8 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center transition-all"
-                    title="Logout"
-                    data-ocid="admin.close_button"
+                    onClick={() => {
+                      setActiveSection(item.id);
+                      setMobileSidebarOpen(false);
+                    }}
+                    className={`admin-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all border-l-3 ${
+                      activeSection === item.id
+                        ? "admin-nav-active"
+                        : "border-l-3 border-transparent text-gray-400"
+                    }`}
+                    style={{
+                      borderLeft:
+                        activeSection === item.id
+                          ? `3px solid ${item.color}`
+                          : "3px solid transparent",
+                    }}
+                    data-ocid={`admin.${item.id}.tab`}
                   >
-                    <LogOut className="w-4 h-4 text-white" />
+                    <span
+                      style={{
+                        color:
+                          activeSection === item.id ? item.color : "#6b7280",
+                      }}
+                    >
+                      {item.icon}
+                    </span>
+                    <span
+                      className={
+                        activeSection === item.id
+                          ? "text-white font-medium"
+                          : ""
+                      }
+                    >
+                      {item.label}
+                    </span>
+                    {item.id === "users" && totalUsers > 0 && (
+                      <span
+                        className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full"
+                        style={{
+                          background: "rgba(220,38,38,0.2)",
+                          color: "#fca5a5",
+                        }}
+                      >
+                        {totalUsers}
+                      </span>
+                    )}
                   </button>
-                )}
+                ))}
               </div>
             </div>
 
-            {isLoggedIn && (
-              <>
-                {/* Stats Grid */}
-                <div className="p-3 grid grid-cols-2 gap-2">
-                  {statsData.map((s) => (
-                    <div
-                      key={s.label}
-                      className="rounded-xl p-3 flex flex-col gap-1.5"
-                      style={{
-                        background: "#13131e",
-                        border: `1px solid ${s.color}33`,
-                        boxShadow: `0 0 12px ${s.glow}`,
-                      }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span
-                          className="text-xl font-bold"
-                          style={{ color: s.color }}
-                        >
-                          {s.value}
-                        </span>
-                        <div style={{ color: s.color }}>{s.icon}</div>
-                      </div>
-                      <span className="text-xs text-gray-400 font-medium">
-                        {s.label}
-                      </span>
-                    </div>
-                  ))}
+            {/* User search - only in users section */}
+            {activeSection === "users" && (
+              <div className="px-3 pb-2 flex-shrink-0">
+                <div className="h-px bg-white/5 mb-3" />
+                <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-2 mb-2">
+                  User List
+                </p>
+                <div className="relative mb-2">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" />
+                  <Input
+                    placeholder="Search users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8 h-8 text-xs text-white placeholder:text-gray-600"
+                    style={{
+                      background: "#1a1a2e",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                    data-ocid="admin.search_input"
+                  />
                 </div>
-
-                {/* Search */}
-                <div className="px-3 pb-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <Input
-                      placeholder="Search users..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 text-sm text-white placeholder:text-gray-600"
-                      style={{
-                        background: "#1a1a2e",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                      }}
-                      data-ocid="admin.search_input"
-                    />
-                  </div>
-                </div>
-
-                {/* Tier Filter */}
-                <div className="px-3 pb-2 flex gap-1.5 flex-wrap">
-                  {TIER_FILTERS.map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => setTierFilter(f.id)}
-                      className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
-                      style={{
-                        background:
-                          tierFilter === f.id ? `${f.color}22` : "#13131e",
-                        color: tierFilter === f.id ? f.color : "#6b7280",
-                        border: `1px solid ${tierFilter === f.id ? `${f.color}55` : "rgba(255,255,255,0.06)"}`,
-                        boxShadow:
-                          tierFilter === f.id
-                            ? `0 0 10px ${f.color}33`
-                            : undefined,
-                      }}
-                      data-ocid="admin.toggle"
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* User Count */}
-                <div className="px-4 pb-2 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Users ({filteredAccounts.length})
-                  </span>
-                  <button
-                    type="button"
-                    onClick={loadAccounts}
-                    className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center transition-all"
-                    data-ocid="admin.button"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 text-gray-500 hover:text-red-400" />
-                  </button>
-                </div>
-
-                {/* User List */}
-                <ScrollArea className="flex-1 px-2">
-                  <div className="space-y-1 pb-2">
+                <ScrollArea className="h-[calc(100vh-340px)]">
+                  <div className="space-y-0.5 pr-1">
                     {filteredAccounts.length === 0 ? (
                       <div
-                        className="text-center py-8 text-gray-600 text-sm"
+                        className="text-center py-8 text-gray-600 text-xs"
                         data-ocid="admin.empty_state"
                       >
-                        <Users className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                        <Users className="w-6 h-6 mx-auto mb-2 opacity-20" />
                         <p>No users found</p>
                       </div>
                     ) : (
                       filteredAccounts.map((account, idx) => (
-                        <motion.button
+                        <button
                           key={account.handle}
-                          whileHover={{ x: 2 }}
+                          type="button"
                           onClick={() => {
                             setSelectedUser(
                               selectedUser?.handle === account.handle
@@ -773,22 +718,21 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                             );
                             setMobileSidebarOpen(false);
                           }}
-                          className={`admin-user-row w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all border border-transparent ${
-                            selectedUser?.handle === account.handle
-                              ? "active"
-                              : ""
-                          }`}
+                          className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all"
                           style={{
-                            background: "#13131e",
+                            background:
+                              selectedUser?.handle === account.handle
+                                ? "rgba(220,38,38,0.15)"
+                                : "transparent",
                             borderLeft:
                               selectedUser?.handle === account.handle
-                                ? "3px solid #dc2626"
-                                : "3px solid transparent",
+                                ? "2px solid #dc2626"
+                                : "2px solid transparent",
                           }}
                           data-ocid={`admin.item.${idx + 1}`}
                         >
                           <div
-                            className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
                             style={{
                               background: getAvatarGradient(
                                 account.fullName || account.handle,
@@ -798,704 +742,1848 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                             {getInitials(account.fullName || account.handle)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-white truncate">
+                            <p className="text-xs font-semibold text-white truncate">
                               {account.fullName || "—"}
                             </p>
-                            <p className="text-xs text-gray-500 truncate">
+                            <p className="text-[10px] text-gray-500 truncate">
                               @{account.handle}
                             </p>
                           </div>
                           {bannedUsers.has(account.handle) && (
                             <Ban className="w-3 h-3 text-red-500 flex-shrink-0" />
                           )}
-                          <div
-                            className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold"
-                            style={{
-                              color: TIER_CONFIG[getUserTier()].color,
-                              border: `1px solid ${TIER_CONFIG[getUserTier()].color}44`,
-                              background: `${TIER_CONFIG[getUserTier()].color}12`,
-                            }}
-                          >
-                            {TIER_CONFIG[getUserTier()].label}
-                          </div>
-                        </motion.button>
+                        </button>
                       ))
                     )}
                   </div>
                 </ScrollArea>
-
-                {/* Export */}
-                <div
-                  className="p-3"
-                  style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
-                >
-                  <button
-                    type="button"
-                    onClick={exportCSV}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold text-sm text-white transition-all admin-glow-btn"
-                    style={{
-                      background: "linear-gradient(135deg, #dc2626, #b91c1c)",
-                    }}
-                    data-ocid="admin.button"
-                  >
-                    <Download className="w-4 h-4" />
-                    Export CSV
-                  </button>
-                </div>
-              </>
+              </div>
             )}
-          </div>
 
-          {/* ── RIGHT PANEL ── */}
-          <div
-            className="flex-1 flex flex-col overflow-hidden min-w-0"
-            style={{ background: "#0a0a0f" }}
+            {/* Export button at bottom */}
+            <div className="mt-auto p-3 border-t border-white/5">
+              <button
+                type="button"
+                onClick={exportCSV}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl font-semibold text-xs text-white transition-all hover:opacity-90"
+                style={{
+                  background: "linear-gradient(135deg, #1d4ed8, #1e40af)",
+                  boxShadow: "0 4px 12px rgba(29,78,216,0.3)",
+                }}
+                data-ocid="admin.button"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Export CSV
+              </button>
+            </div>
+          </aside>
+
+          {/* Right Content Panel */}
+          <main
+            className="flex-1 overflow-auto"
+            style={{ background: "#06060f" }}
           >
-            {/* Top bar with Back button */}
-            <div
-              className="flex items-center justify-between px-4 md:px-6 py-3 flex-shrink-0"
-              style={{
-                background: "#13131e",
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-                boxShadow: "0 2px 20px rgba(0,0,0,0.3)",
-              }}
-            >
-              <div className="flex items-center gap-3">
-                {isLoggedIn && (
-                  <div
-                    className="w-1 h-6 rounded-full"
-                    style={{
-                      background: "linear-gradient(180deg, #dc2626, #a78bfa)",
-                    }}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection + (selectedUser?.handle || "")}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -12 }}
+                transition={{ duration: 0.18 }}
+                className="h-full"
+              >
+                {activeSection === "users" && (
+                  <UsersPanel
+                    accounts={accounts}
+                    filteredAccounts={filteredAccounts}
+                    selectedUser={selectedUser}
+                    setSelectedUser={setSelectedUser}
+                    bannedUsers={bannedUsers}
+                    setBannedUsers={setBannedUsers}
+                    getInstalledApps={getInstalledApps}
+                    getUserTier={getUserTier}
+                    getAvatarGradient={getAvatarGradient}
+                    getInitials={getInitials}
+                    loadAccounts={loadAccounts}
+                    totalUsers={totalUsers}
+                    activeToday={activeToday}
                   />
                 )}
-                <h1 className="text-base font-bold text-white">
-                  {isLoggedIn ? "User Management" : "Admin Login"}
-                </h1>
-                {isLoggedIn && (
-                  <span
-                    className="px-2.5 py-0.5 rounded-full text-xs font-semibold text-white"
-                    style={{
-                      background: "linear-gradient(135deg, #dc2626, #b91c1c)",
-                    }}
-                  >
-                    {accounts.length} Total
-                  </span>
+                {activeSection === "analytics" && (
+                  <AnalyticsPanel accounts={accounts} />
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                {isLoggedIn && (
-                  <div className="flex items-center gap-1.5">
-                    <div
-                      className="w-2 h-2 rounded-full health-dot"
-                      style={{
-                        background: "#10b981",
-                        boxShadow: "0 0 6px rgba(16,185,129,0.8)",
-                      }}
-                    />
-                    <span className="text-xs text-gray-500 hidden sm:inline">
-                      Live Data
-                    </span>
-                  </div>
+                {activeSection === "notifications" && (
+                  <NotificationsPanel accounts={accounts} />
                 )}
-                {/* Back button - always visible */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (selectedUser) {
-                      setSelectedUser(null);
-                    } else {
-                      onClose();
-                    }
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all hover:bg-red-500/20"
-                  style={{
-                    background: "#1a0808",
-                    color: "rgba(255,200,200,0.9)",
-                    border: "1px solid rgba(220,38,38,0.3)",
-                  }}
-                  data-ocid="admin.close_button"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  <span className="hidden sm:inline">Back</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Panel Body */}
-            <div className="flex-1 overflow-auto">
-              {!isLoggedIn ? (
-                <div className="flex-1 flex items-center justify-center p-6 min-h-full">
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="w-full max-w-sm"
-                  >
-                    <div
-                      className="rounded-2xl p-8"
-                      style={{
-                        background: "#13131e",
-                        border: "1px solid rgba(220,38,38,0.2)",
-                        boxShadow:
-                          "0 20px 60px rgba(220,38,38,0.1), 0 4px 20px rgba(0,0,0,0.5)",
-                      }}
-                    >
-                      <div className="text-center mb-6">
-                        <div
-                          className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #dc2626, #991b1b)",
-                            boxShadow: "0 8px 24px rgba(220,38,38,0.4)",
-                          }}
-                        >
-                          <Shield className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white">
-                          Admin Login
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          ClawPro.ai Control Panel
-                        </p>
-                      </div>
-
-                      {forgotStep === "none" ? (
-                        <div className="space-y-4">
-                          <div>
-                            <label
-                              htmlFor="admin-login-username"
-                              className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide"
-                            >
-                              Username
-                            </label>
-                            <Input
-                              id="admin-login-username"
-                              placeholder="Admin username"
-                              value={loginUsername}
-                              onChange={(e) => setLoginUsername(e.target.value)}
-                              className="text-white placeholder:text-gray-600"
-                              style={{
-                                background: "#1a1a2e",
-                                border: "1px solid rgba(255,255,255,0.1)",
-                              }}
-                              onKeyDown={(e) =>
-                                e.key === "Enter" && handleLogin()
-                              }
-                              data-ocid="admin.input"
-                            />
-                          </div>
-                          <div>
-                            <label
-                              htmlFor="admin-login-password"
-                              className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wide"
-                            >
-                              Password
-                            </label>
-                            <div className="relative">
-                              <Input
-                                id="admin-login-password"
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Admin password"
-                                value={loginPassword}
-                                onChange={(e) =>
-                                  setLoginPassword(e.target.value)
-                                }
-                                className="pr-10 text-white placeholder:text-gray-600"
-                                style={{
-                                  background: "#1a1a2e",
-                                  border: "1px solid rgba(255,255,255,0.1)",
-                                }}
-                                onKeyDown={(e) =>
-                                  e.key === "Enter" && handleLogin()
-                                }
-                                data-ocid="admin.input"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                              >
-                                {showPassword ? (
-                                  <EyeOff className="w-4 h-4" />
-                                ) : (
-                                  <Eye className="w-4 h-4" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
-
-                          {loginError && (
-                            <p
-                              className="text-xs text-red-400 px-3 py-2 rounded-lg"
-                              style={{
-                                background: "rgba(220,38,38,0.1)",
-                                border: "1px solid rgba(220,38,38,0.2)",
-                              }}
-                              data-ocid="admin.error_state"
-                            >
-                              {loginError}
-                            </p>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={handleLogin}
-                            className="w-full py-3 rounded-xl font-bold text-white text-sm transition-all admin-glow-btn"
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #dc2626, #b91c1c)",
-                            }}
-                            data-ocid="admin.submit_button"
-                          >
-                            <LogIn className="w-4 h-4 inline mr-2" />
-                            Sign In
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setForgotStep("recover")}
-                            className="w-full py-2 text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
-                            data-ocid="admin.button"
-                          >
-                            Forgot password?
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <p className="text-sm text-gray-400 text-center">
-                            Enter the recovery code to retrieve credentials.
-                          </p>
-                          <Input
-                            placeholder="Recovery code"
-                            value={recoverCode}
-                            onChange={(e) => setRecoverCode(e.target.value)}
-                            className="text-white placeholder:text-gray-600"
-                            style={{
-                              background: "#1a1a2e",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                            }}
-                            data-ocid="admin.input"
-                          />
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={handleForgotSubmit}
-                              className="flex-1 py-2.5 rounded-xl font-bold text-white text-sm admin-glow-btn"
-                              style={{
-                                background:
-                                  "linear-gradient(135deg, #dc2626, #b91c1c)",
-                              }}
-                              data-ocid="admin.confirm_button"
-                            >
-                              Verify
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setForgotStep("none");
-                                setRecoverCode("");
-                              }}
-                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm text-gray-400 hover:text-white transition-colors"
-                              style={{
-                                border: "1px solid rgba(255,255,255,0.1)",
-                                background: "rgba(255,255,255,0.04)",
-                              }}
-                              data-ocid="admin.cancel_button"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                </div>
-              ) : (
-                <AnimatePresence mode="wait">
-                  {!selectedUser ? (
-                    /* Empty state with System Health */
-                    <motion.div
-                      key="empty"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="p-4 md:p-8"
-                      data-ocid="admin.empty_state"
-                    >
-                      <div className="text-center mb-8">
-                        <div
-                          className="w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                          style={{
-                            background: "#13131e",
-                            border: "1px solid rgba(220,38,38,0.2)",
-                            boxShadow: "0 0 20px rgba(220,38,38,0.1)",
-                          }}
-                        >
-                          <Users className="w-10 h-10 text-red-500/70" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-white/60 mb-2">
-                          Select a user to view details
-                        </h3>
-                        <p className="text-sm text-gray-600 max-w-xs mx-auto">
-                          Click any user from the sidebar to see their complete
-                          profile.
-                        </p>
-                      </div>
-
-                      {/* System Health */}
-                      <div
-                        className="rounded-2xl p-5 max-w-lg mx-auto"
-                        style={{
-                          background: "#13131e",
-                          border: "1px solid rgba(255,255,255,0.06)",
-                        }}
-                      >
-                        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                          <Server className="w-4 h-4 text-green-400" />
-                          System Health
-                        </h3>
-                        <div className="grid grid-cols-2 gap-3">
-                          {systemHealth.map((item) => (
-                            <div
-                              key={item.name}
-                              className="flex items-center gap-3 p-3 rounded-xl"
-                              style={{
-                                background: "#0a0a0f",
-                                border: "1px solid rgba(16,185,129,0.15)",
-                              }}
-                            >
-                              <div className="text-green-400">{item.icon}</div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-white">
-                                  {item.name}
-                                </p>
-                                <p className="text-xs text-green-400">
-                                  {item.status}
-                                </p>
-                              </div>
-                              <div
-                                className="w-2 h-2 rounded-full health-dot flex-shrink-0"
-                                style={{
-                                  background: item.color,
-                                  boxShadow: `0 0 6px ${item.color}`,
-                                }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    /* User Detail */
-                    <motion.div
-                      key={selectedUser.handle}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ duration: 0.2 }}
-                      className="p-4 md:p-6"
-                      data-ocid="admin.panel"
-                    >
-                      {/* Profile Card */}
-                      <div
-                        className="rounded-2xl p-5 mb-4 relative overflow-hidden"
-                        style={{
-                          background: "#13131e",
-                          border: "1px solid rgba(255,255,255,0.08)",
-                          boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
-                        }}
-                      >
-                        <div
-                          className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl"
-                          style={{
-                            background:
-                              "linear-gradient(90deg, #dc2626, #7c3aed, #0891b2)",
-                          }}
-                        />
-
-                        <div className="flex items-start gap-4 mt-2">
-                          <div
-                            className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
-                            style={{
-                              background: getAvatarGradient(
-                                selectedUser.fullName || selectedUser.handle,
-                              ),
-                              boxShadow: "0 8px 20px rgba(220,38,38,0.25)",
-                            }}
-                          >
-                            {getInitials(
-                              selectedUser.fullName || selectedUser.handle,
-                            )}
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <h2 className="text-xl font-bold text-white">
-                              {selectedUser.fullName || "—"}
-                            </h2>
-                            <p className="text-gray-500 text-sm mb-2">
-                              @{selectedUser.handle}
-                            </p>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <div
-                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-sm font-bold"
-                                style={{
-                                  color: TIER_CONFIG[getUserTier()].color,
-                                  border: `1.5px solid ${TIER_CONFIG[getUserTier()].color}44`,
-                                  background: `${TIER_CONFIG[getUserTier()].color}15`,
-                                  boxShadow: TIER_CONFIG[getUserTier()].glow,
-                                }}
-                              >
-                                {TIER_CONFIG[getUserTier()].icon}
-                                {TIER_CONFIG[getUserTier()].label} Member
-                              </div>
-                              {bannedUsers.has(selectedUser.handle) && (
-                                <Badge className="bg-red-500/20 text-red-400 border-red-500/40 text-xs">
-                                  Banned
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Info grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4">
-                          <div
-                            className="flex items-center gap-2 p-3 rounded-xl"
-                            style={{
-                              background: "#0a0a0f",
-                              border: "1px solid rgba(255,255,255,0.05)",
-                            }}
-                          >
-                            <Mail className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-xs text-gray-600">Email</p>
-                              <p className="text-xs font-medium text-gray-300 truncate">
-                                {selectedUser.email || "Not provided"}
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className="flex items-center gap-2 p-3 rounded-xl"
-                            style={{
-                              background: "#0a0a0f",
-                              border: "1px solid rgba(255,255,255,0.05)",
-                            }}
-                          >
-                            <Phone className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-xs text-gray-600">Phone</p>
-                              <p className="text-xs font-medium text-gray-300 truncate">
-                                {selectedUser.phone || "Not provided"}
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className="flex items-center gap-2 p-3 rounded-xl"
-                            style={{
-                              background: "#0a0a0f",
-                              border: "1px solid rgba(255,255,255,0.05)",
-                            }}
-                          >
-                            <Activity className="w-4 h-4 text-gray-600 flex-shrink-0" />
-                            <div className="min-w-0">
-                              <p className="text-xs text-gray-600">Joined</p>
-                              <p className="text-xs font-medium text-gray-300 truncate">
-                                {selectedUser.createdAt
-                                  ? new Date(
-                                      selectedUser.createdAt,
-                                    ).toLocaleDateString()
-                                  : "Recently"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Quick Actions */}
-                      <div
-                        className="rounded-2xl p-4 mb-4"
-                        style={{
-                          background: "#13131e",
-                          border: "1px solid rgba(255,255,255,0.06)",
-                        }}
-                      >
-                        <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-yellow-400" />
-                          Quick Actions
-                        </h3>
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            type="button"
-                            onClick={() => toast.success("Profile view opened")}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-cyan-500/20"
-                            style={{
-                              background: "rgba(6,182,212,0.1)",
-                              color: "#22d3ee",
-                              border: "1px solid rgba(6,182,212,0.25)",
-                            }}
-                            data-ocid="admin.button"
-                          >
-                            <User className="w-3.5 h-3.5" />
-                            View Profile
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              toast.success("Password reset email sent")
-                            }
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-amber-500/20"
-                            style={{
-                              background: "rgba(245,158,11,0.1)",
-                              color: "#fbbf24",
-                              border: "1px solid rgba(245,158,11,0.25)",
-                            }}
-                            data-ocid="admin.button"
-                          >
-                            <Key className="w-3.5 h-3.5" />
-                            Reset Password
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => toast.success("User data exported")}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-violet-500/20"
-                            style={{
-                              background: "rgba(167,139,250,0.1)",
-                              color: "#c4b5fd",
-                              border: "1px solid rgba(167,139,250,0.25)",
-                            }}
-                            data-ocid="admin.button"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            Export Data
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = new Set(bannedUsers);
-                              if (updated.has(selectedUser.handle)) {
-                                updated.delete(selectedUser.handle);
-                                toast.success("User unbanned");
-                              } else {
-                                updated.add(selectedUser.handle);
-                                toast.error("User banned");
-                              }
-                              setBannedUsers(updated);
-                            }}
-                            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all hover:bg-red-500/20"
-                            style={{
-                              background: "rgba(220,38,38,0.1)",
-                              color: "#f87171",
-                              border: "1px solid rgba(220,38,38,0.25)",
-                            }}
-                            data-ocid="admin.delete_button"
-                          >
-                            <Ban className="w-3.5 h-3.5" />
-                            {bannedUsers.has(selectedUser.handle)
-                              ? "Unban"
-                              : "Ban"}{" "}
-                            User
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Installed Apps */}
-                      <div
-                        className="rounded-2xl p-4 mb-4"
-                        style={{
-                          background: "#13131e",
-                          border: "1px solid rgba(255,255,255,0.06)",
-                        }}
-                      >
-                        <div className="flex items-center gap-2 mb-3">
-                          <Package className="w-4 h-4 text-gray-500" />
-                          <h3 className="font-bold text-white text-sm">
-                            Installed Apps
-                          </h3>
-                        </div>
-                        {getInstalledApps(selectedUser.handle).length === 0 ? (
-                          <p className="text-sm text-gray-600 italic">
-                            No apps installed yet.
-                          </p>
-                        ) : (
-                          <div className="flex flex-wrap gap-2">
-                            {getInstalledApps(selectedUser.handle).map(
-                              (app) => {
-                                const cfg = INTEGRATION_LABELS[app] || {
-                                  name: app,
-                                  color: "#6b7280",
-                                };
-                                return (
-                                  <span
-                                    key={app}
-                                    className="px-3 py-1.5 rounded-full text-xs font-semibold text-white"
-                                    style={{
-                                      background: `${cfg.color}22`,
-                                      color: cfg.color,
-                                      border: `1px solid ${cfg.color}44`,
-                                      boxShadow: `0 2px 8px ${cfg.color}33`,
-                                    }}
-                                  >
-                                    {cfg.name}
-                                  </span>
-                                );
-                              },
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Activity Timeline */}
-                      <div
-                        className="rounded-2xl p-4"
-                        style={{
-                          background: "#13131e",
-                          border: "1px solid rgba(255,255,255,0.06)",
-                        }}
-                      >
-                        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          Activity Timeline
-                        </h3>
-                        <div className="space-y-3">
-                          {activityTimeline.map((event) => (
-                            <div
-                              key={event.event}
-                              className="flex items-center gap-3"
-                            >
-                              <div
-                                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{
-                                  background: `${event.color}20`,
-                                  color: event.color,
-                                  border: `1px solid ${event.color}33`,
-                                }}
-                              >
-                                {event.icon}
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-white">
-                                  {event.event}
-                                </p>
-                                <p className="text-xs text-gray-600">
-                                  {event.time}
-                                </p>
-                              </div>
-                              <CheckCircle
-                                className="w-3.5 h-3.5 flex-shrink-0"
-                                style={{ color: event.color }}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              )}
-            </div>
-          </div>
-        </motion.div>
+                {activeSection === "broadcast" && (
+                  <BroadcastPanel accounts={accounts} />
+                )}
+                {activeSection === "logs" && <SystemLogsPanel />}
+                {activeSection === "roles" && (
+                  <UserRolesPanel accounts={accounts} />
+                )}
+                {activeSection === "health" && <SystemHealthPanel />}
+                {activeSection === "settings" && <AdminSettingsPanel />}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </div>
       </motion.div>
     </>
+  );
+}
+
+// ── Users Panel ──
+function UsersPanel({
+  accounts,
+  filteredAccounts,
+  selectedUser,
+  setSelectedUser,
+  bannedUsers,
+  setBannedUsers,
+  getInstalledApps,
+  getUserTier,
+  getAvatarGradient,
+  getInitials,
+  loadAccounts,
+  totalUsers,
+  activeToday,
+}: {
+  accounts: LocalAccount[];
+  filteredAccounts: LocalAccount[];
+  selectedUser: LocalAccount | null;
+  setSelectedUser: (u: LocalAccount | null) => void;
+  bannedUsers: Set<string>;
+  setBannedUsers: (f: (prev: Set<string>) => Set<string>) => void;
+  getInstalledApps: (h: string) => string[];
+  getUserTier: () => string;
+  getAvatarGradient: (n: string) => string;
+  getInitials: (n: string) => string;
+  loadAccounts: () => void;
+  totalUsers: number;
+  activeToday: number;
+}) {
+  const statsData = [
+    {
+      label: "Total Users",
+      value: totalUsers,
+      icon: <Users className="w-4 h-4" />,
+      color: "#dc2626",
+      glow: "rgba(220,38,38,0.3)",
+    },
+    {
+      label: "Active Today",
+      value: activeToday,
+      icon: <Activity className="w-4 h-4" />,
+      color: "#10b981",
+      glow: "rgba(16,185,129,0.3)",
+    },
+    {
+      label: "Silver Tier",
+      value: Math.max(0, accounts.filter((_, i) => i % 3 === 0).length),
+      icon: <Star className="w-4 h-4" />,
+      color: "#94a3b8",
+      glow: "rgba(148,163,184,0.3)",
+    },
+    {
+      label: "Gold / Plat",
+      value: Math.max(0, accounts.filter((_, i) => i % 3 !== 0).length),
+      icon: <Crown className="w-4 h-4" />,
+      color: "#d97706",
+      glow: "rgba(217,119,6,0.3)",
+    },
+  ];
+
+  if (selectedUser) {
+    const installed = getInstalledApps(selectedUser.handle);
+    const isBanned = bannedUsers.has(selectedUser.handle);
+    return (
+      <div className="p-6 space-y-5 max-w-2xl">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setSelectedUser(null)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
+            style={{
+              background: "rgba(255,255,255,0.06)",
+              color: "rgba(255,255,255,0.6)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            data-ocid="admin.close_button"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            Back to Users
+          </button>
+        </div>
+
+        {/* User Header */}
+        <div
+          className="rounded-2xl p-6 border"
+          style={{
+            background: "#0f1729",
+            border: "1px solid rgba(220,38,38,0.2)",
+            boxShadow: "0 0 24px rgba(220,38,38,0.08)",
+          }}
+        >
+          <div className="flex items-start gap-4">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-xl font-bold text-white flex-shrink-0"
+              style={{
+                background: getAvatarGradient(
+                  selectedUser.fullName || selectedUser.handle,
+                ),
+                boxShadow: "0 8px 20px rgba(0,0,0,0.4)",
+              }}
+            >
+              {getInitials(selectedUser.fullName || selectedUser.handle)}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-white">
+                {selectedUser.fullName || "—"}
+              </h2>
+              <p className="text-sm text-gray-400">@{selectedUser.handle}</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Badge className="bg-red-500/15 text-red-300 border-red-500/30 border text-xs">
+                  {getUserTier().charAt(0).toUpperCase() +
+                    getUserTier().slice(1)}{" "}
+                  Tier
+                </Badge>
+                {isBanned ? (
+                  <Badge className="bg-red-900/30 text-red-400 border-red-700/40 border text-xs">
+                    Banned
+                  </Badge>
+                ) : (
+                  <Badge className="bg-green-500/15 text-green-300 border-green-500/30 border text-xs">
+                    Active
+                  </Badge>
+                )}
+                {selectedUser.createdAt && (
+                  <Badge className="bg-gray-800 text-gray-400 border-white/10 border text-xs">
+                    Joined{" "}
+                    {new Date(selectedUser.createdAt).toLocaleDateString()}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Info */}
+        <div
+          className="rounded-2xl p-5 border"
+          style={{
+            background: "#0f1729",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+            <User className="w-4 h-4 text-cyan-400" /> Contact Information
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              {
+                icon: <Mail className="w-3.5 h-3.5" />,
+                label: "Email",
+                value: selectedUser.email || "Not provided",
+                color: "#06b6d4",
+              },
+              {
+                icon: <Phone className="w-3.5 h-3.5" />,
+                label: "Phone",
+                value: selectedUser.phone || "Not provided",
+                color: "#10b981",
+              },
+              {
+                icon: <Package className="w-3.5 h-3.5" />,
+                label: "Username",
+                value: selectedUser.username || selectedUser.handle,
+                color: "#a78bfa",
+              },
+              {
+                icon: <Clock className="w-3.5 h-3.5" />,
+                label: "Joined",
+                value: selectedUser.createdAt
+                  ? new Date(selectedUser.createdAt).toLocaleString()
+                  : "—",
+                color: "#f59e0b",
+              },
+            ].map((f) => (
+              <div
+                key={f.label}
+                className="flex items-start gap-3 p-3 rounded-xl"
+                style={{ background: "#131f35" }}
+              >
+                <span
+                  style={{ color: f.color }}
+                  className="mt-0.5 flex-shrink-0"
+                >
+                  {f.icon}
+                </span>
+                <div>
+                  <p className="text-[10px] text-gray-500 uppercase tracking-wide">
+                    {f.label}
+                  </p>
+                  <p className="text-xs text-white mt-0.5">{f.value}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Installed Apps */}
+        <div
+          className="rounded-2xl p-5 border"
+          style={{
+            background: "#0f1729",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-400" /> Installed Integrations (
+            {installed.length})
+          </h3>
+          {installed.length === 0 ? (
+            <p className="text-xs text-gray-500">No integrations installed</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {installed.map((appId) => {
+                const label = INTEGRATION_LABELS[appId];
+                return (
+                  <span
+                    key={appId}
+                    className="px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: `${label?.color ?? "#888"}18`,
+                      color: label?.color ?? "#888",
+                      border: `1px solid ${label?.color ?? "#888"}40`,
+                    }}
+                  >
+                    {label?.name ?? appId}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div
+          className="rounded-2xl p-5 border"
+          style={{
+            background: "#0f1729",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <h3 className="text-sm font-semibold text-gray-300 mb-4">
+            Admin Actions
+          </h3>
+          <div className="flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setBannedUsers((prev) => {
+                  const n = new Set(prev);
+                  if (n.has(selectedUser.handle)) n.delete(selectedUser.handle);
+                  else n.add(selectedUser.handle);
+                  return n;
+                });
+                toast(isBanned ? "User unbanned" : "User banned");
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={
+                isBanned
+                  ? {
+                      background: "linear-gradient(135deg, #059669, #047857)",
+                      boxShadow: "0 4px 12px rgba(5,150,105,0.3)",
+                      color: "white",
+                    }
+                  : {
+                      background: "linear-gradient(135deg, #dc2626, #b91c1c)",
+                      boxShadow: "0 4px 12px rgba(220,38,38,0.3)",
+                      color: "white",
+                    }
+              }
+              data-ocid={
+                isBanned ? "admin.confirm_button" : "admin.delete_button"
+              }
+            >
+              <Ban className="w-4 h-4" />
+              {isBanned ? "Unban User" : "Ban User"}
+            </button>
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+                boxShadow: "0 4px 12px rgba(124,58,237,0.3)",
+                color: "white",
+              }}
+              onClick={() => toast.info("Password reset link sent")}
+              data-ocid="admin.button"
+            >
+              <Key className="w-4 h-4" />
+              Reset Password
+            </button>
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+              style={{
+                background: "linear-gradient(135deg, #0891b2, #0e7490)",
+                boxShadow: "0 4px 12px rgba(8,145,178,0.3)",
+                color: "white",
+              }}
+              onClick={() => toast.info("Email sent to user")}
+              data-ocid="admin.button"
+            >
+              <Mail className="w-4 h-4" />
+              Send Email
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-5">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {statsData.map((s) => (
+          <div
+            key={s.label}
+            className="rounded-xl p-4"
+            style={{
+              background: "#0f1729",
+              border: `1px solid ${s.color}25`,
+              boxShadow: `0 0 16px ${s.glow}`,
+            }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-2xl font-bold" style={{ color: s.color }}>
+                {s.value}
+              </span>
+              <div style={{ color: s.color }}>{s.icon}</div>
+            </div>
+            <p className="text-xs text-gray-400">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* System Health Quick View */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { name: "Database", status: "Healthy", color: "#10b981" },
+          { name: "API Server", status: "Healthy", color: "#10b981" },
+          { name: "Auth", status: "Healthy", color: "#10b981" },
+          { name: "Storage", status: "OK", color: "#f59e0b" },
+        ].map((s) => (
+          <div
+            key={s.name}
+            className="flex items-center gap-2 p-3 rounded-xl"
+            style={{
+              background: "#0f1729",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            <div
+              className="w-2 h-2 rounded-full flex-shrink-0"
+              style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
+            />
+            <div>
+              <p className="text-xs font-medium text-white">{s.name}</p>
+              <p className="text-[10px]" style={{ color: s.color }}>
+                {s.status}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* All Users Table */}
+      <div
+        className="rounded-2xl overflow-hidden border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-white/8">
+          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Users className="w-4 h-4 text-red-400" /> All Users
+          </h3>
+          <button
+            type="button"
+            onClick={loadAccounts}
+            className="p-1.5 rounded text-gray-500 hover:text-gray-300 transition-colors"
+            data-ocid="admin.button"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr
+                style={{
+                  background: "#131f35",
+                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                }}
+              >
+                <th className="text-left text-[10px] text-gray-500 uppercase tracking-wide font-semibold px-4 py-2.5">
+                  Name
+                </th>
+                <th className="text-left text-[10px] text-gray-500 uppercase tracking-wide font-semibold px-4 py-2.5 hidden sm:table-cell">
+                  Email
+                </th>
+                <th className="text-left text-[10px] text-gray-500 uppercase tracking-wide font-semibold px-4 py-2.5 hidden md:table-cell">
+                  Joined
+                </th>
+                <th className="text-left text-[10px] text-gray-500 uppercase tracking-wide font-semibold px-4 py-2.5">
+                  Tier
+                </th>
+                <th className="text-left text-[10px] text-gray-500 uppercase tracking-wide font-semibold px-4 py-2.5">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAccounts.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="text-center py-10 text-gray-600 text-sm"
+                    data-ocid="admin.empty_state"
+                  >
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                    No users found
+                  </td>
+                </tr>
+              ) : (
+                filteredAccounts.map((account, idx) => (
+                  <tr
+                    key={account.handle}
+                    className="border-b border-white/4 hover:bg-white/3 transition-colors cursor-pointer"
+                    onClick={() => setSelectedUser(account)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && setSelectedUser(account)
+                    }
+                    data-ocid={`admin.row.${idx + 1}`}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+                          style={{
+                            background: getAvatarGradient(
+                              account.fullName || account.handle,
+                            ),
+                          }}
+                        >
+                          {getInitials(account.fullName || account.handle)}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-white">
+                            {account.fullName || "—"}
+                          </p>
+                          <p className="text-[10px] text-gray-500">
+                            @{account.handle}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-400 hidden sm:table-cell">
+                      {account.email || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500 hidden md:table-cell">
+                      {account.createdAt
+                        ? new Date(account.createdAt).toLocaleDateString()
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full"
+                        style={{
+                          background: "rgba(148,163,184,0.15)",
+                          color: "#94a3b8",
+                        }}
+                      >
+                        Silver
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedUser(account);
+                        }}
+                        className="text-[10px] px-2 py-1 rounded text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                        data-ocid={`admin.edit_button.${idx + 1}`}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Analytics Panel ──
+function AnalyticsPanel({ accounts }: { accounts: LocalAccount[] }) {
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const registrations = [2, 5, 3, 7, 4, 8, accounts.length || 6];
+  const maxReg = Math.max(...registrations);
+
+  const tierData = [
+    { label: "Silver", value: 60, color: "#94a3b8" },
+    { label: "Gold", value: 30, color: "#d97706" },
+    { label: "Platinum", value: 10, color: "#a78bfa" },
+  ];
+
+  return (
+    <div className="p-6 space-y-5">
+      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <BarChart3 className="w-5 h-5 text-blue-400" /> Analytics Dashboard
+      </h2>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          {
+            label: "Total Users",
+            value: accounts.length || 0,
+            delta: "+12%",
+            color: "#3b82f6",
+          },
+          {
+            label: "Registrations (7d)",
+            value: registrations.reduce((a, b) => a + b, 0),
+            delta: "+23%",
+            color: "#10b981",
+          },
+          {
+            label: "Avg Session",
+            value: "4m 32s",
+            delta: "+5%",
+            color: "#f59e0b",
+          },
+          {
+            label: "Retention Rate",
+            value: "72%",
+            delta: "+8%",
+            color: "#a78bfa",
+          },
+        ].map((k) => (
+          <div
+            key={k.label}
+            className="rounded-xl p-4"
+            style={{
+              background: "#0f1729",
+              border: `1px solid ${k.color}20`,
+              boxShadow: `0 0 16px ${k.color}12`,
+            }}
+          >
+            <p className="text-xl font-bold" style={{ color: k.color }}>
+              {k.value}
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">{k.label}</p>
+            <p className="text-[10px] text-green-400 mt-1">
+              {k.delta} this week
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Weekly Registration Bar Chart */}
+      <div
+        className="rounded-2xl p-5 border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">
+          Weekly Registrations
+        </h3>
+        <div className="flex items-end gap-2 h-28">
+          {registrations.map((val, i) => (
+            <div
+              key={days[i]}
+              className="flex-1 flex flex-col items-center gap-1"
+            >
+              <div
+                className="w-full rounded-t-md transition-all"
+                style={{
+                  height: `${(val / maxReg) * 100}%`,
+                  background: "linear-gradient(180deg, #3b82f6, #1d4ed8)",
+                  boxShadow: "0 0 8px rgba(59,130,246,0.4)",
+                  minHeight: "4px",
+                }}
+              />
+              <span className="text-[9px] text-gray-500">{days[i]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tier Distribution */}
+      <div
+        className="rounded-2xl p-5 border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">
+          Tier Distribution
+        </h3>
+        <div className="space-y-3">
+          {tierData.map((t) => (
+            <div key={t.label} className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs" style={{ color: t.color }}>
+                  {t.label}
+                </span>
+                <span className="text-xs text-gray-500">{t.value}%</span>
+              </div>
+              <div
+                className="h-2 rounded-full"
+                style={{ background: "#131f35" }}
+              >
+                <div
+                  className="h-2 rounded-full transition-all"
+                  style={{
+                    width: `${t.value}%`,
+                    background: t.color,
+                    boxShadow: `0 0 8px ${t.color}60`,
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Activity Timeline */}
+      <div
+        className="rounded-2xl p-5 border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">
+          Recent Activity
+        </h3>
+        <div className="space-y-3">
+          {[
+            {
+              icon: <UserCheck className="w-3.5 h-3.5" />,
+              text: "New user registered",
+              time: "2m ago",
+              color: "#10b981",
+            },
+            {
+              icon: <Zap className="w-3.5 h-3.5" />,
+              text: "Integration installed",
+              time: "15m ago",
+              color: "#a78bfa",
+            },
+            {
+              icon: <Crown className="w-3.5 h-3.5" />,
+              text: "Tier upgrade",
+              time: "1h ago",
+              color: "#d97706",
+            },
+            {
+              icon: <Globe className="w-3.5 h-3.5" />,
+              text: "API key configured",
+              time: "3h ago",
+              color: "#3b82f6",
+            },
+            {
+              icon: <Bell className="w-3.5 h-3.5" />,
+              text: "Price alert triggered",
+              time: "5h ago",
+              color: "#f59e0b",
+            },
+          ].map((item) => (
+            <div key={item.text} className="flex items-start gap-3">
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                style={{ background: `${item.color}20`, color: item.color }}
+              >
+                {item.icon}
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-white">{item.text}</p>
+              </div>
+              <span className="text-[10px] text-gray-500">{item.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Notifications Panel ──
+function NotificationsPanel({ accounts }: { accounts: LocalAccount[] }) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [targetTier, setTargetTier] = useState("all");
+  const [sent, setSent] = useState<
+    { title: string; body: string; tier: string; time: string }[]
+  >([
+    {
+      title: "System Update",
+      body: "ClawPro v108 deployed with new features",
+      tier: "all",
+      time: "2h ago",
+    },
+    {
+      title: "Gold Exclusive",
+      body: "New Gold tier benefits available",
+      tier: "gold",
+      time: "1d ago",
+    },
+  ]);
+
+  const send = () => {
+    if (!title.trim() || !body.trim()) return toast.error("Fill in all fields");
+    setSent((prev) => [
+      { title, body, tier: targetTier, time: "Just now" },
+      ...prev,
+    ]);
+    setTitle("");
+    setBody("");
+    toast.success(
+      `Notification sent to ${targetTier === "all" ? "all users" : `${targetTier} tier`}`,
+    );
+  };
+
+  return (
+    <div className="p-6 space-y-5">
+      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <Bell className="w-5 h-5 text-amber-400" /> Notifications
+      </h2>
+
+      {/* Create Notification */}
+      <div
+        className="rounded-2xl p-5 border"
+        style={{
+          background: "#0f1729",
+          border: "1px solid rgba(245,158,11,0.2)",
+          boxShadow: "0 0 16px rgba(245,158,11,0.08)",
+        }}
+      >
+        <h3 className="text-sm font-semibold text-amber-300 mb-4">
+          Send New Notification
+        </h3>
+        <div className="space-y-3">
+          <div>
+            <label
+              htmlFor="notif-title"
+              className="text-xs text-gray-400 block mb-1.5"
+            >
+              Title
+            </label>
+            <Input
+              id="notif-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Notification title..."
+              className="text-white placeholder:text-gray-600"
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.input"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="notif-body"
+              className="text-xs text-gray-400 block mb-1.5"
+            >
+              Message
+            </label>
+            <Textarea
+              id="notif-body"
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Notification message..."
+              className="text-white placeholder:text-gray-600 resize-none"
+              rows={3}
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.textarea"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="notif-target"
+              className="text-xs text-gray-400 block mb-1.5"
+            >
+              Target Audience
+            </label>
+            <select
+              value={targetTier}
+              onChange={(e) => setTargetTier(e.target.value)}
+              className="w-full h-9 text-sm rounded-lg px-3 text-white"
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.select"
+            >
+              <option value="all">All Users ({accounts.length})</option>
+              <option value="silver">Silver Tier</option>
+              <option value="gold">Gold Tier</option>
+              <option value="platinum">Platinum Tier</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={send}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all"
+            style={{
+              background: "linear-gradient(135deg, #d97706, #b45309)",
+              boxShadow: "0 4px 12px rgba(217,119,6,0.3)",
+            }}
+            data-ocid="admin.submit_button"
+          >
+            <Send className="w-4 h-4" /> Send Notification
+          </button>
+        </div>
+      </div>
+
+      {/* Sent History */}
+      <div
+        className="rounded-2xl p-5 border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">
+          Sent Notifications
+        </h3>
+        <div className="space-y-2">
+          {sent.map((n) => (
+            <div
+              key={n.title + n.time}
+              className="flex items-start gap-3 p-3 rounded-xl"
+              style={{ background: "#131f35" }}
+            >
+              <Bell className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-white">{n.title}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">{n.body}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span
+                    className="text-[9px] px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: "rgba(245,158,11,0.15)",
+                      color: "#fbbf24",
+                    }}
+                  >
+                    {n.tier}
+                  </span>
+                  <span className="text-[9px] text-gray-600">{n.time}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Broadcast Panel ──
+function BroadcastPanel({ accounts }: { accounts: LocalAccount[] }) {
+  const [msg, setMsg] = useState("");
+  const [subject, setSubject] = useState("");
+  const [history, setHistory] = useState<
+    { subject: string; msg: string; time: string; recipients: number }[]
+  >([
+    {
+      subject: "Welcome to ClawPro v108!",
+      msg: "Major update with new dashboard features.",
+      time: "1d ago",
+      recipients: 45,
+    },
+  ]);
+
+  const send = () => {
+    if (!msg.trim() || !subject.trim())
+      return toast.error("Fill in all fields");
+    setHistory((prev) => [
+      { subject, msg, time: "Just now", recipients: accounts.length || 1 },
+      ...prev,
+    ]);
+    setMsg("");
+    setSubject("");
+    toast.success(`Broadcast sent to ${accounts.length || 0} users!`);
+  };
+
+  return (
+    <div className="p-6 space-y-5">
+      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <MessageSquare className="w-5 h-5 text-violet-400" /> Broadcast Message
+      </h2>
+
+      <div
+        className="rounded-2xl p-5 border"
+        style={{
+          background: "#0f1729",
+          border: "1px solid rgba(139,92,246,0.2)",
+          boxShadow: "0 0 16px rgba(139,92,246,0.08)",
+        }}
+      >
+        <h3 className="text-sm font-semibold text-violet-300 mb-4">
+          Compose Broadcast
+        </h3>
+        <div className="space-y-3">
+          <div>
+            <label
+              htmlFor="bc-subj"
+              className="text-xs text-gray-400 block mb-1.5"
+            >
+              Subject
+            </label>
+            <Input
+              id="bc-subj"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Broadcast subject..."
+              className="text-white placeholder:text-gray-600"
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.input"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="bc-msg2"
+              className="text-xs text-gray-400 block mb-1.5"
+            >
+              Message
+            </label>
+            <Textarea
+              id="bc-msg2"
+              value={msg}
+              onChange={(e) => setMsg(e.target.value)}
+              placeholder="Your message to all users..."
+              className="text-white placeholder:text-gray-600 resize-none"
+              rows={5}
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.textarea"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-lg"
+              style={{ background: "rgba(139,92,246,0.15)" }}
+            >
+              <Users className="w-4 h-4 text-violet-400" />
+              <span className="text-xs text-violet-300">
+                {accounts.length} recipients
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={send}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all"
+              style={{
+                background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+                boxShadow: "0 4px 12px rgba(124,58,237,0.3)",
+              }}
+              data-ocid="admin.submit_button"
+            >
+              <Send className="w-4 h-4" /> Send to All
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="rounded-2xl p-5 border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">
+          Broadcast History
+        </h3>
+        <div className="space-y-3">
+          {history.map((h) => (
+            <div
+              key={h.subject + h.time}
+              className="p-4 rounded-xl border border-white/5"
+              style={{ background: "#131f35" }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-white">
+                    {h.subject}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                    {h.msg}
+                  </p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <p className="text-[10px] text-gray-500">{h.time}</p>
+                  <p className="text-[10px] text-violet-400">
+                    {h.recipients} users
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── System Logs Panel ──
+function SystemLogsPanel() {
+  const logs = [
+    {
+      type: "login",
+      user: "@cryptoking",
+      action: "User login successful",
+      ip: "192.168.1.1",
+      time: "2m ago",
+      color: "#10b981",
+    },
+    {
+      type: "register",
+      user: "@newuser123",
+      action: "New account registered",
+      ip: "10.0.0.5",
+      time: "15m ago",
+      color: "#3b82f6",
+    },
+    {
+      type: "install",
+      user: "@webdev",
+      action: "Installed WhatsApp integration",
+      ip: "172.16.0.3",
+      time: "32m ago",
+      color: "#a78bfa",
+    },
+    {
+      type: "login",
+      user: "@satoshi_jr",
+      action: "User login successful",
+      ip: "192.168.2.10",
+      time: "1h ago",
+      color: "#10b981",
+    },
+    {
+      type: "ban",
+      user: "@spammer99",
+      action: "User banned by admin",
+      ip: "—",
+      time: "2h ago",
+      color: "#dc2626",
+    },
+    {
+      type: "tier",
+      user: "@goldmember",
+      action: "Tier upgraded to Gold",
+      ip: "10.0.1.22",
+      time: "3h ago",
+      color: "#d97706",
+    },
+    {
+      type: "install",
+      user: "@techuser",
+      action: "Installed ChatGPT integration",
+      ip: "192.168.0.88",
+      time: "5h ago",
+      color: "#a78bfa",
+    },
+    {
+      type: "login",
+      user: "@adminroot",
+      action: "Admin login",
+      ip: "127.0.0.1",
+      time: "6h ago",
+      color: "#dc2626",
+    },
+    {
+      type: "register",
+      user: "@newbie456",
+      action: "New account registered",
+      ip: "10.0.0.9",
+      time: "8h ago",
+      color: "#3b82f6",
+    },
+    {
+      type: "login",
+      user: "@powercoder",
+      action: "User login successful",
+      ip: "172.20.0.5",
+      time: "12h ago",
+      color: "#10b981",
+    },
+  ];
+
+  const typeIcon: Record<string, React.ReactNode> = {
+    login: <User className="w-3 h-3" />,
+    register: <UserCheck className="w-3 h-3" />,
+    install: <Zap className="w-3 h-3" />,
+    ban: <Ban className="w-3 h-3" />,
+    tier: <Crown className="w-3 h-3" />,
+  };
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <Terminal className="w-5 h-5 text-green-400" /> System Logs
+        </h2>
+        <button
+          type="button"
+          className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1"
+          onClick={() => toast.success("Logs refreshed")}
+        >
+          <RefreshCw className="w-3.5 h-3.5" /> Refresh
+        </button>
+      </div>
+
+      <div
+        className="rounded-2xl overflow-hidden border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <div
+          className="p-3 border-b border-white/6"
+          style={{ background: "#131f35" }}
+        >
+          <div className="grid grid-cols-5 gap-2">
+            {["Type", "User", "Action", "IP", "Time"].map((h) => (
+              <p
+                key={h}
+                className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide"
+              >
+                {h}
+              </p>
+            ))}
+          </div>
+        </div>
+        <div className="divide-y divide-white/4">
+          {logs.map((log, i) => (
+            <div
+              key={log.action}
+              className="grid grid-cols-5 gap-2 p-3 hover:bg-white/2 transition-colors"
+              data-ocid={`admin.item.${i + 1}`}
+            >
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="w-5 h-5 rounded flex items-center justify-center flex-shrink-0"
+                  style={{ background: `${log.color}20`, color: log.color }}
+                >
+                  {typeIcon[log.type]}
+                </div>
+                <span
+                  className="text-[10px] font-medium"
+                  style={{ color: log.color }}
+                >
+                  {log.type}
+                </span>
+              </div>
+              <p className="text-xs text-cyan-400 truncate">{log.user}</p>
+              <p className="text-xs text-gray-400 truncate col-span-1">
+                {log.action}
+              </p>
+              <p className="text-[10px] text-gray-500 font-mono">{log.ip}</p>
+              <p className="text-[10px] text-gray-600">{log.time}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── User Roles Panel ──
+function UserRolesPanel({ accounts }: { accounts: LocalAccount[] }) {
+  const roles = [
+    {
+      name: "Super Admin",
+      color: "#dc2626",
+      permissions: ["All Access", "User Management", "System Config"],
+      users: 1,
+    },
+    {
+      name: "Moderator",
+      color: "#f59e0b",
+      permissions: ["View Users", "Ban Users", "Send Notifications"],
+      users: 2,
+    },
+    {
+      name: "Support",
+      color: "#3b82f6",
+      permissions: ["View Users", "Send Messages"],
+      users: 5,
+    },
+    {
+      name: "Member",
+      color: "#94a3b8",
+      permissions: ["Access Dashboard", "Install Integrations"],
+      users: accounts.length,
+    },
+  ];
+
+  return (
+    <div className="p-6 space-y-5">
+      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <UserCog className="w-5 h-5 text-cyan-400" /> User Roles & Permissions
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {roles.map((role) => (
+          <div
+            key={role.name}
+            className="rounded-2xl p-5 border"
+            style={{
+              background: "#0f1729",
+              border: `1px solid ${role.color}20`,
+              boxShadow: `0 0 12px ${role.color}08`,
+            }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{ background: `${role.color}20` }}
+                >
+                  <Shield className="w-4 h-4" style={{ color: role.color }} />
+                </div>
+                <div>
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: role.color }}
+                  >
+                    {role.name}
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    {role.users} user{role.users !== 1 ? "s" : ""}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="text-[10px] px-2.5 py-1 rounded-lg transition-all"
+                style={{
+                  background: `${role.color}15`,
+                  color: role.color,
+                  border: `1px solid ${role.color}30`,
+                }}
+                onClick={() => toast.info("Role editor opening...")}
+                data-ocid="admin.edit_button"
+              >
+                Edit
+              </button>
+            </div>
+            <div className="space-y-1.5">
+              {role.permissions.map((perm) => (
+                <div
+                  key={perm}
+                  className="flex items-center gap-2 text-xs text-gray-400"
+                >
+                  <CheckCircle
+                    className="w-3 h-3 flex-shrink-0"
+                    style={{ color: role.color }}
+                  />
+                  {perm}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div
+        className="rounded-2xl p-5 border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-3">
+          Create Custom Role
+        </h3>
+        <div className="flex gap-3">
+          <Input
+            placeholder="Role name..."
+            className="flex-1 text-white placeholder:text-gray-600"
+            style={{
+              background: "#131f35",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            data-ocid="admin.input"
+          />
+          <button
+            type="button"
+            className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition-all"
+            style={{
+              background: "linear-gradient(135deg, #0891b2, #0e7490)",
+              boxShadow: "0 4px 12px rgba(8,145,178,0.3)",
+            }}
+            onClick={() => toast.success("Role created!")}
+            data-ocid="admin.primary_button"
+          >
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── System Health Panel ──
+function SystemHealthPanel() {
+  const [checking, setChecking] = useState(false);
+  const services = [
+    { name: "ICP Canister", status: "online", latency: 12, color: "#10b981" },
+    { name: "Database", status: "online", latency: 8, color: "#10b981" },
+    { name: "API Gateway", status: "online", latency: 45, color: "#10b981" },
+    { name: "Auth Service", status: "online", latency: 22, color: "#10b981" },
+    { name: "CoinGecko API", status: "online", latency: 280, color: "#f59e0b" },
+    { name: "OpenAI API", status: "online", latency: 380, color: "#f59e0b" },
+    { name: "Storage", status: "online", latency: 16, color: "#10b981" },
+    { name: "CDN", status: "online", latency: 24, color: "#10b981" },
+  ];
+
+  const recheck = () => {
+    setChecking(true);
+    setTimeout(() => {
+      setChecking(false);
+      toast.success("Health check complete");
+    }, 1500);
+  };
+
+  const metrics = [
+    { label: "CPU Usage", value: 23, color: "#3b82f6", unit: "%" },
+    { label: "Memory", value: 47, color: "#a78bfa", unit: "%" },
+    { label: "Storage", value: 31, color: "#f59e0b", unit: "%" },
+    { label: "Network", value: 15, color: "#10b981", unit: "%" },
+  ];
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <Server className="w-5 h-5 text-green-400" /> System Health
+        </h2>
+        <button
+          type="button"
+          onClick={recheck}
+          disabled={checking}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+          style={{
+            background: "rgba(34,197,94,0.1)",
+            color: "#4ade80",
+            border: "1px solid rgba(34,197,94,0.2)",
+          }}
+          data-ocid="admin.button"
+        >
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${checking ? "animate-spin" : ""}`}
+          />
+          {checking ? "Checking..." : "Recheck All"}
+        </button>
+      </div>
+
+      {/* Overall Status */}
+      <div
+        className="rounded-xl p-4 flex items-center gap-3"
+        style={{
+          background: "rgba(34,197,94,0.08)",
+          border: "1px solid rgba(34,197,94,0.2)",
+        }}
+      >
+        <div
+          className="w-3 h-3 rounded-full"
+          style={{
+            background: "#22c55e",
+            boxShadow: "0 0 8px #22c55e",
+            animation: "healthDot 2s infinite",
+          }}
+        />
+        <p className="text-sm font-semibold text-green-300">
+          All systems operational
+        </p>
+        <span className="ml-auto text-[10px] text-gray-500">
+          Last checked just now
+        </span>
+      </div>
+
+      {/* Resource Metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {metrics.map((m) => (
+          <div
+            key={m.label}
+            className="rounded-xl p-4"
+            style={{ background: "#0f1729", border: `1px solid ${m.color}20` }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-400">{m.label}</span>
+              <span className="text-sm font-bold" style={{ color: m.color }}>
+                {m.value}
+                {m.unit}
+              </span>
+            </div>
+            <div
+              className="h-1.5 rounded-full"
+              style={{ background: "#131f35" }}
+            >
+              <div
+                className="h-1.5 rounded-full"
+                style={{
+                  width: `${m.value}%`,
+                  background: m.color,
+                  boxShadow: `0 0 6px ${m.color}60`,
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Service Status */}
+      <div
+        className="rounded-2xl p-5 border border-white/8"
+        style={{ background: "#0f1729" }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-4">
+          Service Status
+        </h3>
+        <div className="space-y-2">
+          {services.map((s, i) => (
+            <div
+              key={s.name}
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{ background: "#131f35" }}
+              data-ocid={`admin.item.${i + 1}`}
+            >
+              <div
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                style={{ background: s.color, boxShadow: `0 0 6px ${s.color}` }}
+              />
+              <span className="text-sm text-white flex-1">{s.name}</span>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-1 rounded-full"
+                  style={{ width: "60px", background: "#1a2540" }}
+                >
+                  <div
+                    className="h-1 rounded-full"
+                    style={{
+                      width: `${Math.min((s.latency / 500) * 100, 100)}%`,
+                      background:
+                        s.latency < 100
+                          ? "#22c55e"
+                          : s.latency < 300
+                            ? "#f59e0b"
+                            : "#ef4444",
+                    }}
+                  />
+                </div>
+                <span className="text-[10px] text-gray-500 w-12 text-right">
+                  {s.latency}ms
+                </span>
+              </div>
+              <span
+                className="text-[10px] font-medium"
+                style={{ color: s.color }}
+              >
+                {s.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Admin Settings Panel ──
+function AdminSettingsPanel() {
+  const [siteName, setSiteName] = useState("ClawPro.ai");
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [twoFAEnabled, setTwoFAEnabled] = useState(false);
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
+  const [apiKeys, setApiKeys] = useState({
+    openai: "",
+    gemini: "",
+    coingecko: "",
+  });
+
+  const saveGeneral = () => toast.success("General settings saved!");
+  const changePwd = () => {
+    if (!currentPwd || !newPwd) return toast.error("Fill in all fields");
+    if (newPwd !== confirmPwd) return toast.error("Passwords don't match");
+    toast.success("Password updated successfully!");
+    setCurrentPwd("");
+    setNewPwd("");
+    setConfirmPwd("");
+  };
+  const saveApiKeys = () => toast.success("API keys saved!");
+
+  return (
+    <div className="p-6 space-y-5">
+      <h2 className="text-lg font-bold text-white flex items-center gap-2">
+        <Settings className="w-5 h-5 text-violet-400" /> Admin Settings
+      </h2>
+
+      {/* General Settings */}
+      <div
+        className="rounded-2xl p-5 border"
+        style={{
+          background: "#0f1729",
+          border: "1px solid rgba(139,92,246,0.15)",
+        }}
+      >
+        <h3 className="text-sm font-semibold text-violet-300 mb-4 flex items-center gap-2">
+          <Globe className="w-4 h-4" /> General
+        </h3>
+        <div className="space-y-3">
+          <div>
+            <label
+              htmlFor="site-nm"
+              className="text-xs text-gray-400 block mb-1.5"
+            >
+              Site Name
+            </label>
+            <Input
+              id="site-nm"
+              value={siteName}
+              onChange={(e) => setSiteName(e.target.value)}
+              className="text-white"
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.input"
+            />
+          </div>
+          <div
+            className="flex items-center justify-between p-3 rounded-xl"
+            style={{ background: "#131f35" }}
+          >
+            <div>
+              <p className="text-sm text-white">Maintenance Mode</p>
+              <p className="text-xs text-gray-500">
+                Temporarily disable public access
+              </p>
+            </div>
+            <Switch
+              checked={maintenanceMode}
+              onCheckedChange={setMaintenanceMode}
+              data-ocid="admin.switch"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={saveGeneral}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{
+              background: "linear-gradient(135deg, #7c3aed, #6d28d9)",
+              boxShadow: "0 4px 12px rgba(124,58,237,0.3)",
+            }}
+            data-ocid="admin.save_button"
+          >
+            Save Changes
+          </button>
+        </div>
+      </div>
+
+      {/* Security Settings */}
+      <div
+        className="rounded-2xl p-5 border"
+        style={{
+          background: "#0f1729",
+          border: "1px solid rgba(220,38,38,0.15)",
+        }}
+      >
+        <h3 className="text-sm font-semibold text-red-300 mb-4 flex items-center gap-2">
+          <Lock className="w-4 h-4" /> Security
+        </h3>
+        <div className="space-y-3">
+          <div
+            className="flex items-center justify-between p-3 rounded-xl"
+            style={{ background: "#131f35" }}
+          >
+            <div>
+              <p className="text-sm text-white">Two-Factor Authentication</p>
+              <p className="text-xs text-gray-500">
+                Require 2FA for admin login
+              </p>
+            </div>
+            <Switch
+              checked={twoFAEnabled}
+              onCheckedChange={setTwoFAEnabled}
+              data-ocid="admin.switch"
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs text-gray-400 font-medium">
+              Change Admin Password
+            </p>
+            <Input
+              type="password"
+              placeholder="Current password"
+              value={currentPwd}
+              onChange={(e) => setCurrentPwd(e.target.value)}
+              className="text-white placeholder:text-gray-600"
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.input"
+            />
+            <Input
+              type="password"
+              placeholder="New password"
+              value={newPwd}
+              onChange={(e) => setNewPwd(e.target.value)}
+              className="text-white placeholder:text-gray-600"
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.input"
+            />
+            <Input
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPwd}
+              onChange={(e) => setConfirmPwd(e.target.value)}
+              className="text-white placeholder:text-gray-600"
+              style={{
+                background: "#131f35",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+              data-ocid="admin.input"
+            />
+            <button
+              type="button"
+              onClick={changePwd}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+              style={{
+                background: "linear-gradient(135deg, #dc2626, #b91c1c)",
+                boxShadow: "0 4px 12px rgba(220,38,38,0.3)",
+              }}
+              data-ocid="admin.save_button"
+            >
+              <Key className="w-4 h-4" /> Change Password
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* API Keys */}
+      <div
+        className="rounded-2xl p-5 border"
+        style={{
+          background: "#0f1729",
+          border: "1px solid rgba(6,182,212,0.15)",
+        }}
+      >
+        <h3 className="text-sm font-semibold text-cyan-300 mb-4 flex items-center gap-2">
+          <Key className="w-4 h-4" /> API Keys
+        </h3>
+        <div className="space-y-3">
+          {[
+            {
+              key: "openai" as const,
+              label: "OpenAI API Key",
+              placeholder: "sk-...",
+            },
+            {
+              key: "gemini" as const,
+              label: "Google Gemini Key",
+              placeholder: "AIza...",
+            },
+            {
+              key: "coingecko" as const,
+              label: "CoinGecko API Key",
+              placeholder: "CG-...",
+            },
+          ].map((f) => (
+            <div key={f.key}>
+              <label
+                htmlFor={f.key}
+                className="text-xs text-gray-400 block mb-1.5"
+              >
+                {f.label}
+              </label>
+              <Input
+                id={f.key}
+                type="password"
+                placeholder={f.placeholder}
+                value={apiKeys[f.key]}
+                onChange={(e) =>
+                  setApiKeys((prev) => ({ ...prev, [f.key]: e.target.value }))
+                }
+                className="text-white placeholder:text-gray-600"
+                style={{
+                  background: "#131f35",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                }}
+                data-ocid="admin.input"
+              />
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={saveApiKeys}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
+            style={{
+              background: "linear-gradient(135deg, #0891b2, #0e7490)",
+              boxShadow: "0 4px 12px rgba(8,145,178,0.3)",
+            }}
+            data-ocid="admin.save_button"
+          >
+            <Key className="w-4 h-4" /> Save API Keys
+          </button>
+        </div>
+      </div>
+
+      {/* Admin Profile */}
+      <div
+        className="rounded-2xl p-5 border"
+        style={{
+          background: "#0f1729",
+          border: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+          <User className="w-4 h-4" /> Admin Profile
+        </h3>
+        <div
+          className="flex items-center gap-4 p-4 rounded-xl"
+          style={{ background: "#131f35" }}
+        >
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, #dc2626, #991b1b)",
+              boxShadow: "0 4px 12px rgba(220,38,38,0.3)",
+            }}
+          >
+            <Shield className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-white">clawpro_admin</p>
+            <p className="text-xs text-gray-500">Super Administrator</p>
+          </div>
+          <Badge className="ml-auto bg-red-500/15 text-red-300 border-red-500/30 border text-xs">
+            Active
+          </Badge>
+        </div>
+      </div>
+    </div>
   );
 }
