@@ -1486,10 +1486,10 @@ function PricingCard({
         viewport={{ once: true }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         whileHover={{ y: -4, transition: { duration: 0.2 } }}
-        className={`relative flex flex-col rounded-2xl border bg-card overflow-hidden transition-all duration-300 ${
+        className={`relative flex flex-col rounded-2xl border bg-card overflow-hidden transition-all duration-300 hover:scale-[1.02] ${
           config.popular
             ? `${config.borderColor} ${config.glowColor}`
-            : `border-border hover:${config.borderColor}`
+            : `border-border hover:${config.borderColor} hover:${config.glowColor}`
         }`}
         style={{ isolation: "isolate" }}
       >
@@ -1678,8 +1678,8 @@ export function PricingSection({
       tagline: t.pricing.silver.tagline,
       features: t.pricing.silverFeatures,
       accentColor: "text-slate-300",
-      glowColor: "shadow-[0_0_14px_oklch(0.72_0.03_240/0.25)]",
-      borderColor: "border-slate-500/30",
+      glowColor: "shadow-[0_0_30px_rgba(148,163,184,0.15)]",
+      borderColor: "border-slate-500/40",
       bgGradient: "from-slate-500/10 via-slate-400/3 to-transparent",
       badgeClass: "bg-slate-500/15 text-slate-300 border-slate-500/30",
       buttonClass:
@@ -1694,8 +1694,8 @@ export function PricingSection({
       tagline: t.pricing.gold.tagline,
       features: t.pricing.goldFeatures,
       accentColor: "text-amber-400",
-      glowColor: "shadow-[0_0_18px_oklch(0.78_0.18_85/0.3)]",
-      borderColor: "border-amber-500/35",
+      glowColor: "shadow-[0_0_30px_rgba(245,158,11,0.2)]",
+      borderColor: "border-amber-500/40",
       bgGradient: "from-amber-500/12 via-amber-400/5 to-transparent",
       badgeClass: "bg-amber-500/15 text-amber-300 border-amber-500/30",
       buttonClass:
@@ -1710,8 +1710,8 @@ export function PricingSection({
       tagline: t.pricing.platinum.tagline,
       features: t.pricing.platinumFeatures,
       accentColor: "text-violet-400",
-      glowColor: "shadow-[0_0_18px_oklch(0.6_0.22_290/0.3)]",
-      borderColor: "border-violet-500/35",
+      glowColor: "shadow-[0_0_30px_rgba(167,139,250,0.2)]",
+      borderColor: "border-violet-500/40",
       bgGradient: "from-violet-500/12 via-violet-400/5 to-transparent",
       badgeClass: "bg-violet-500/15 text-violet-300 border-violet-500/30",
       buttonClass:

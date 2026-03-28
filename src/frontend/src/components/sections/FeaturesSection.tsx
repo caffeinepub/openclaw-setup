@@ -122,7 +122,26 @@ export function FeaturesSection() {
                 <div className="relative z-10">
                   {/* Icon row with optional badge */}
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-lg bg-background/50 border border-border flex items-center justify-center">
+                    <div
+                      className="w-12 h-12 rounded-lg bg-background/50 border border-border flex items-center justify-center transition-all duration-300 hover:scale-110"
+                      style={{
+                        boxShadow: feature.iconColor.includes("cyan")
+                          ? "0 0 20px rgba(6,182,212,0.2)"
+                          : feature.iconColor.includes("purple") ||
+                              feature.iconColor.includes("violet")
+                            ? "0 0 20px rgba(167,139,250,0.2)"
+                            : feature.iconColor.includes("blue")
+                              ? "0 0 20px rgba(59,130,246,0.2)"
+                              : feature.iconColor.includes("amber")
+                                ? "0 0 20px rgba(245,158,11,0.2)"
+                                : feature.iconColor.includes("green") ||
+                                    feature.iconColor.includes("emerald")
+                                  ? "0 0 20px rgba(16,185,129,0.2)"
+                                  : feature.iconColor.includes("rose")
+                                    ? "0 0 20px rgba(244,63,94,0.2)"
+                                    : "0 0 20px rgba(255,255,255,0.1)",
+                      }}
+                    >
                       <Icon className={`w-6 h-6 ${feature.iconColor}`} />
                     </div>
                     {feature.badge && (

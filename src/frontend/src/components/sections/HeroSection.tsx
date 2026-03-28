@@ -2005,6 +2005,17 @@ export function HeroSection({
       {/* Subtle dark gradient overlay for readability */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 z-[2] pointer-events-none" />
 
+      {/* Glow orbs */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-cyan-500/8 blur-3xl animate-pulse pointer-events-none z-[1]" />
+      <div
+        className="absolute top-20 right-1/4 w-80 h-80 rounded-full bg-violet-500/6 blur-3xl animate-pulse pointer-events-none z-[1]"
+        style={{ animationDelay: "1s" }}
+      />
+      <div
+        className="absolute bottom-0 left-1/2 w-64 h-64 rounded-full bg-amber-500/5 blur-3xl animate-pulse pointer-events-none z-[1]"
+        style={{ animationDelay: "2s" }}
+      />
+
       {/* Content: two-column on lg+, stacked on mobile */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
         <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-0">
@@ -2024,7 +2035,13 @@ export function HeroSection({
             {/* Main Title */}
             <div className="mb-4">
               <h1 className="font-display font-black leading-none tracking-tighter flex items-baseline gap-0">
-                <span className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-foreground">
+                <span
+                  className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-foreground"
+                  style={{
+                    textShadow:
+                      "0 0 40px rgba(255,255,255,0.15), 0 0 80px rgba(255,255,255,0.05)",
+                  }}
+                >
                   Claw
                 </span>
                 <span
@@ -2080,7 +2097,7 @@ export function HeroSection({
               <Button
                 size="lg"
                 onClick={() => scrollTo("#setup")}
-                className="bg-cyan text-background hover:bg-cyan-bright font-bold text-base px-8 transition-colors duration-200 group"
+                className="bg-cyan text-background hover:bg-cyan-bright font-bold text-base px-8 transition-colors duration-200 group ring-2 ring-cyan-500/30 ring-offset-2 ring-offset-black"
               >
                 <Download className="w-5 h-5 mr-2" />
                 {t.hero.downloadNow}

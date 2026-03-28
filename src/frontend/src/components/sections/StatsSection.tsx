@@ -143,10 +143,9 @@ export function StatsSection() {
           />
           <StatCard
             icon={<Users className="w-6 h-6 text-green-400" />}
-            value={100000}
-            suffix="+"
-            label="Community Members"
-            desc="Active users in our ecosystem"
+            value={membersNum}
+            label="Registered Members"
+            desc="Joined on any device"
             color="bg-gradient-to-br from-green-500/10 to-transparent"
           />
           <StatCard

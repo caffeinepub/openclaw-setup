@@ -19,6 +19,7 @@ import {
   Eye,
   EyeOff,
   Globe,
+  Home,
   Key,
   Lock,
   LogOut,
@@ -492,7 +493,7 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
 
   // ── Logged In: Full Dashboard ──
   const totalUsers = accounts.length;
-  const activeToday = Math.max(1, Math.floor(accounts.length * 0.4));
+  // activeToday removed - using real banned/active counts now
 
   return (
     <>
@@ -573,6 +574,22 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
             </div>
             <button
               type="button"
+              onClick={() => {
+                window.location.hash = "#/";
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-cyan-500/25"
+              style={{
+                background: "rgba(6,182,212,0.1)",
+                color: "#67e8f9",
+                border: "1px solid rgba(6,182,212,0.3)",
+              }}
+              data-ocid="admin.home_button"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Home</span>
+            </button>
+            <button
+              type="button"
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-red-500/20"
               style={{
@@ -638,9 +655,9 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
             ].join(" ")}
             style={{
               width: "260px",
-              background: "#0c0c18",
-              borderRight: "1px solid rgba(255,255,255,0.07)",
-              boxShadow: "4px 0 24px rgba(0,0,0,0.5)",
+              background: "linear-gradient(180deg, #0a0f1e 0%, #060a14 100%)",
+              borderRight: "1px solid rgba(6,182,212,0.12)",
+              boxShadow: "4px 0 32px rgba(0,0,0,0.7)",
             }}
           >
             {/* Admin section nav */}
@@ -856,7 +873,6 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                     getInitials={getInitials}
                     loadAccounts={loadAccounts}
                     totalUsers={totalUsers}
-                    activeToday={activeToday}
                   />
                 )}
                 {activeSection === "analytics" && (
@@ -897,7 +913,6 @@ function UsersPanel({
   getInitials,
   loadAccounts,
   totalUsers,
-  activeToday,
 }: {
   accounts: LocalAccount[];
   filteredAccounts: LocalAccount[];
@@ -911,36 +926,51 @@ function UsersPanel({
   getInitials: (n: string) => string;
   loadAccounts: () => void;
   totalUsers: number;
-  activeToday: number;
 }) {
+  const todayStr = new Date().toISOString().split("T")[0];
+  const bannedCount = bannedUsers.size;
+  const activeCount = totalUsers - bannedCount;
+  const newTodayCount = accounts.filter((a) => {
+    const created = (a as any).createdAt || (a as any).registeredAt;
+    return created?.startsWith(todayStr) ?? false;
+  }).length;
+
+  const recentRegistrants = [...accounts]
+    .sort((a, b) => {
+      const ta = (a as any).createdAt || (a as any).registeredAt || "";
+      const tb = (b as any).createdAt || (b as any).registeredAt || "";
+      return tb.localeCompare(ta);
+    })
+    .slice(0, 5);
+
   const statsData = [
     {
-      label: "Total Users",
+      label: "Total Registered",
       value: totalUsers,
       icon: <Users className="w-4 h-4" />,
-      color: "#dc2626",
-      glow: "rgba(220,38,38,0.3)",
+      color: "#06b6d4",
+      glow: "rgba(6,182,212,0.25)",
     },
     {
-      label: "Active Today",
-      value: activeToday,
+      label: "Active Members",
+      value: activeCount,
       icon: <Activity className="w-4 h-4" />,
       color: "#10b981",
-      glow: "rgba(16,185,129,0.3)",
+      glow: "rgba(16,185,129,0.25)",
     },
     {
-      label: "Silver Tier",
-      value: Math.max(0, accounts.filter((_, i) => i % 3 === 0).length),
+      label: "Banned",
+      value: bannedCount,
+      icon: <Ban className="w-4 h-4" />,
+      color: "#ef4444",
+      glow: "rgba(239,68,68,0.25)",
+    },
+    {
+      label: "New Today",
+      value: newTodayCount,
       icon: <Star className="w-4 h-4" />,
-      color: "#94a3b8",
-      glow: "rgba(148,163,184,0.3)",
-    },
-    {
-      label: "Gold / Plat",
-      value: Math.max(0, accounts.filter((_, i) => i % 3 !== 0).length),
-      icon: <Crown className="w-4 h-4" />,
-      color: "#d97706",
-      glow: "rgba(217,119,6,0.3)",
+      color: "#f59e0b",
+      glow: "rgba(245,158,11,0.25)",
     },
   ];
 
@@ -1218,6 +1248,63 @@ function UsersPanel({
           </div>
         ))}
       </div>
+
+      {/* Recent Registrations */}
+      {recentRegistrants.length > 0 && (
+        <div
+          className="rounded-xl p-4 space-y-3"
+          style={{
+            background: "#0a0f1e",
+            border: "1px solid rgba(6,182,212,0.15)",
+            boxShadow: "0 0 20px rgba(6,182,212,0.05)",
+          }}
+        >
+          <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+            <Star className="w-3.5 h-3.5" /> Recent Registrations
+          </p>
+          <div className="space-y-2">
+            {recentRegistrants.map((u, i) => {
+              const initials = getInitials(u.fullName || u.handle);
+              const grad = getAvatarGradient(u.fullName || u.handle);
+              const created = (u as any).createdAt || (u as any).registeredAt;
+              const timeAgo = created
+                ? (() => {
+                    const diff = Date.now() - new Date(created).getTime();
+                    const mins = Math.floor(diff / 60000);
+                    if (mins < 60) return `${mins}m ago`;
+                    const hrs = Math.floor(mins / 60);
+                    if (hrs < 24) return `${hrs}h ago`;
+                    return `${Math.floor(hrs / 24)}d ago`;
+                  })()
+                : "—";
+              return (
+                <div
+                  key={u.handle || String(i)}
+                  className="flex items-center gap-3 py-1"
+                >
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                    style={{ background: grad }}
+                  >
+                    {initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-white truncate">
+                      @{u.handle || u.username}
+                    </p>
+                    <p className="text-[10px] text-gray-500 truncate">
+                      {u.email || "—"}
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-gray-500 flex-shrink-0">
+                    {timeAgo}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* System Health Quick View */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

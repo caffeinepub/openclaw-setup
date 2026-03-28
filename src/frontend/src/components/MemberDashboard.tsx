@@ -96,6 +96,7 @@ import {
   useCallerUserProfile,
   useSaveCallerUserProfile,
 } from "../hooks/useQueries";
+import { ForumPage } from "./ForumPage";
 import { StarBackground } from "./StarBackground";
 
 // ---- Types ----
@@ -116,6 +117,7 @@ type SidebarItem =
   | "notifications"
   | "wallet"
   | "forum"
+  | "achievements"
   | "docs"
   | "profile";
 
@@ -297,6 +299,14 @@ const NAV_ITEMS: {
     color: "text-teal-400",
     glow: "border-teal-500/60",
     colorHex: "#14b8a6",
+  },
+  {
+    id: "achievements",
+    label: "Achievements",
+    icon: <Trophy className="w-4 h-4" />,
+    color: "text-amber-400",
+    glow: "border-amber-500/60",
+    colorHex: "#f59e0b",
   },
   {
     id: "docs",
@@ -1228,46 +1238,116 @@ export function MemberDashboard({
                   </div>
                 )}
                 {active === "forum" && (
+                  <div className="h-full">
+                    <ForumPage
+                      identity={identity ?? null}
+                      onClose={() => setActive("home")}
+                    />
+                  </div>
+                )}
+                {active === "achievements" && (
                   <div className="p-6 space-y-4">
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                      <span>💬</span> Community Forum
+                      <Trophy className="w-5 h-5 text-amber-400" /> Achievements
                     </h2>
-                    <div
-                      className="rounded-2xl p-8 text-center"
-                      style={{
-                        background: "linear-gradient(135deg, #0d1520, #0a0f1a)",
-                        border: "1px solid rgba(20,184,166,0.2)",
-                        boxShadow: "0 0 30px rgba(20,184,166,0.06)",
-                      }}
-                    >
-                      <div
-                        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, rgba(20,184,166,0.2), rgba(20,184,166,0.05))",
-                          border: "1px solid rgba(20,184,166,0.3)",
-                        }}
-                      >
-                        <span className="text-3xl">💬</span>
-                      </div>
-                      <h3 className="text-base font-bold text-white mb-2">
-                        Coming Soon
-                      </h3>
-                      <p className="text-sm text-gray-400 max-w-xs mx-auto">
-                        The ClawPro Community Forum is launching soon. Connect,
-                        share, and grow with thousands of members worldwide.
-                      </p>
-                      <button
-                        type="button"
-                        className="mt-4 px-6 py-2 rounded-xl text-sm font-semibold text-white"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #14b8a6, #0d9488)",
-                          boxShadow: "0 4px 16px rgba(20,184,166,0.3)",
-                        }}
-                      >
-                        Notify Me
-                      </button>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                      {[
+                        {
+                          icon: "⭐",
+                          title: "Early Adopter",
+                          desc: "Joined ClawPro early",
+                          color: "#f59e0b",
+                          unlocked: true,
+                        },
+                        {
+                          icon: "✅",
+                          title: "First Login",
+                          desc: "Completed first login",
+                          color: "#10b981",
+                          unlocked: true,
+                        },
+                        {
+                          icon: "💬",
+                          title: "Forum Member",
+                          desc: "Joined the community forum",
+                          color: "#06b6d4",
+                          unlocked: true,
+                        },
+                        {
+                          icon: "🤖",
+                          title: "Bot Installer",
+                          desc: "Installed at least one app",
+                          color: "#a78bfa",
+                          unlocked: installedApps.length > 0,
+                        },
+                        {
+                          icon: "💎",
+                          title: "Whale Holder",
+                          desc: "Hold 10,000+ tokens",
+                          color: "#f59e0b",
+                          unlocked: false,
+                        },
+                        {
+                          icon: "👑",
+                          title: "Top Earner",
+                          desc: "Reach top 10 leaderboard",
+                          color: "#ef4444",
+                          unlocked: false,
+                        },
+                      ].map((badge) => (
+                        <div
+                          key={badge.title}
+                          className="rounded-xl p-4 flex flex-col items-center text-center transition-all"
+                          style={{
+                            background: badge.unlocked
+                              ? `linear-gradient(135deg, ${badge.color}15, ${badge.color}05)`
+                              : "#0a0a14",
+                            border: `1px solid ${badge.unlocked ? `${badge.color}40` : "rgba(255,255,255,0.06)"}`,
+                            boxShadow: badge.unlocked
+                              ? `0 0 16px ${badge.color}20`
+                              : "none",
+                            opacity: badge.unlocked ? 1 : 0.5,
+                          }}
+                        >
+                          <div
+                            className="w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-2"
+                            style={{
+                              background: badge.unlocked
+                                ? `${badge.color}20`
+                                : "rgba(255,255,255,0.05)",
+                              boxShadow: badge.unlocked
+                                ? `0 0 12px ${badge.color}40`
+                                : "none",
+                            }}
+                          >
+                            {badge.icon}
+                          </div>
+                          <p className="text-xs font-bold text-white mb-1">
+                            {badge.title}
+                          </p>
+                          <p className="text-[10px] text-gray-500 leading-tight">
+                            {badge.desc}
+                          </p>
+                          {badge.unlocked ? (
+                            <span
+                              className="mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                              style={{
+                                background: `${badge.color}20`,
+                                color: badge.color,
+                              }}
+                            >
+                              Unlocked
+                            </span>
+                          ) : (
+                            <span
+                              className="mt-2 text-[10px] text-gray-600 px-2 py-0.5 rounded-full"
+                              style={{ background: "rgba(255,255,255,0.04)" }}
+                            >
+                              Locked
+                            </span>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
