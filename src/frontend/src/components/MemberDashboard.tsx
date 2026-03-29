@@ -344,6 +344,12 @@ export function MemberDashboard({
   const [active, setActive] = useState<SidebarItem>("home");
   const [navHistory, setNavHistory] = useState<SidebarItem[]>([]);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [flashBtn, setFlashBtn] = useState<string | null>(null);
+
+  const flashButton = (id: string) => {
+    setFlashBtn(id);
+    setTimeout(() => setFlashBtn(null), 450);
+  };
   const [glowingId, setGlowingId] = useState<string | null>(null);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [installedApps, setInstalledApps] = useState<string[]>(() => {
@@ -1080,41 +1086,106 @@ export function MemberDashboard({
                   </span>
                 </button>
               )}
-              <button
-                type="button"
-                data-ocid="dashboard.home.button"
-                onClick={() => onClose()}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
-              >
-                <Home className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Home</span>
-              </button>
-              <button
-                type="button"
-                data-ocid="dashboard.logout.button"
-                onClick={() => {
-                  localStorage.removeItem("clawpro_logged_in_user");
-                  onClose();
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-all duration-200"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
-              <button
-                type="button"
-                data-ocid="dashboard.close_button"
-                onClick={handleBack}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-red-500/20 hover:text-red-400"
-                style={{
-                  background: "rgba(255,255,255,0.06)",
-                  color: "rgba(255,255,255,0.6)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                }}
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Back</span>
-              </button>
+              <span className="relative inline-flex">
+                <button
+                  type="button"
+                  data-ocid="dashboard.home.button"
+                  onClick={() => {
+                    flashButton("home");
+                    setTimeout(() => onClose(), 80);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 transition-all duration-200"
+                  style={{
+                    boxShadow:
+                      flashBtn === "home"
+                        ? "0 0 22px 6px rgba(6,182,212,0.5)"
+                        : undefined,
+                    background:
+                      flashBtn === "home" ? "rgba(6,182,212,0.2)" : undefined,
+                  }}
+                >
+                  <Home className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Home</span>
+                </button>
+                {flashBtn === "home" && (
+                  <span
+                    className="absolute inset-0 rounded-lg pointer-events-none animate-ping"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(6,182,212,0.5) 0%, transparent 70%)",
+                    }}
+                  />
+                )}
+              </span>
+              <span className="relative inline-flex">
+                <button
+                  type="button"
+                  data-ocid="dashboard.logout.button"
+                  onClick={() => {
+                    flashButton("logout");
+                    setTimeout(() => {
+                      localStorage.removeItem("clawpro_logged_in_user");
+                      onClose();
+                    }, 80);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-500/40 text-red-400 hover:bg-red-500/10 transition-all duration-200"
+                  style={{
+                    boxShadow:
+                      flashBtn === "logout"
+                        ? "0 0 22px 6px rgba(239,68,68,0.5)"
+                        : undefined,
+                    background:
+                      flashBtn === "logout" ? "rgba(239,68,68,0.2)" : undefined,
+                  }}
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+                {flashBtn === "logout" && (
+                  <span
+                    className="absolute inset-0 rounded-lg pointer-events-none animate-ping"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(239,68,68,0.5) 0%, transparent 70%)",
+                    }}
+                  />
+                )}
+              </span>
+              <span className="relative inline-flex">
+                <button
+                  type="button"
+                  data-ocid="dashboard.close_button"
+                  onClick={() => {
+                    flashButton("back");
+                    handleBack();
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-white/10"
+                  style={{
+                    background:
+                      flashBtn === "back"
+                        ? "rgba(255,255,255,0.15)"
+                        : "rgba(255,255,255,0.06)",
+                    color: "rgba(255,255,255,0.6)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    boxShadow:
+                      flashBtn === "back"
+                        ? "0 0 22px 6px rgba(255,255,255,0.3)"
+                        : undefined,
+                  }}
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Back</span>
+                </button>
+                {flashBtn === "back" && (
+                  <span
+                    className="absolute inset-0 rounded-lg pointer-events-none animate-ping"
+                    style={{
+                      background:
+                        "radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)",
+                    }}
+                  />
+                )}
+              </span>
             </div>
           </div>
 

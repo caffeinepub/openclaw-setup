@@ -1608,11 +1608,12 @@ function UnifiedClaimSearchCard({
 
           {/* Inner card — black background */}
           <div
-            className="relative rounded-2xl bg-black backdrop-blur-md p-5 space-y-4"
+            className="relative rounded-2xl backdrop-blur-md p-5 space-y-4"
             style={{
               zIndex: 1,
+              background: "#0d0e12",
               boxShadow:
-                "0 0 30px rgba(0,198,255,0.15), 0 0 60px rgba(168,85,247,0.1), 0 4px 24px rgba(0,0,0,0.5)",
+                "0 0 30px rgba(0,198,255,0.15), 0 0 60px rgba(168,85,247,0.1), 0 4px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(160,170,185,0.08)",
             }}
           >
             {/* ── Section 1: Claim Your ClawPro Handle ── */}
@@ -1630,8 +1631,15 @@ function UnifiedClaimSearchCard({
                   <AtSign className="w-3.5 h-3.5 text-amber-400" />
                 </div>
                 <span
-                  className="text-sm font-semibold text-foreground/90"
-                  style={{ textShadow: "0 0 10px rgba(245,158,11,0.4)" }}
+                  className="text-sm font-semibold"
+                  style={{
+                    background: "linear-gradient(135deg, #c0c8d4, #8899aa)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    textShadow: "none",
+                    filter: "drop-shadow(0 0 8px rgba(160,170,185,0.4))",
+                  }}
                 >
                   {t.hero.claimHandle}
                 </span>
@@ -1663,7 +1671,10 @@ function UnifiedClaimSearchCard({
                     animation: "fieldBorderGlow 2s linear infinite",
                   }}
                 >
-                  <div className="flex items-center rounded-lg bg-black overflow-hidden">
+                  <div
+                    className="flex items-center rounded-lg overflow-hidden"
+                    style={{ background: "#0a0b0f" }}
+                  >
                     <span
                       className="px-3 py-2 text-xs font-mono text-cyan/80 bg-cyan/5 border-r border-cyan/20 whitespace-nowrap flex-shrink-0"
                       style={{ textShadow: "0 0 8px rgba(0,198,255,0.6)" }}
@@ -1713,7 +1724,10 @@ function UnifiedClaimSearchCard({
                     animation: "fieldBorderGlow 2s linear infinite",
                   }}
                 >
-                  <div className="rounded-lg bg-black overflow-hidden">
+                  <div
+                    className="rounded-lg overflow-hidden"
+                    style={{ background: "#0a0b0f" }}
+                  >
                     <Input
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}

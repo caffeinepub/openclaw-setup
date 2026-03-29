@@ -21,9 +21,11 @@ import { FeaturesSection } from "./components/sections/FeaturesSection";
 import { HeroSection } from "./components/sections/HeroSection";
 import { PartnerSection } from "./components/sections/PartnerSection";
 import { PricingSection } from "./components/sections/PricingSection";
+import { RoadmapSection } from "./components/sections/RoadmapSection";
 import { SetupSection } from "./components/sections/SetupSection";
 import { StatsSection } from "./components/sections/StatsSection";
 import { WorkWithEverythingSection } from "./components/sections/WorkWithEverythingSection";
+import { WorksWithLogoSlide } from "./components/sections/WorksWithLogoSlide";
 import { useMyUserAccount } from "./hooks/useForumQueries";
 import { useInternetIdentity } from "./hooks/useInternetIdentity";
 import { useIsAdmin } from "./hooks/useQueries";
@@ -141,6 +143,7 @@ function AppInner() {
           isLoggedIn={!!localAccount || !!(identity && userAccount)}
           onGoToDashboard={() => setShowDashboard(true)}
         />
+        <WorksWithLogoSlide />
         <AvailableWorldwideSection />
         <FeaturesSection />
         <WorkWithEverythingSection
@@ -165,6 +168,7 @@ function AppInner() {
         <ChangelogSection />
         <StatsSection />
         <PartnerSection />
+        <RoadmapSection />
       </main>
 
       <Footer />

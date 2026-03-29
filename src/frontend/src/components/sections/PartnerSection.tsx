@@ -170,63 +170,160 @@ function usePartnerApis(): PartnerApiData {
 }
 
 function OpenClawLogo({ size = 32 }: { size?: number }) {
+  const w = size * 3.2;
+  const h = size;
   return (
     <svg
-      width={size * 3.2}
-      height={size}
-      viewBox="0 0 96 32"
+      width={w}
+      height={h}
+      viewBox="0 0 100 32"
       fill="none"
       role="img"
       aria-label="OpenClaw.ai"
     >
       <title>OpenClaw.ai</title>
-      {/* Claw icon */}
-      <path
-        d="M8 24 C6 20 4 16 6 12 C8 8 12 7 14 10 C15 12 14 15 12 16"
-        stroke="url(#oc-grad)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M12 24 C11 20 10 16 12 12 C13 9 16 8 17 11 C18 13 17 16 15 17"
-        stroke="url(#oc-grad)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <path
-        d="M16 24 C16 20 16 16 18 12 C19 9 22 9 22 12 C22 14 21 17 19 18"
-        stroke="url(#oc-grad)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        fill="none"
-      />
       <defs>
-        <linearGradient id="oc-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#e0e8f0" />
-          <stop offset="100%" stopColor="#c0ccd8" />
-        </linearGradient>
+        <radialGradient id="lobster-body" cx="50%" cy="40%">
+          <stop offset="0%" stopColor="#FF8A65" />
+          <stop offset="60%" stopColor="#FF5722" />
+          <stop offset="100%" stopColor="#E64A19" />
+        </radialGradient>
+        <radialGradient id="lobster-claw" cx="50%" cy="50%">
+          <stop offset="0%" stopColor="#FF7043" />
+          <stop offset="100%" stopColor="#BF360C" />
+        </radialGradient>
       </defs>
+      {/* Body */}
+      <ellipse cx="16" cy="17" rx="7" ry="9" fill="url(#lobster-body)" />
+      {/* Head */}
+      <ellipse cx="16" cy="8.5" rx="5" ry="4.5" fill="#FF7043" />
+      {/* Eyes */}
+      <circle cx="13.5" cy="7" r="1.2" fill="#fff" />
+      <circle cx="18.5" cy="7" r="1.2" fill="#fff" />
+      <circle cx="13.8" cy="7" r="0.6" fill="#1a1a1a" />
+      <circle cx="18.8" cy="7" r="0.6" fill="#1a1a1a" />
+      {/* Antennae */}
+      <line
+        x1="13"
+        y1="6"
+        x2="8"
+        y2="2"
+        stroke="#FF8A65"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+      />
+      <line
+        x1="19"
+        y1="6"
+        x2="24"
+        y2="2"
+        stroke="#FF8A65"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+      />
+      {/* Left claw */}
+      <ellipse
+        cx="7"
+        cy="14"
+        rx="3.5"
+        ry="2.5"
+        fill="url(#lobster-claw)"
+        transform="rotate(-30 7 14)"
+      />
+      <ellipse
+        cx="5"
+        cy="11"
+        rx="2.5"
+        ry="1.8"
+        fill="#BF360C"
+        transform="rotate(-45 5 11)"
+      />
+      {/* Right claw */}
+      <ellipse
+        cx="25"
+        cy="14"
+        rx="3.5"
+        ry="2.5"
+        fill="url(#lobster-claw)"
+        transform="rotate(30 25 14)"
+      />
+      <ellipse
+        cx="27"
+        cy="11"
+        rx="2.5"
+        ry="1.8"
+        fill="#BF360C"
+        transform="rotate(45 27 11)"
+      />
+      {/* Legs */}
+      <line
+        x1="11"
+        y1="20"
+        x2="7"
+        y2="24"
+        stroke="#E64A19"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+      <line
+        x1="13"
+        y1="22"
+        x2="10"
+        y2="27"
+        stroke="#E64A19"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+      <line
+        x1="19"
+        y1="22"
+        x2="22"
+        y2="27"
+        stroke="#E64A19"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+      <line
+        x1="21"
+        y1="20"
+        x2="25"
+        y2="24"
+        stroke="#E64A19"
+        strokeWidth="0.9"
+        strokeLinecap="round"
+      />
+      {/* Tail */}
+      <path d="M12 25 Q16 30 20 25 Q16 32 12 25Z" fill="#FF5722" />
+      {/* Tail fan */}
+      <path
+        d="M10 26 Q16 31.5 22 26"
+        stroke="#FF7043"
+        strokeWidth="0.8"
+        fill="none"
+      />
       {/* Text */}
       <text
-        x="28"
-        y="20"
-        fill="url(#silver-text)"
-        fontSize="11"
-        fontWeight="600"
+        x="34"
+        y="14"
+        fill="#FF8A65"
+        fontSize="7.5"
+        fontWeight="700"
+        fontFamily="system-ui, sans-serif"
+        letterSpacing="0.2"
+      >
+        OpenClaw
+      </text>
+      <text
+        x="34"
+        y="24"
+        fill="#FFAB91"
+        fontSize="6.5"
+        fontWeight="500"
         fontFamily="system-ui, sans-serif"
         letterSpacing="0.3"
       >
-        OpenClaw.ai
+        .ai
       </text>
-      <defs>
-        <linearGradient id="silver-text" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="50%" stopColor="#d0dbe8" />
-          <stop offset="100%" stopColor="#a8b8c8" />
-        </linearGradient>
-      </defs>
     </svg>
   );
 }
