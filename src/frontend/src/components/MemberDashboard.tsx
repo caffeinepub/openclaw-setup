@@ -97,6 +97,7 @@ import {
   useSaveCallerUserProfile,
 } from "../hooks/useQueries";
 import { ForumPage } from "./ForumPage";
+import { AnimatedLobsterSVG } from "./LobsterPopupCard";
 import { StarBackground } from "./StarBackground";
 
 // ---- Types ----
@@ -660,6 +661,29 @@ export function MemberDashboard({
         100% { box-shadow: 0 0 0 0px rgba(0,0,0,0); }
       }
       .nav-glow-ring { animation: glowRingPulse 0.7s ease-out forwards; }
+      @keyframes clawOpenClose {
+        0%, 100% { transform: rotate(0deg); }
+        30%, 70% { transform: rotate(22deg); }
+        50% { transform: rotate(28deg); }
+      }
+      @keyframes clawOpenCloseL {
+        0%, 100% { transform: rotate(0deg); }
+        30%, 70% { transform: rotate(-22deg); }
+        50% { transform: rotate(-28deg); }
+      }
+      @keyframes eyePulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+      @keyframes tailWiggle {
+        0%, 100% { transform: rotate(0deg); }
+        33% { transform: rotate(5deg); }
+        66% { transform: rotate(-5deg); }
+      }
+      @keyframes antennaWave {
+        0%, 100% { transform: rotate(-8deg); }
+        50% { transform: rotate(8deg); }
+      }
     `}</style>
       <div
         className="fixed inset-0 z-50 flex"
@@ -4702,13 +4726,9 @@ const INTEGRATIONS: {
   // AI & Bots
   {
     id: "openclaw",
-    name: "OpenClaw.ai",
+    name: "OpenClaw",
     category: "AI",
-    icon: (
-      <span className="text-xl font-black" style={{ color: "#ef4444" }}>
-        🦾
-      </span>
-    ),
+    icon: <AnimatedLobsterSVG width={28} height={24} />,
     color: "#ef4444",
     desc: "ClawPro native AI engine",
   },
@@ -5352,11 +5372,12 @@ function InstallIntegrationsPanel({
               data-ocid={`integrations.${item.id}.card`}
               className="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 hover:scale-[1.03]"
               style={{
-                background: "oklch(0.09 0.015 250)",
+                background: isInstalled ? `${item.color}20` : `${item.color}0e`,
                 borderColor: isInstalled
                   ? `${item.color}60`
-                  : "rgba(255,255,255,0.08)",
+                  : `${item.color}28`,
                 boxShadow: isInstalled ? `0 0 16px ${item.color}25` : "none",
+                transition: "all 0.2s",
               }}
             >
               {/* Icon */}

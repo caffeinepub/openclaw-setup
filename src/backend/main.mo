@@ -118,6 +118,12 @@ actor {
     fullName : Text;
   };
 
+  public type WaitlistEntry = {
+    handle : Text;
+    email : Text;
+    joinedAt : Int;
+  };
+
   public type BlogPost = {
     id : Nat;
     title : Text;
@@ -186,6 +192,7 @@ actor {
   let userAccounts = Map.empty<Principal, UserAccount>();
   let handles = Set.empty<Text>();
   let localAccounts = Map.empty<Text, LocalAccountData>();
+  let waitlistEntries = Map.empty<Text, WaitlistEntry>();
   let blogPosts = Map.empty<Nat, BlogPost>();
   let forumTopics = Map.empty<Nat, ForumTopic>();
   let forumThreads = Map.empty<Nat, ForumThread>();
@@ -978,5 +985,22 @@ actor {
   public query func getAllLocalAccounts() : async [LocalAccountData] {
     localAccounts.values().toArray();
   };
+
+
+  // Waitlist Management
+  public func addToWaitlist(handle : Text, email : Text) : async Bool {
+    let entry : WaitlistEntry = {
+      handle;
+      email;
+      joinedAt = Time.now();
+    };
+    waitlistEntries.add(email, entry);
+    true;
+  };
+
+  public query func getWaitlistEntries() : async [WaitlistEntry] {
+    waitlistEntries.values().toArray();
+  };
+
 
 };

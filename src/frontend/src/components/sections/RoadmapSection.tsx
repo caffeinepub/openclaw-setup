@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { AnimatedLobsterSVG } from "../LobsterPopupCard";
 
 const ECOSYSTEM_LOGOS = [
   { id: "openclaw", name: "OpenClaw", color: "#FF5722" },
@@ -263,82 +264,7 @@ function ClawProCenterLogo({ glow }: { glow: boolean }) {
         position: "relative",
       }}
     >
-      <svg
-        width="44"
-        height="44"
-        viewBox="0 0 32 32"
-        fill="none"
-        aria-label="ClawPro lobster logo"
-      >
-        <title>ClawPro</title>
-        <defs>
-          <radialGradient id="rm-lb-body" cx="50%" cy="40%">
-            <stop offset="0%" stopColor="#FF8A65" />
-            <stop offset="60%" stopColor="#FF5722" />
-            <stop offset="100%" stopColor="#E64A19" />
-          </radialGradient>
-          <radialGradient id="rm-lb-claw" cx="50%" cy="50%">
-            <stop offset="0%" stopColor="#FF7043" />
-            <stop offset="100%" stopColor="#BF360C" />
-          </radialGradient>
-        </defs>
-        <ellipse cx="16" cy="18" rx="5" ry="7" fill="url(#rm-lb-body)" />
-        <ellipse cx="16" cy="11" rx="4" ry="4" fill="#FF7043" />
-        <circle cx="14" cy="10" r="1" fill="#fff" />
-        <circle cx="18" cy="10" r="1" fill="#fff" />
-        <circle cx="14.3" cy="10" r="0.5" fill="#1a1a1a" />
-        <circle cx="18.3" cy="10" r="0.5" fill="#1a1a1a" />
-        <line
-          x1="13"
-          y1="8"
-          x2="9"
-          y2="4"
-          stroke="#FF8A65"
-          strokeWidth="0.8"
-          strokeLinecap="round"
-        />
-        <line
-          x1="19"
-          y1="8"
-          x2="23"
-          y2="4"
-          stroke="#FF8A65"
-          strokeWidth="0.8"
-          strokeLinecap="round"
-        />
-        <ellipse
-          cx="9"
-          cy="16"
-          rx="3"
-          ry="2"
-          fill="url(#rm-lb-claw)"
-          transform="rotate(-30 9 16)"
-        />
-        <ellipse
-          cx="7"
-          cy="13"
-          rx="2"
-          ry="1.5"
-          fill="#BF360C"
-          transform="rotate(-45 7 13)"
-        />
-        <ellipse
-          cx="23"
-          cy="16"
-          rx="3"
-          ry="2"
-          fill="url(#rm-lb-claw)"
-          transform="rotate(30 23 16)"
-        />
-        <ellipse
-          cx="25"
-          cy="13"
-          rx="2"
-          ry="1.5"
-          fill="#BF360C"
-          transform="rotate(45 25 13)"
-        />
-      </svg>
+      <AnimatedLobsterSVG width={60} height={52} />
       <span
         style={{
           fontSize: "0.42rem",
@@ -348,7 +274,7 @@ function ClawProCenterLogo({ glow }: { glow: boolean }) {
           marginTop: 1,
         }}
       >
-        ClawPro.ai
+        ClawPro
       </span>
       <div
         style={{
@@ -390,6 +316,29 @@ export function RoadmapSection() {
         10% { opacity: 1; }
         80% { opacity: 1; }
         100% { stroke-dashoffset: 0; opacity: 0.9; }
+      }
+      @keyframes clawOpenClose {
+        0%, 100% { transform: rotate(0deg); }
+        30%, 70% { transform: rotate(22deg); }
+        50% { transform: rotate(28deg); }
+      }
+      @keyframes clawOpenCloseL {
+        0%, 100% { transform: rotate(0deg); }
+        30%, 70% { transform: rotate(-22deg); }
+        50% { transform: rotate(-28deg); }
+      }
+      @keyframes eyePulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+      @keyframes tailWiggle {
+        0%, 100% { transform: rotate(0deg); }
+        33% { transform: rotate(5deg); }
+        66% { transform: rotate(-5deg); }
+      }
+      @keyframes antennaWave {
+        0%, 100% { transform: rotate(-8deg); }
+        50% { transform: rotate(8deg); }
       }
     `;
     document.head.appendChild(style);

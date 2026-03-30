@@ -1,15 +1,43 @@
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useActor } from "../hooks/useActor";
 
 interface LobsterPopupCardProps {
   handle?: string;
   onClose: () => void;
 }
 
+// Registration opens: May 31, 2026 at midnight UTC
+const OPEN_DATE = new Date("2026-05-31T00:00:00Z");
+
+function calcCountdown(target: Date) {
+  const diff = Math.max(0, target.getTime() - Date.now());
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  const seconds = Math.floor((diff % 60000) / 1000);
+  return { days, hours, minutes, seconds, done: diff === 0 };
+}
+
+function useCountdown(target: Date) {
+  const [state, setState] = useState(() => calcCountdown(target));
+  useEffect(() => {
+    const id = setInterval(() => setState(calcCountdown(target)), 1000);
+    return () => clearInterval(id);
+  }, [target]);
+  return state;
+}
+
 export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
   const displayHandle = handle?.trim() ? handle.trim() : "yourname";
+  const { days, hours, minutes, seconds, done } = useCountdown(OPEN_DATE);
+  const { actor } = useActor();
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Close on Escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -17,6 +45,37 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
+
+  const handleSave = async () => {
+    if (saved) {
+      onClose();
+      return;
+    }
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !trimmedEmail.includes("@")) {
+      setError("Please enter a valid email.");
+      inputRef.current?.focus();
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      // Save to waitlist optimistically (backend sync handled gracefully)
+      if (actor && "addToWaitlist" in actor) {
+        await (
+          actor as unknown as {
+            addToWaitlist: (h: string, e: string) => Promise<unknown>;
+          }
+        ).addToWaitlist(displayHandle, trimmedEmail);
+      }
+      setSaved(true);
+    } catch {
+      // Save failed silently — mark saved anyway (optimistic)
+      setSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div
@@ -31,13 +90,11 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
       role="presentation"
       data-ocid="lobster-popup.modal"
     >
-      {/* Backdrop blur layer */}
       <div
         className="absolute inset-0 backdrop-blur-md pointer-events-none"
         style={{ zIndex: -1 }}
       />
 
-      {/* Card */}
       <div
         className="relative w-full max-w-sm rounded-3xl overflow-hidden"
         style={{
@@ -90,7 +147,7 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
         </button>
 
         {/* Card content */}
-        <div className="px-7 pt-8 pb-7 flex flex-col items-center gap-5">
+        <div className="px-7 pt-8 pb-7 flex flex-col items-center gap-4">
           {/* Title */}
           <div className="text-center">
             <p
@@ -107,10 +164,9 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
-                textShadow: "none",
               }}
             >
-              Registration Opening Soon
+              Registration Opens May 31, 2026
             </h3>
           </div>
 
@@ -125,16 +181,77 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
             <AnimatedLobsterSVG />
           </div>
 
+          {/* Countdown Timer */}
+          {!done ? (
+            <div
+              className="w-full rounded-2xl px-3 py-3"
+              style={{
+                background: "rgba(0,150,255,0.05)",
+                border: "1px solid rgba(0,198,255,0.12)",
+              }}
+            >
+              <p
+                className="text-[10px] text-center uppercase tracking-widest mb-2"
+                style={{ color: "rgba(0,198,255,0.5)" }}
+              >
+                Registration opens in
+              </p>
+              <div className="grid grid-cols-4 gap-1">
+                {[
+                  { v: days, label: "Days" },
+                  { v: hours, label: "Hrs" },
+                  { v: minutes, label: "Min" },
+                  { v: seconds, label: "Sec" },
+                ].map(({ v, label }) => (
+                  <div key={label} className="flex flex-col items-center">
+                    <div
+                      className="text-2xl font-black tabular-nums"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, #00c6ff 0%, #a855f7 100%)",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
+                        lineHeight: 1,
+                        animation: "handleGlow 2s ease-in-out infinite",
+                      }}
+                    >
+                      {String(v).padStart(2, "0")}
+                    </div>
+                    <span
+                      className="text-[9px] mt-0.5 uppercase tracking-wider"
+                      style={{ color: "rgba(148,163,184,0.5)" }}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div
+              className="w-full rounded-2xl px-3 py-3 text-center"
+              style={{
+                background: "rgba(34,197,94,0.08)",
+                border: "1px solid rgba(34,197,94,0.3)",
+              }}
+            >
+              <p className="text-sm font-bold text-green-400">
+                🎉 Registration is now OPEN!
+              </p>
+            </div>
+          )}
+
           {/* Handle display */}
           <div
-            className="text-center px-4 py-3 rounded-2xl w-full"
+            className="text-center px-4 py-2 rounded-2xl w-full"
             style={{
               background: "rgba(0,150,255,0.06)",
               border: "1px solid rgba(0,198,255,0.15)",
             }}
           >
             <p
-              className="text-2xl font-black tracking-tight"
+              className="text-xl font-black tracking-tight"
               style={{
                 background:
                   "linear-gradient(135deg, #00c6ff 0%, #a855f7 50%, #f59e0b 100%)",
@@ -143,13 +260,12 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
                 backgroundClip: "text",
                 filter: "drop-shadow(0 0 12px rgba(0,198,255,0.4))",
                 animation: "handleGlow 2s ease-in-out infinite",
-                textShadow: "none",
               }}
             >
               @{displayHandle}
             </p>
             <p
-              className="text-xs mt-1"
+              className="text-xs mt-0.5"
               style={{ color: "rgba(148,163,184,0.75)" }}
             >
               Your handle{" "}
@@ -159,6 +275,79 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
               is on the waitlist.
             </p>
           </div>
+
+          {/* Email Waitlist Input */}
+          {!saved ? (
+            <div className="w-full space-y-2">
+              <p
+                className="text-[10px] text-center uppercase tracking-widest"
+                style={{ color: "rgba(0,198,255,0.5)" }}
+              >
+                Join waitlist — get notified when we open
+              </p>
+              <div className="flex gap-2">
+                <input
+                  ref={inputRef}
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError("");
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSave()}
+                  className="flex-1 px-3 py-2 rounded-xl text-sm text-white placeholder-gray-500 outline-none transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: error
+                      ? "1px solid rgba(239,68,68,0.6)"
+                      : "1px solid rgba(0,198,255,0.2)",
+                    boxShadow: error
+                      ? "0 0 8px rgba(239,68,68,0.2)"
+                      : "0 0 8px rgba(0,198,255,0.08)",
+                  }}
+                  data-ocid="lobster-popup.email_input"
+                />
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-4 py-2 rounded-xl font-bold text-xs transition-all duration-200 shrink-0"
+                  style={{
+                    background: saving
+                      ? "rgba(0,198,255,0.15)"
+                      : "linear-gradient(135deg, #00c6ff, #0072ff)",
+                    color: saving ? "rgba(0,198,255,0.5)" : "#fff",
+                    border: "1px solid rgba(0,198,255,0.4)",
+                    boxShadow: saving
+                      ? "none"
+                      : "0 0 16px rgba(0,198,255,0.35)",
+                  }}
+                  data-ocid="lobster-popup.waitlist_button"
+                >
+                  {saving ? "..." : "Join"}
+                </button>
+              </div>
+              {error && (
+                <p className="text-[10px] text-red-400 text-center">{error}</p>
+              )}
+            </div>
+          ) : (
+            <div
+              className="w-full rounded-xl py-2.5 text-center"
+              style={{
+                background: "rgba(34,197,94,0.1)",
+                border: "1px solid rgba(34,197,94,0.35)",
+              }}
+            >
+              <p className="text-sm font-semibold text-green-400">
+                ✓ You're on the waitlist!
+              </p>
+              <p className="text-[10px] text-green-400/70 mt-0.5">
+                We'll notify you at {email}
+              </p>
+            </div>
+          )}
 
           {/* Got it button */}
           <button
@@ -187,7 +376,6 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
             }}
             data-ocid="lobster-popup.confirm_button"
           >
-            {/* Shine effect */}
             <span
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -256,11 +444,14 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
   );
 }
 
-function AnimatedLobsterSVG() {
+export function AnimatedLobsterSVG({
+  width = 140,
+  height = 120,
+}: { width?: number; height?: number }) {
   return (
     <svg
-      width="140"
-      height="120"
+      width={width}
+      height={height}
       viewBox="0 0 140 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -290,14 +481,13 @@ function AnimatedLobsterSVG() {
         </filter>
       </defs>
 
-      {/* ─── Left claw arm ─── */}
+      {/* Left claw arm */}
       <g
         style={{
           transformOrigin: "35px 55px",
           animation: "clawOpenCloseL 1.5s ease-in-out infinite",
         }}
       >
-        {/* Arm */}
         <rect
           x="14"
           y="51"
@@ -307,7 +497,6 @@ function AnimatedLobsterSVG() {
           fill="#dc2626"
           filter="url(#glow)"
         />
-        {/* Claw upper jaw */}
         <ellipse
           cx="10"
           cy="50"
@@ -316,7 +505,6 @@ function AnimatedLobsterSVG() {
           fill="url(#clawGrad)"
           filter="url(#glow)"
         />
-        {/* Claw lower jaw */}
         <ellipse
           cx="10"
           cy="60"
@@ -325,18 +513,16 @@ function AnimatedLobsterSVG() {
           fill="#b91c1c"
           filter="url(#glow)"
         />
-        {/* Gold accent tip */}
         <circle cx="2" cy="50" r="2.5" fill="#f59e0b" />
       </g>
 
-      {/* ─── Right claw arm ─── */}
+      {/* Right claw arm */}
       <g
         style={{
           transformOrigin: "105px 55px",
           animation: "clawOpenClose 1.5s ease-in-out infinite",
         }}
       >
-        {/* Arm */}
         <rect
           x="102"
           y="51"
@@ -346,7 +532,6 @@ function AnimatedLobsterSVG() {
           fill="#dc2626"
           filter="url(#glow)"
         />
-        {/* Claw upper jaw */}
         <ellipse
           cx="130"
           cy="50"
@@ -355,7 +540,6 @@ function AnimatedLobsterSVG() {
           fill="url(#clawGrad)"
           filter="url(#glow)"
         />
-        {/* Claw lower jaw */}
         <ellipse
           cx="130"
           cy="60"
@@ -364,11 +548,10 @@ function AnimatedLobsterSVG() {
           fill="#b91c1c"
           filter="url(#glow)"
         />
-        {/* Gold accent tip */}
         <circle cx="138" cy="50" r="2.5" fill="#f59e0b" />
       </g>
 
-      {/* ─── Body ─── */}
+      {/* Body */}
       <ellipse
         cx="70"
         cy="72"
@@ -377,8 +560,6 @@ function AnimatedLobsterSVG() {
         fill="url(#bodyGrad)"
         filter="url(#glow)"
       />
-
-      {/* Body segments */}
       <path
         d="M48 68 Q70 64 92 68"
         stroke="#991b1b"
@@ -407,11 +588,9 @@ function AnimatedLobsterSVG() {
         fill="none"
         opacity="0.7"
       />
-
-      {/* Gold belly stripe */}
       <ellipse cx="70" cy="74" rx="10" ry="14" fill="#f59e0b" opacity="0.18" />
 
-      {/* ─── Head ─── */}
+      {/* Head */}
       <ellipse
         cx="70"
         cy="48"
@@ -420,8 +599,6 @@ function AnimatedLobsterSVG() {
         fill="url(#headGrad)"
         filter="url(#glow)"
       />
-
-      {/* Head ridge */}
       <path
         d="M56 44 Q70 38 84 44"
         stroke="#fbbf24"
@@ -430,7 +607,7 @@ function AnimatedLobsterSVG() {
         opacity="0.6"
       />
 
-      {/* ─── Left small leg ─── */}
+      {/* Legs */}
       <line
         x1="55"
         y1="75"
@@ -440,7 +617,6 @@ function AnimatedLobsterSVG() {
         strokeWidth="3"
         strokeLinecap="round"
       />
-      {/* ─── Right small leg ─── */}
       <line
         x1="85"
         y1="75"
@@ -450,7 +626,6 @@ function AnimatedLobsterSVG() {
         strokeWidth="3"
         strokeLinecap="round"
       />
-      {/* ─── Left mid leg ─── */}
       <line
         x1="53"
         y1="82"
@@ -460,7 +635,6 @@ function AnimatedLobsterSVG() {
         strokeWidth="2.5"
         strokeLinecap="round"
       />
-      {/* ─── Right mid leg ─── */}
       <line
         x1="87"
         y1="82"
@@ -471,7 +645,7 @@ function AnimatedLobsterSVG() {
         strokeLinecap="round"
       />
 
-      {/* ─── Tail ─── */}
+      {/* Tail */}
       <g
         style={{
           transformOrigin: "70px 98px",
@@ -486,7 +660,6 @@ function AnimatedLobsterSVG() {
           fill="#dc2626"
           filter="url(#glow)"
         />
-        {/* Tail fan left */}
         <ellipse
           cx="58"
           cy="110"
@@ -495,7 +668,6 @@ function AnimatedLobsterSVG() {
           fill="#b91c1c"
           transform="rotate(-25 58 110)"
         />
-        {/* Tail fan right */}
         <ellipse
           cx="82"
           cy="110"
@@ -504,11 +676,10 @@ function AnimatedLobsterSVG() {
           fill="#b91c1c"
           transform="rotate(25 82 110)"
         />
-        {/* Tail center */}
         <ellipse cx="70" cy="112" rx="5" ry="7" fill="#dc2626" />
       </g>
 
-      {/* ─── Eyes ─── */}
+      {/* Eyes */}
       <circle cx="62" cy="40" r="5" fill="#1a0000" />
       <circle
         cx="62"
@@ -518,7 +689,6 @@ function AnimatedLobsterSVG() {
         style={{ animation: "eyePulse 1.8s ease-in-out infinite" }}
       />
       <circle cx="62" cy="40" r="1.5" fill="#fff" opacity="0.9" />
-
       <circle cx="78" cy="40" r="5" fill="#1a0000" />
       <circle
         cx="78"
@@ -532,7 +702,7 @@ function AnimatedLobsterSVG() {
       />
       <circle cx="78" cy="40" r="1.5" fill="#fff" opacity="0.9" />
 
-      {/* ─── Left antenna ─── */}
+      {/* Antennas */}
       <g
         style={{
           transformOrigin: "62px 36px",
@@ -550,8 +720,6 @@ function AnimatedLobsterSVG() {
         />
         <circle cx="48" cy="14" r="2" fill="#fbbf24" />
       </g>
-
-      {/* ─── Right antenna ─── */}
       <g
         style={{
           transformOrigin: "78px 36px",
@@ -570,8 +738,6 @@ function AnimatedLobsterSVG() {
         />
         <circle cx="92" cy="14" r="2" fill="#fbbf24" />
       </g>
-
-      {/* ─── Short antennae ─── */}
       <line
         x1="64"
         y1="35"

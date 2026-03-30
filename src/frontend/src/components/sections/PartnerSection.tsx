@@ -2,6 +2,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 // Pre-footer section: ClawPro.ai brand + partner logos + app download badges
 import React, { useEffect, useState } from "react";
 import { SiGithub, SiOpenai } from "react-icons/si";
+import { AnimatedLobsterSVG } from "../LobsterPopupCard";
 
 // ── API Types ──
 interface GitHubRepoData {
@@ -758,7 +759,43 @@ export function PartnerSection() {
               0%, 100% { opacity: 0.38; letter-spacing: 0.12em; }
               50% { opacity: 0.6; letter-spacing: 0.13em; }
             }
+            @keyframes clawOpenClose {
+              0%, 100% { transform: rotate(0deg); }
+              30%, 70% { transform: rotate(22deg); }
+              50% { transform: rotate(28deg); }
+            }
+            @keyframes clawOpenCloseL {
+              0%, 100% { transform: rotate(0deg); }
+              30%, 70% { transform: rotate(-22deg); }
+              50% { transform: rotate(-28deg); }
+            }
+            @keyframes eyePulse {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0.6; }
+            }
+            @keyframes tailWiggle {
+              0%, 100% { transform: rotate(0deg); }
+              33% { transform: rotate(5deg); }
+              66% { transform: rotate(-5deg); }
+            }
+            @keyframes antennaWave {
+              0%, 100% { transform: rotate(-8deg); }
+              50% { transform: rotate(8deg); }
+            }
           `}</style>
+          <div style={{ marginBottom: 4 }}>
+            <div
+              style={{
+                animation: "clawproPartnerFloat 3s ease-in-out infinite",
+                filter:
+                  "drop-shadow(0 0 18px rgba(220,38,38,0.6)) drop-shadow(0 0 36px rgba(245,158,11,0.3))",
+                display: "inline-block",
+                marginBottom: 8,
+              }}
+            >
+              <AnimatedLobsterSVG width={100} height={86} />
+            </div>
+          </div>
           <div
             style={{
               animation:

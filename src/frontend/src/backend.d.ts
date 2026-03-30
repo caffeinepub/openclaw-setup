@@ -148,6 +148,11 @@ export interface LocalAccountData {
     fullName: string;
     createdAt?: string;
 }
+export interface WaitlistEntry {
+    handle: string;
+    email: string;
+    joinedAt: bigint;
+}
 export interface backendInterface {
     addBlogPost(title: string, body: string, authorName: string, category: string, tags: Array<string>, coverImageUrl: string): Promise<BlogPost>;
     addChangelog(version: string, releaseDate: string, title: string, description: string, changesList: Array<string>, changeType: string): Promise<void>;
@@ -199,4 +204,6 @@ export interface backendInterface {
     isHandleAvailable(handle: string): Promise<boolean>;
     getLocalAccountByHandle(handle: string): Promise<LocalAccountData | null>;
     getAllLocalAccounts(): Promise<Array<LocalAccountData>>;
+    addToWaitlist(handle: string, email: string): Promise<boolean>;
+    getWaitlistEntries(): Promise<Array<WaitlistEntry>>;
 }
