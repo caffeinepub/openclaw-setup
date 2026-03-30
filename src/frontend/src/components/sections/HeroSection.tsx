@@ -37,6 +37,7 @@ import {
   useTotalDownloads,
 } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { LobsterPopupCard } from "../LobsterPopupCard";
 function RobotMascot() {
   return (
     <div
@@ -1478,6 +1479,7 @@ function UnifiedClaimSearchCard({
     null,
   );
   const [pendingSave, setPendingSave] = useState(false);
+  const [showLobsterPopup, setShowLobsterPopup] = useState(false);
 
   // Search state
   const [query, setQuery] = useState("");
@@ -1532,6 +1534,9 @@ function UnifiedClaimSearchCard({
   };
 
   const handleSave = async () => {
+    // Registration temporarily disabled — show waitlist popup
+    setShowLobsterPopup(true);
+    if (true as boolean) return; // biome-ignore: temporary registration blocker
     const trimmedHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
     if (!trimmedHandle) {
       toast.error("Please enter a valid handle (letters, numbers, _ or -).");
@@ -1590,6 +1595,13 @@ function UnifiedClaimSearchCard({
         onClose={() => setSelectedPlatform(null)}
       />
 
+      {showLobsterPopup && (
+        <LobsterPopupCard
+          handle={handle}
+          onClose={() => setShowLobsterPopup(false)}
+        />
+      )}
+
       <div className="w-full max-w-xl">
         {/* Outer animated highlight border — melingkari seluruh card */}
         <div className="relative rounded-2xl" style={{ padding: "2px" }}>
@@ -1611,9 +1623,10 @@ function UnifiedClaimSearchCard({
             className="relative rounded-2xl backdrop-blur-md p-5 space-y-4"
             style={{
               zIndex: 1,
-              background: "#0d0e12",
+              background:
+                "linear-gradient(135deg, #0a1628 0%, #0d1f3c 40%, #0f2242 70%, #080e1c 100%)",
               boxShadow:
-                "0 0 30px rgba(0,198,255,0.15), 0 0 60px rgba(168,85,247,0.1), 0 4px 24px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(160,170,185,0.08)",
+                "0 0 30px rgba(0,150,255,0.15), 0 0 60px rgba(100,80,255,0.1), 0 4px 24px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(0,150,255,0.12)",
             }}
           >
             {/* ── Section 1: Claim Your ClawPro Handle ── */}
@@ -1633,12 +1646,12 @@ function UnifiedClaimSearchCard({
                 <span
                   className="text-sm font-semibold"
                   style={{
-                    background: "linear-gradient(135deg, #c0c8d4, #8899aa)",
+                    background: "linear-gradient(135deg, #e2e8f0, #94a3b8)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                     textShadow: "none",
-                    filter: "drop-shadow(0 0 8px rgba(160,170,185,0.4))",
+                    filter: "drop-shadow(0 0 8px rgba(0,198,255,0.3))",
                   }}
                 >
                   {t.hero.claimHandle}
@@ -1673,11 +1686,15 @@ function UnifiedClaimSearchCard({
                 >
                   <div
                     className="flex items-center rounded-lg overflow-hidden"
-                    style={{ background: "#0a0b0f" }}
+                    style={{ background: "rgba(7,17,31,0.95)" }}
                   >
                     <span
-                      className="px-3 py-2 text-xs font-mono text-cyan/80 bg-cyan/5 border-r border-cyan/20 whitespace-nowrap flex-shrink-0"
-                      style={{ textShadow: "0 0 8px rgba(0,198,255,0.6)" }}
+                      className="px-3 py-2 text-xs font-mono whitespace-nowrap flex-shrink-0"
+                      style={{
+                        background: "rgba(0,150,255,0.1)",
+                        color: "rgba(0,198,255,0.8)",
+                        borderRight: "1px solid rgba(0,150,255,0.3)",
+                      }}
                     >
                       ClawPro.ai/
                     </span>
@@ -1690,7 +1707,8 @@ function UnifiedClaimSearchCard({
                         checkHandleAvailability(v);
                       }}
                       placeholder="your-handle"
-                      className="flex-1 bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none font-mono"
+                      className="flex-1 bg-transparent px-3 py-2 text-sm placeholder:text-slate-400 outline-none font-mono"
+                      style={{ color: "#e2e8f0" }}
                       autoComplete="username"
                     />
                   </div>
@@ -1830,8 +1848,8 @@ function UnifiedClaimSearchCard({
                 <span
                   className="text-sm font-semibold"
                   style={{
-                    color: "#e0f7ff",
-                    textShadow: "0 0 10px rgba(0,198,255,0.6)",
+                    color: "#e2e8f0",
+                    textShadow: "none",
                   }}
                 >
                   Search Works With Everything
@@ -1851,7 +1869,10 @@ function UnifiedClaimSearchCard({
                       : "fieldBorderGlow 2.5s linear infinite",
                   }}
                 >
-                  <div className="flex items-center rounded-xl bg-black overflow-hidden">
+                  <div
+                    className="flex items-center rounded-xl overflow-hidden"
+                    style={{ background: "rgba(7,17,31,0.95)" }}
+                  >
                     <input
                       type="text"
                       value={query}
@@ -1861,7 +1882,7 @@ function UnifiedClaimSearchCard({
                       onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                       placeholder="Search integrations... Facebook, Discord, GPT..."
                       className="flex-1 bg-transparent px-4 py-2.5 text-sm outline-none"
-                      style={{ color: "#e0f7ff" }}
+                      style={{ color: "#e2e8f0" }}
                     />
                     <button
                       type="button"

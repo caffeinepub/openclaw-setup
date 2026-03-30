@@ -67,6 +67,12 @@ const SLIDE_PLATFORMS = [
     bg: "rgba(59,138,224,0.18)",
   },
   { id: "gmail", name: "Gmail", color: "#EA4335", bg: "rgba(234,67,53,0.18)" },
+  {
+    id: "openclaw",
+    name: "OpenClaw",
+    color: "#FF5722",
+    bg: "rgba(255,87,34,0.18)",
+  },
 ];
 
 function PlatformIcon({
@@ -253,10 +259,89 @@ function PlatformIcon({
           />
         </svg>
       );
+    case "openclaw":
+      return (
+        <svg
+          width={28}
+          height={28}
+          viewBox="0 0 32 32"
+          fill="none"
+          role="img"
+          aria-label={name}
+        >
+          <title>{name}</title>
+          <defs>
+            <radialGradient id="sl-lb-body" cx="50%" cy="40%">
+              <stop offset="0%" stopColor="#FF8A65" />
+              <stop offset="60%" stopColor="#FF5722" />
+              <stop offset="100%" stopColor="#E64A19" />
+            </radialGradient>
+            <radialGradient id="sl-lb-claw" cx="50%" cy="50%">
+              <stop offset="0%" stopColor="#FF7043" />
+              <stop offset="100%" stopColor="#BF360C" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="16" cy="18" rx="5" ry="7" fill="url(#sl-lb-body)" />
+          <ellipse cx="16" cy="11" rx="4" ry="4" fill="#FF7043" />
+          <circle cx="14" cy="10" r="1" fill="#fff" />
+          <circle cx="18" cy="10" r="1" fill="#fff" />
+          <circle cx="14.3" cy="10" r="0.5" fill="#1a1a1a" />
+          <circle cx="18.3" cy="10" r="0.5" fill="#1a1a1a" />
+          <line
+            x1="13"
+            y1="8"
+            x2="9"
+            y2="4"
+            stroke="#FF8A65"
+            strokeWidth="0.8"
+            strokeLinecap="round"
+          />
+          <line
+            x1="19"
+            y1="8"
+            x2="23"
+            y2="4"
+            stroke="#FF8A65"
+            strokeWidth="0.8"
+            strokeLinecap="round"
+          />
+          <ellipse
+            cx="9"
+            cy="16"
+            rx="3"
+            ry="2"
+            fill="url(#sl-lb-claw)"
+            transform="rotate(-30 9 16)"
+          />
+          <ellipse
+            cx="7"
+            cy="13"
+            rx="2"
+            ry="1.5"
+            fill="#BF360C"
+            transform="rotate(-45 7 13)"
+          />
+          <ellipse
+            cx="23"
+            cy="16"
+            rx="3"
+            ry="2"
+            fill="url(#sl-lb-claw)"
+            transform="rotate(30 23 16)"
+          />
+          <ellipse
+            cx="25"
+            cy="13"
+            rx="2"
+            ry="1.5"
+            fill="#BF360C"
+            transform="rotate(45 25 13)"
+          />
+        </svg>
+      );
     default:
       return (
         <svg {...p} fill={color}>
-          <title>{name}</title>
           <title>{name}</title>
           <circle cx="12" cy="12" r="10" />
         </svg>

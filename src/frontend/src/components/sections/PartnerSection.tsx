@@ -793,7 +793,7 @@ export function PartnerSection() {
           {/* OpenClaw */}
           <PartnerApiCard
             logo={<OpenClawLogo size={30} />}
-            name="OpenClaw.ai"
+            name="OpenClaw"
             description="OpenClaw AI platform powering ClawPro. Automation, bots, and workflow integrations."
             status={apis.openclaw.status}
             apiUrl="https://openclaw.ai"

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const ECOSYSTEM_LOGOS = [
+  { id: "openclaw", name: "OpenClaw", color: "#FF5722" },
   { id: "facebook", name: "Facebook", color: "#1877F2" },
   { id: "whatsapp", name: "WhatsApp", color: "#25D366" },
   { id: "telegram", name: "Telegram", color: "#0088cc" },
@@ -28,6 +29,86 @@ function EcoIcon({
     "aria-label": id,
   };
   switch (id) {
+    case "openclaw":
+      return (
+        <svg
+          width={size}
+          height={size}
+          viewBox="0 0 32 32"
+          fill="none"
+          role="img"
+          aria-label="openclaw"
+        >
+          <title>openclaw</title>
+          <defs>
+            <radialGradient id="eco-lb-body" cx="50%" cy="40%">
+              <stop offset="0%" stopColor="#FF8A65" />
+              <stop offset="60%" stopColor="#FF5722" />
+              <stop offset="100%" stopColor="#E64A19" />
+            </radialGradient>
+            <radialGradient id="eco-lb-claw" cx="50%" cy="50%">
+              <stop offset="0%" stopColor="#FF7043" />
+              <stop offset="100%" stopColor="#BF360C" />
+            </radialGradient>
+          </defs>
+          <ellipse cx="16" cy="18" rx="5" ry="7" fill="url(#eco-lb-body)" />
+          <ellipse cx="16" cy="11" rx="4" ry="4" fill="#FF7043" />
+          <circle cx="14" cy="10" r="1" fill="#fff" />
+          <circle cx="18" cy="10" r="1" fill="#fff" />
+          <circle cx="14.3" cy="10" r="0.5" fill="#1a1a1a" />
+          <circle cx="18.3" cy="10" r="0.5" fill="#1a1a1a" />
+          <line
+            x1="13"
+            y1="8"
+            x2="9"
+            y2="4"
+            stroke="#FF8A65"
+            strokeWidth="0.8"
+            strokeLinecap="round"
+          />
+          <line
+            x1="19"
+            y1="8"
+            x2="23"
+            y2="4"
+            stroke="#FF8A65"
+            strokeWidth="0.8"
+            strokeLinecap="round"
+          />
+          <ellipse
+            cx="9"
+            cy="16"
+            rx="3"
+            ry="2"
+            fill="url(#eco-lb-claw)"
+            transform="rotate(-30 9 16)"
+          />
+          <ellipse
+            cx="7"
+            cy="13"
+            rx="2"
+            ry="1.5"
+            fill="#BF360C"
+            transform="rotate(-45 7 13)"
+          />
+          <ellipse
+            cx="23"
+            cy="16"
+            rx="3"
+            ry="2"
+            fill="url(#eco-lb-claw)"
+            transform="rotate(30 23 16)"
+          />
+          <ellipse
+            cx="25"
+            cy="13"
+            rx="2"
+            ry="1.5"
+            fill="#BF360C"
+            transform="rotate(45 25 13)"
+          />
+        </svg>
+      );
     case "facebook":
       return (
         <svg {...p} fill={color}>
@@ -166,71 +247,115 @@ function ClawProCenterLogo({ glow }: { glow: boolean }) {
   return (
     <div
       style={{
-        width: 72,
-        height: 72,
+        width: 80,
+        height: 80,
         borderRadius: "50%",
-        background: "radial-gradient(circle at 40% 35%, #1a2a3a, #0a0f1e)",
-        border: "2px solid rgba(0,198,255,0.4)",
+        background: "radial-gradient(circle at 40% 35%, #1a0a08, #0a0505)",
+        border: `2px solid ${glow ? "#FF5722" : "rgba(255,87,34,0.4)"}`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         boxShadow: glow
-          ? "0 0 40px 12px rgba(0,198,255,0.6), 0 0 80px 20px rgba(0,198,255,0.3)"
-          : "0 0 20px 4px rgba(0,198,255,0.25)",
-        transition: "box-shadow 0.3s ease",
+          ? "0 0 40px 16px rgba(255,87,34,0.7), 0 0 80px 24px rgba(255,87,34,0.3)"
+          : "0 0 20px 4px rgba(255,87,34,0.3)",
+        transition: "box-shadow 0.5s ease, border-color 0.5s ease",
         position: "relative",
       }}
     >
-      {/* Claw icon */}
       <svg
-        width="28"
-        height="28"
-        viewBox="0 0 24 24"
+        width="44"
+        height="44"
+        viewBox="0 0 32 32"
         fill="none"
-        aria-hidden="true"
+        aria-label="ClawPro lobster logo"
       >
-        <path
-          d="M8 20C6 16 4 12 6 8C8 4 12 3 14 6C15 8 14 11 12 12"
-          stroke="#06b6d4"
-          strokeWidth="1.8"
+        <title>ClawPro</title>
+        <defs>
+          <radialGradient id="rm-lb-body" cx="50%" cy="40%">
+            <stop offset="0%" stopColor="#FF8A65" />
+            <stop offset="60%" stopColor="#FF5722" />
+            <stop offset="100%" stopColor="#E64A19" />
+          </radialGradient>
+          <radialGradient id="rm-lb-claw" cx="50%" cy="50%">
+            <stop offset="0%" stopColor="#FF7043" />
+            <stop offset="100%" stopColor="#BF360C" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="16" cy="18" rx="5" ry="7" fill="url(#rm-lb-body)" />
+        <ellipse cx="16" cy="11" rx="4" ry="4" fill="#FF7043" />
+        <circle cx="14" cy="10" r="1" fill="#fff" />
+        <circle cx="18" cy="10" r="1" fill="#fff" />
+        <circle cx="14.3" cy="10" r="0.5" fill="#1a1a1a" />
+        <circle cx="18.3" cy="10" r="0.5" fill="#1a1a1a" />
+        <line
+          x1="13"
+          y1="8"
+          x2="9"
+          y2="4"
+          stroke="#FF8A65"
+          strokeWidth="0.8"
           strokeLinecap="round"
-          fill="none"
         />
-        <path
-          d="M12 20C11 16 10 12 12 8C13 5 16 4 17 7C18 9 17 12 15 13"
-          stroke="#67e8f9"
-          strokeWidth="1.8"
+        <line
+          x1="19"
+          y1="8"
+          x2="23"
+          y2="4"
+          stroke="#FF8A65"
+          strokeWidth="0.8"
           strokeLinecap="round"
-          fill="none"
         />
-        <path
-          d="M16 20C16 16 16 12 18 8C19 5 22 5 22 8C22 10 21 13 19 14"
-          stroke="#a5f3fc"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          fill="none"
+        <ellipse
+          cx="9"
+          cy="16"
+          rx="3"
+          ry="2"
+          fill="url(#rm-lb-claw)"
+          transform="rotate(-30 9 16)"
+        />
+        <ellipse
+          cx="7"
+          cy="13"
+          rx="2"
+          ry="1.5"
+          fill="#BF360C"
+          transform="rotate(-45 7 13)"
+        />
+        <ellipse
+          cx="23"
+          cy="16"
+          rx="3"
+          ry="2"
+          fill="url(#rm-lb-claw)"
+          transform="rotate(30 23 16)"
+        />
+        <ellipse
+          cx="25"
+          cy="13"
+          rx="2"
+          ry="1.5"
+          fill="#BF360C"
+          transform="rotate(45 25 13)"
         />
       </svg>
       <span
         style={{
-          fontSize: "0.45rem",
+          fontSize: "0.42rem",
           fontWeight: 700,
-          color: "#67e8f9",
+          color: "#FF8A65",
           letterSpacing: "0.08em",
-          marginTop: 2,
-          fontFamily: "system-ui, sans-serif",
+          marginTop: 1,
         }}
       >
         ClawPro.ai
       </span>
-      {/* Pulse ring */}
       <div
         style={{
           position: "absolute",
           inset: -8,
           borderRadius: "50%",
-          border: "1.5px solid rgba(0,198,255,0.25)",
+          border: "1.5px solid rgba(255,87,34,0.25)",
           animation: "rmPulse 2s ease-in-out infinite",
         }}
       />
@@ -239,7 +364,7 @@ function ClawProCenterLogo({ glow }: { glow: boolean }) {
           position: "absolute",
           inset: -18,
           borderRadius: "50%",
-          border: "1px solid rgba(0,198,255,0.1)",
+          border: "1px solid rgba(255,87,34,0.1)",
           animation: "rmPulse 2s ease-in-out 0.5s infinite",
         }}
       />
@@ -247,44 +372,24 @@ function ClawProCenterLogo({ glow }: { glow: boolean }) {
   );
 }
 
-function generateZigzagPath(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-): string {
-  const mx = (x1 + x2) / 2;
-  const my = (y1 + y2) / 2;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const len = Math.sqrt(dx * dx + dy * dy);
-  const nx = -dy / len;
-  const ny = dx / len;
-  const jitter = len * 0.12;
-  const m1x = (x1 + mx) / 2 + nx * jitter;
-  const m1y = (y1 + my) / 2 + ny * jitter;
-  const m2x = (mx + x2) / 2 - nx * jitter;
-  const m2y = (my + y2) / 2 - ny * jitter;
-  return `M${x1},${y1} L${m1x},${m1y} L${mx},${my} L${m2x},${m2y} L${x2},${y2}`;
-}
-
 export function RoadmapSection() {
-  const [activeBolt, setActiveBolt] = useState(0);
-  const [glowLogo, setGlowLogo] = useState<number | null>(null);
+  const [glowAll, setGlowAll] = useState(false);
   const [centerGlow, setCenterGlow] = useState(false);
+  const [tick, setTick] = useState(0);
   const styleRef = useRef<HTMLStyleElement | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
       @keyframes rmPulse {
         0%, 100% { opacity: 0.3; transform: scale(1); }
-        50% { opacity: 0.7; transform: scale(1.04); }
+        50% { opacity: 0.8; transform: scale(1.05); }
       }
-      @keyframes dashDraw {
-        from { stroke-dashoffset: var(--path-len, 300); }
-        to { stroke-dashoffset: 0; }
+      @keyframes lineBeam {
+        0% { stroke-dashoffset: var(--len, 300); opacity: 0; }
+        10% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { stroke-dashoffset: 0; opacity: 0.9; }
       }
     `;
     document.head.appendChild(style);
@@ -295,30 +400,23 @@ export function RoadmapSection() {
   }, []);
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setActiveBolt((prev) => {
-        const next = (prev + 1) % ECOSYSTEM_LOGOS.length;
-        setCenterGlow(true);
-        setGlowLogo(next);
-        setTimeout(() => {
-          setCenterGlow(false);
-        }, 500);
-        setTimeout(() => {
-          setGlowLogo(null);
-        }, 1600);
-        return next;
-      });
-    }, 1300);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    const id = setInterval(() => {
+      setCenterGlow(true);
+      setGlowAll(true);
+      setTick((t) => t + 1);
+      setTimeout(() => {
+        setCenterGlow(false);
+        setGlowAll(false);
+      }, 1800);
+    }, 3200);
+    return () => clearInterval(id);
   }, []);
 
-  const SVG_W = 500;
-  const SVG_H = 500;
+  const SVG_W = 520;
+  const SVG_H = 520;
   const cx = SVG_W / 2;
   const cy = SVG_H / 2;
-  const radius = 185;
+  const radius = 195;
   const count = ECOSYSTEM_LOGOS.length;
 
   const logoPositions = ECOSYSTEM_LOGOS.map((_, i) => {
@@ -332,37 +430,38 @@ export function RoadmapSection() {
   return (
     <section
       style={{
-        background: "#020208",
+        background:
+          "linear-gradient(180deg, #020208 0%, #08050a 50%, #020208 100%)",
         padding: "80px 20px",
         position: "relative",
         overflow: "hidden",
-        borderTop: "1px solid rgba(0,198,255,0.08)",
+        borderTop: "1px solid rgba(255,87,34,0.1)",
       }}
     >
-      {/* Background glow orb */}
+      {/* Radial glow orb */}
       <div
         style={{
           position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 500,
-          height: 500,
+          width: 600,
+          height: 600,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(0,198,255,0.04) 0%, transparent 70%)",
+            "radial-gradient(circle, rgba(255,87,34,0.06) 0%, rgba(255,87,34,0.02) 40%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
 
-      <div style={{ textAlign: "center", marginBottom: 48 }}>
+      <div style={{ textAlign: "center", marginBottom: 52 }}>
         <p
           style={{
             fontSize: "0.65rem",
-            letterSpacing: "0.25em",
+            letterSpacing: "0.28em",
             textTransform: "uppercase",
-            color: "rgba(0,198,255,0.5)",
-            marginBottom: 10,
+            color: "rgba(255,138,101,0.7)",
+            marginBottom: 12,
             fontFamily: "system-ui, sans-serif",
           }}
         >
@@ -370,27 +469,39 @@ export function RoadmapSection() {
         </p>
         <h2
           style={{
-            fontSize: "clamp(1.4rem, 3vw, 2.2rem)",
-            fontWeight: 700,
+            fontSize: "clamp(1.5rem, 3vw, 2.4rem)",
+            fontWeight: 800,
             background:
-              "linear-gradient(135deg, #fff 0%, #67e8f9 50%, #a855f7 100%)",
+              "linear-gradient(135deg, #fff 0%, #FF8A65 40%, #FF5722 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
             fontFamily: "system-ui, sans-serif",
-            marginBottom: 8,
+            marginBottom: 12,
+            letterSpacing: "-0.02em",
           }}
         >
           ClawPro Ecosystem Roadmap
         </h2>
+        {/* Decorative line */}
+        <div
+          style={{
+            width: 120,
+            height: 2,
+            background:
+              "linear-gradient(90deg, transparent, #FF5722, transparent)",
+            margin: "0 auto 12px",
+            borderRadius: 2,
+          }}
+        />
         <p
           style={{
             fontSize: "0.9rem",
-            color: "rgba(160,180,200,0.7)",
+            color: "rgba(200,180,175,0.7)",
             fontFamily: "system-ui, sans-serif",
           }}
         >
-          Powering every integration with intelligent automation
+          Unified platform powering every integration
         </p>
       </div>
 
@@ -398,10 +509,11 @@ export function RoadmapSection() {
         style={{
           display: "flex",
           justifyContent: "center",
+          alignItems: "center",
           overflow: "visible",
         }}
       >
-        <div style={{ position: "relative", width: "100%", maxWidth: 520 }}>
+        <div style={{ position: "relative", width: "100%", maxWidth: 540 }}>
           <svg
             viewBox={`0 0 ${SVG_W} ${SVG_H}`}
             style={{ width: "100%", overflow: "visible" }}
@@ -410,17 +522,7 @@ export function RoadmapSection() {
           >
             <defs>
               <filter
-                id="bolt-glow"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
-              >
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-              </filter>
-              <filter
-                id="logo-glow"
+                id="logo-glow-rm"
                 x="-50%"
                 y="-50%"
                 width="200%"
@@ -435,95 +537,108 @@ export function RoadmapSection() {
             <circle
               cx={cx}
               cy={cy}
-              r={radius + 28}
+              r={radius + 30}
               fill="none"
-              stroke="rgba(0,198,255,0.06)"
+              stroke="rgba(255,87,34,0.08)"
               strokeWidth="1"
-              strokeDasharray="4 8"
+              strokeDasharray="4 10"
+            />
+            <circle
+              cx={cx}
+              cy={cy}
+              r={radius - 10}
+              fill="none"
+              stroke="rgba(255,87,34,0.04)"
+              strokeWidth="1"
+              strokeDasharray="2 14"
             />
 
-            {/* Static faint lines to all logos */}
-            {ECOSYSTEM_LOGOS.map((logo2, logoIdx) => (
+            {/* Faint static lines to all logos */}
+            {ECOSYSTEM_LOGOS.map((logo, logoIdx) => (
               <line
-                key={`static-${logo2.id}`}
+                key={`static-${logo.id}`}
                 x1={cx}
                 y1={cy}
                 x2={logoPositions[logoIdx].x}
                 y2={logoPositions[logoIdx].y}
-                stroke="rgba(0,198,255,0.06)"
+                stroke="rgba(255,87,34,0.1)"
                 strokeWidth="1"
               />
             ))}
 
-            {/* Active lightning bolt */}
-            {ECOSYSTEM_LOGOS.map((ecosLogo, i) => {
-              if (i !== activeBolt) return null;
-              const pos = logoPositions[i];
-              const pathD = generateZigzagPath(cx, cy, pos.x, pos.y);
-              const approxLen =
-                Math.sqrt((pos.x - cx) ** 2 + (pos.y - cy) ** 2) * 1.15;
-              return (
-                <g key={`bolt-${ecosLogo.id}`}>
-                  {/* Glow layer */}
-                  <path
-                    d={pathD}
-                    stroke="rgba(255,224,102,0.35)"
-                    strokeWidth="6"
-                    fill="none"
-                    strokeLinecap="round"
-                    filter="url(#bolt-glow)"
-                    style={
-                      {
-                        strokeDasharray: approxLen,
-                        strokeDashoffset: 0,
-                        // @ts-ignore
-                        "--path-len": approxLen,
-                        animation: "dashDraw 0.4s ease-out forwards",
-                      } as React.CSSProperties
-                    }
-                  />
-                  {/* Core bolt */}
-                  <path
-                    d={pathD}
-                    stroke="#ffe066"
-                    strokeWidth="2"
-                    fill="none"
-                    strokeLinecap="round"
-                    style={
-                      {
-                        strokeDasharray: approxLen,
-                        strokeDashoffset: 0,
-                        // @ts-ignore
-                        "--path-len": approxLen,
-                        animation: "dashDraw 0.4s ease-out forwards",
-                      } as React.CSSProperties
-                    }
-                  />
-                </g>
-              );
-            })}
+            {/* Animated beam lines when glowAll */}
+            {glowAll &&
+              ECOSYSTEM_LOGOS.map((logo, i) => {
+                const pos = logoPositions[i];
+                const len = Math.sqrt((pos.x - cx) ** 2 + (pos.y - cy) ** 2);
+                return (
+                  <g key={`beam-${logo.id}-${tick}`}>
+                    {/* Glow layer */}
+                    <line
+                      x1={cx}
+                      y1={cy}
+                      x2={pos.x}
+                      y2={pos.y}
+                      stroke={`${logo.color}55`}
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                      style={
+                        {
+                          strokeDasharray: len,
+                          animation: `lineBeam 0.9s ease-out ${i * 40}ms forwards`,
+                          "--len": len,
+                        } as React.CSSProperties
+                      }
+                    />
+                    {/* Core beam */}
+                    <line
+                      x1={cx}
+                      y1={cy}
+                      x2={pos.x}
+                      y2={pos.y}
+                      stroke={logo.color}
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      style={
+                        {
+                          strokeDasharray: len,
+                          animation: `lineBeam 0.9s ease-out ${i * 40}ms forwards`,
+                          "--len": len,
+                        } as React.CSSProperties
+                      }
+                    />
+                  </g>
+                );
+              })}
 
             {/* Logo nodes */}
             {ECOSYSTEM_LOGOS.map((logo, i) => {
               const { x, y } = logoPositions[i];
-              const isGlowing = glowLogo === i;
+              const isGlowing = glowAll;
               return (
                 <g key={logo.id} transform={`translate(${x - 22}, ${y - 22})`}>
-                  {/* Glow ring */}
+                  {/* Glow ring when all glow */}
                   {isGlowing && (
                     <circle
                       cx={22}
                       cy={22}
-                      r={26}
+                      r={27}
                       fill="none"
                       stroke={logo.color}
                       strokeWidth="2"
-                      opacity="0.8"
-                      filter="url(#logo-glow)"
+                      opacity="0.7"
+                      filter="url(#logo-glow-rm)"
+                      style={
+                        {
+                          animation: `lineBeam 0.9s ease-out ${i * 40}ms forwards`,
+                          strokeDasharray: 170,
+                          "--len": 170,
+                        } as React.CSSProperties
+                      }
                     />
                   )}
                   {isGlowing && (
-                    <circle cx={22} cy={22} r={22} fill={`${logo.color}22`} />
+                    <circle cx={22} cy={22} r={22} fill={`${logo.color}18`} />
                   )}
                   {/* Node bg */}
                   <rect
@@ -532,12 +647,12 @@ export function RoadmapSection() {
                     width={44}
                     height={44}
                     rx={10}
-                    fill={isGlowing ? `${logo.color}22` : "#0d1117"}
-                    stroke={isGlowing ? logo.color : "rgba(100,120,140,0.25)"}
+                    fill={isGlowing ? `${logo.color}1a` : "#0d1117"}
+                    stroke={isGlowing ? logo.color : "rgba(100,120,140,0.2)"}
                     strokeWidth={isGlowing ? "1.5" : "1"}
-                    style={{ transition: "all 0.3s" }}
+                    style={{ transition: "all 0.4s" }}
                   />
-                  {/* Icon via foreignObject */}
+                  {/* Icon */}
                   <foreignObject x={10} y={10} width={24} height={24}>
                     <div
                       style={{
@@ -550,7 +665,7 @@ export function RoadmapSection() {
                     >
                       <EcoIcon
                         id={logo.id}
-                        color={isGlowing ? logo.color : `${logo.color}cc`}
+                        color={isGlowing ? logo.color : `${logo.color}bb`}
                         size={20}
                       />
                     </div>
@@ -560,7 +675,7 @@ export function RoadmapSection() {
             })}
           </svg>
 
-          {/* Center logo - overlaid via absolute */}
+          {/* Center logo - overlaid */}
           <div
             style={{
               position: "absolute",
@@ -581,25 +696,28 @@ export function RoadmapSection() {
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: "8px 16px",
-          marginTop: 40,
-          maxWidth: 600,
-          margin: "40px auto 0",
+          gap: "8px 12px",
+          maxWidth: 640,
+          margin: "44px auto 0",
         }}
       >
-        {ECOSYSTEM_LOGOS.map((logo, i) => (
+        {ECOSYSTEM_LOGOS.map((logo) => (
           <div
             key={logo.id}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 6,
-              padding: "4px 10px",
-              borderRadius: 20,
-              background:
-                glowLogo === i ? `${logo.color}22` : "rgba(255,255,255,0.04)",
-              border: `1px solid ${glowLogo === i ? logo.color : "rgba(255,255,255,0.08)"}`,
-              transition: "all 0.3s",
+              padding: "5px 12px",
+              borderRadius: 99,
+              background: glowAll
+                ? `${logo.color}18`
+                : "rgba(255,255,255,0.03)",
+              border: `1px solid ${
+                glowAll ? `${logo.color}66` : "rgba(255,255,255,0.07)"
+              }`,
+              boxShadow: glowAll ? `0 0 8px ${logo.color}33` : "none",
+              transition: "all 0.4s ease",
             }}
           >
             <div
@@ -608,15 +726,18 @@ export function RoadmapSection() {
                 height: 6,
                 borderRadius: "50%",
                 background: logo.color,
-                opacity: glowLogo === i ? 1 : 0.5,
+                opacity: glowAll ? 1 : 0.4,
+                boxShadow: glowAll ? `0 0 6px ${logo.color}` : "none",
+                transition: "all 0.4s",
               }}
             />
             <span
               style={{
-                fontSize: "0.7rem",
-                color: glowLogo === i ? logo.color : "rgba(160,180,200,0.6)",
+                fontSize: "0.68rem",
+                color: glowAll ? logo.color : "rgba(160,180,200,0.55)",
                 fontFamily: "system-ui, sans-serif",
-                transition: "color 0.3s",
+                transition: "color 0.4s",
+                fontWeight: glowAll ? 600 : 400,
               }}
             >
               {logo.name}

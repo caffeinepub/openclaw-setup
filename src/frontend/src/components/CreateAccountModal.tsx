@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useActor } from "../hooks/useActor";
 import { useSaveUserAccount } from "../hooks/useForumQueries";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
+import { LobsterPopupCard } from "./LobsterPopupCard";
 
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder();
@@ -189,6 +190,7 @@ export function CreateAccountModal({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showLobsterPopup, setShowLobsterPopup] = useState(false);
   const [confettiBurst, setConfettiBurst] = useState(false);
   const prevMatchRef = useRef(false);
 
@@ -254,6 +256,9 @@ export function CreateAccountModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Registration temporarily disabled — show waitlist popup
+    setShowLobsterPopup(true);
+    if (true as boolean) return; // biome-ignore: temporary registration blocker — remove when open
     const trimHandle = handle.trim().replace(/[^a-zA-Z0-9_-]/g, "");
     if (!email.trim() || !phone.trim() || !fullName.trim() || !trimHandle) {
       toast.error("Please fill in all required fields.");
@@ -429,6 +434,15 @@ export function CreateAccountModal({
   const handleGoogleLogin = () => {
     toast.info("Google login coming soon!");
   };
+
+  if (showLobsterPopup) {
+    return (
+      <LobsterPopupCard
+        handle={handle}
+        onClose={() => setShowLobsterPopup(false)}
+      />
+    );
+  }
 
   if (!open) return null;
 
