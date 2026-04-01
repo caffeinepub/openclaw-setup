@@ -76,7 +76,6 @@ function EcoIcon({
             strokeWidth="0.8"
             strokeLinecap="round"
           />
-          {/* Left arm + claw */}
           <path
             d="M 11 14 Q 8 13 7 15"
             stroke="#BF360C"
@@ -92,7 +91,6 @@ function EcoIcon({
             fill="url(#eco-lb-claw2)"
             transform="rotate(-20 6 15)"
           />
-          {/* Right arm + claw */}
           <path
             d="M 21 14 Q 24 13 25 15"
             stroke="#BF360C"
@@ -262,6 +260,127 @@ function EcoIcon({
   }
 }
 
+// HD glowing dot grid canvas background
+function GlowingDotGrid() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+    let t = 0;
+
+    const SPACING = 28;
+    const BASE_R = 1.4;
+    const GLOW_R = 3.5;
+
+    function resize() {
+      if (!canvas) return;
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx?.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    function draw() {
+      if (!canvas || !ctx) return;
+      const W = canvas.offsetWidth;
+      const H = canvas.offsetHeight;
+      ctx.clearRect(0, 0, W, H);
+
+      const cols = Math.ceil(W / SPACING) + 1;
+      const rows = Math.ceil(H / SPACING) + 1;
+
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * SPACING;
+          const y = row * SPACING;
+
+          // Wave pulse: distance from center influences brightness
+          const cx = W / 2;
+          const cy = H / 2;
+          const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+          const maxDist = Math.sqrt(cx ** 2 + cy ** 2);
+          const normDist = dist / maxDist;
+
+          // Each dot has a slightly offset phase based on position
+          const phase = (col * 0.18 + row * 0.14 + t * 0.8) % (Math.PI * 2);
+          const pulse = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(phase));
+          // Dots near center glow more
+          const centerBoost = 1 - normDist * 0.55;
+          const alpha = pulse * centerBoost;
+
+          // Randomly bright "star" dots
+          const isBright =
+            (col * 7 + row * 13) % 17 === 0 ||
+            ((col * 3 + row * 5) % 11 === 0 &&
+              Math.sin(t * 1.1 + col + row) > 0.7);
+
+          if (isBright) {
+            // Outer glow halo
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, GLOW_R * 2.5);
+            grad.addColorStop(0, `rgba(100,210,255,${alpha * 0.7})`);
+            grad.addColorStop(0.4, `rgba(80,180,255,${alpha * 0.25})`);
+            grad.addColorStop(1, "rgba(80,180,255,0)");
+            ctx.beginPath();
+            ctx.arc(x, y, GLOW_R * 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Core
+            ctx.beginPath();
+            ctx.arc(x, y, GLOW_R, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(180,230,255,${alpha})`;
+            ctx.fill();
+          } else {
+            // Normal dot with soft glow
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, GLOW_R);
+            grad.addColorStop(0, `rgba(100,180,255,${alpha * 0.55})`);
+            grad.addColorStop(1, "rgba(100,180,255,0)");
+            ctx.beginPath();
+            ctx.arc(x, y, GLOW_R, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Solid core dot
+            ctx.beginPath();
+            ctx.arc(x, y, BASE_R, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(120,190,255,${alpha * 0.7})`;
+            ctx.fill();
+          }
+        }
+      }
+
+      t += 0.012;
+      animId = requestAnimationFrame(draw);
+    }
+
+    draw();
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        pointerEvents: "none",
+        opacity: 0.85,
+      }}
+    />
+  );
+}
+
 function CenterChip() {
   return (
     <div
@@ -281,7 +400,6 @@ function CenterChip() {
         animation: "ecoCenterPulse 2.5s ease-in-out infinite",
       }}
     >
-      {/* Corner accent marks (chip-style) */}
       {[
         { top: 7, left: 7, corner: "tl" },
         { top: 7, right: 7, corner: "tr" },
@@ -314,8 +432,6 @@ function CenterChip() {
           }}
         />
       ))}
-
-      {/* Circuit trace lines */}
       <div
         style={{
           position: "absolute",
@@ -336,8 +452,6 @@ function CenterChip() {
           background: "rgba(255,130,60,0.14)",
         }}
       />
-
-      {/* Lobster mascot */}
       <AnimatedLobsterSVG width={72} height={82} />
       <span
         style={{
@@ -352,8 +466,6 @@ function CenterChip() {
       >
         ClawPro
       </span>
-
-      {/* Outer glow ring */}
       <div
         style={{
           position: "absolute",
@@ -382,7 +494,6 @@ export function RoadmapSection() {
   const [dotCycle, setDotCycle] = useState(0);
   const styleRef = useRef<HTMLStyleElement | null>(null);
 
-  // Inject keyframes once
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
@@ -407,7 +518,6 @@ export function RoadmapSection() {
     };
   }, []);
 
-  // Refresh dots every 3 seconds for re-trigger effect
   useEffect(() => {
     const id = setInterval(() => setDotCycle((c) => c + 1), 3000);
     return () => clearInterval(id);
@@ -438,17 +548,8 @@ export function RoadmapSection() {
         overflow: "hidden",
       }}
     >
-      {/* Dot-grid background */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage:
-            "radial-gradient(circle, rgba(100,180,255,0.055) 1px, transparent 1px)",
-          backgroundSize: "26px 26px",
-          pointerEvents: "none",
-        }}
-      />
+      {/* HD animated glowing dot grid canvas */}
+      <GlowingDotGrid />
 
       {/* Ambient center glow */}
       <div
@@ -527,14 +628,7 @@ export function RoadmapSection() {
           position: "relative",
         }}
       >
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            maxWidth: 580,
-          }}
-        >
-          {/* SVG layer: connection traces + traveling dots */}
+        <div style={{ position: "relative", width: "100%", maxWidth: 580 }}>
           <svg
             viewBox={`0 0 ${SVG_W} ${SVG_H}`}
             style={{ width: "100%", overflow: "visible" }}
@@ -570,7 +664,6 @@ export function RoadmapSection() {
               </filter>
             </defs>
 
-            {/* Outer dashed ring */}
             <circle
               cx={CCX}
               cy={CCY}
@@ -581,7 +674,6 @@ export function RoadmapSection() {
               strokeDasharray="6 12"
             />
 
-            {/* Static trace lines from center to each chip */}
             {ECOSYSTEM_LOGOS.map((logo, i) => {
               const pos = positions[i];
               return (
@@ -597,7 +689,6 @@ export function RoadmapSection() {
               );
             })}
 
-            {/* Traveling light dots along each trace */}
             {ECOSYSTEM_LOGOS.map((logo, i) => {
               const pos = positions[i];
               const pathData = `M ${CCX} ${CCY} L ${pos.x} ${pos.y}`;
@@ -619,14 +710,12 @@ export function RoadmapSection() {
               );
             })}
 
-            {/* Satellite chip cards */}
             {ECOSYSTEM_LOGOS.map((logo, i) => {
               const { x, y } = positions[i];
               const cw = 66;
               const ch = 62;
               return (
                 <g key={logo.id}>
-                  {/* Outer glow halo */}
                   <rect
                     x={x - cw / 2 - 5}
                     y={y - ch / 2 - 5}
@@ -639,7 +728,6 @@ export function RoadmapSection() {
                     opacity="0.15"
                     filter="url(#chipGlowEco)"
                   />
-                  {/* Chip body */}
                   <rect
                     x={x - cw / 2}
                     y={y - ch / 2}
@@ -651,7 +739,6 @@ export function RoadmapSection() {
                     strokeWidth="1"
                     opacity={0.75}
                   />
-                  {/* Internal circuit accent lines */}
                   <line
                     x1={x - cw / 2 + 7}
                     y1={y - ch / 2 + 16}
@@ -670,7 +757,6 @@ export function RoadmapSection() {
                     strokeWidth="0.5"
                     opacity="0.18"
                   />
-                  {/* Pin connectors on left & right */}
                   <line
                     x1={x - cw / 2 - 6}
                     y1={y - 6}
@@ -707,7 +793,6 @@ export function RoadmapSection() {
                     strokeWidth="1.2"
                     opacity="0.35"
                   />
-                  {/* Icon area */}
                   <foreignObject
                     x={x - 13}
                     y={y - ch / 2 + 14}
@@ -726,7 +811,6 @@ export function RoadmapSection() {
                       <EcoIcon id={logo.id} color={logo.color} size={22} />
                     </div>
                   </foreignObject>
-                  {/* Name label */}
                   <text
                     x={x}
                     y={y + ch / 2 - 8}
@@ -744,7 +828,6 @@ export function RoadmapSection() {
             })}
           </svg>
 
-          {/* Center chip — HTML overlay for rich styling */}
           <div
             style={{
               position: "absolute",

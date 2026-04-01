@@ -22,6 +22,7 @@ import { HeroSection } from "./components/sections/HeroSection";
 import { PartnerSection } from "./components/sections/PartnerSection";
 import { PricingSection } from "./components/sections/PricingSection";
 import { RoadmapSection } from "./components/sections/RoadmapSection";
+import { SetInActionsSection } from "./components/sections/SetInActionsSection";
 import { SetupSection } from "./components/sections/SetupSection";
 import { StatsSection } from "./components/sections/StatsSection";
 import { WorkWithEverythingSection } from "./components/sections/WorkWithEverythingSection";
@@ -102,7 +103,6 @@ function AppInner() {
     setShowPublicLeaderboard(false);
   }, []);
 
-  // Always force dark mode
   useEffect(() => {
     document.documentElement.classList.add("dark");
     document.documentElement.style.colorScheme = "dark";
@@ -145,6 +145,8 @@ function AppInner() {
         />
         <WorksWithLogoSlide />
         <AvailableWorldwideSection />
+        {/* Setup & Download moved here, directly below the world map */}
+        <SetupSection />
         <FeaturesSection />
         <WorkWithEverythingSection
           onGetStarted={(tier) => {
@@ -162,7 +164,7 @@ function AppInner() {
           autoOpenTier={autoOpenPaymentTier}
           onAutoOpenConsumed={() => setAutoOpenPaymentTier(null)}
         />
-        <SetupSection />
+        <SetInActionsSection />
         <ConfigSection />
         <DocsSection />
         <ChangelogSection />
