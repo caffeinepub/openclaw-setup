@@ -42,17 +42,17 @@ function EcoIcon({
         >
           <title>openclaw</title>
           <defs>
-            <radialGradient id="eco-lb-body" cx="50%" cy="40%">
+            <radialGradient id="eco-lb-body2" cx="50%" cy="40%">
               <stop offset="0%" stopColor="#FF8A65" />
               <stop offset="60%" stopColor="#FF5722" />
               <stop offset="100%" stopColor="#E64A19" />
             </radialGradient>
-            <radialGradient id="eco-lb-claw" cx="50%" cy="50%">
+            <radialGradient id="eco-lb-claw2" cx="50%" cy="50%">
               <stop offset="0%" stopColor="#FF7043" />
               <stop offset="100%" stopColor="#BF360C" />
             </radialGradient>
           </defs>
-          <ellipse cx="16" cy="18" rx="5" ry="7" fill="url(#eco-lb-body)" />
+          <ellipse cx="16" cy="18" rx="5" ry="7" fill="url(#eco-lb-body2)" />
           <ellipse cx="16" cy="11" rx="4" ry="4" fill="#FF7043" />
           <circle cx="14" cy="10" r="1" fill="#fff" />
           <circle cx="18" cy="10" r="1" fill="#fff" />
@@ -76,37 +76,37 @@ function EcoIcon({
             strokeWidth="0.8"
             strokeLinecap="round"
           />
-          <ellipse
-            cx="9"
-            cy="16"
-            rx="3"
-            ry="2"
-            fill="url(#eco-lb-claw)"
-            transform="rotate(-30 9 16)"
+          {/* Left arm + claw */}
+          <path
+            d="M 11 14 Q 8 13 7 15"
+            stroke="#BF360C"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            fill="none"
           />
           <ellipse
-            cx="7"
-            cy="13"
-            rx="2"
-            ry="1.5"
-            fill="#BF360C"
-            transform="rotate(-45 7 13)"
+            cx="6"
+            cy="15"
+            rx="2.5"
+            ry="1.8"
+            fill="url(#eco-lb-claw2)"
+            transform="rotate(-20 6 15)"
+          />
+          {/* Right arm + claw */}
+          <path
+            d="M 21 14 Q 24 13 25 15"
+            stroke="#BF360C"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            fill="none"
           />
           <ellipse
-            cx="23"
-            cy="16"
-            rx="3"
-            ry="2"
-            fill="url(#eco-lb-claw)"
-            transform="rotate(30 23 16)"
-          />
-          <ellipse
-            cx="25"
-            cy="13"
-            rx="2"
-            ry="1.5"
-            fill="#BF360C"
-            transform="rotate(45 25 13)"
+            cx="26"
+            cy="15"
+            rx="2.5"
+            ry="1.8"
+            fill="url(#eco-lb-claw2)"
+            transform="rotate(20 26 15)"
           />
         </svg>
       );
@@ -121,7 +121,7 @@ function EcoIcon({
       return (
         <svg {...p} fill={color}>
           <title>{id}</title>
-          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
         </svg>
       );
     case "telegram":
@@ -136,15 +136,17 @@ function EcoIcon({
         <svg {...p}>
           <title>{id}</title>
           <defs>
-            <linearGradient id="ig-rm" x1="0%" y1="100%" x2="100%" y2="0%">
+            <linearGradient id="ig-grad" x1="0%" y1="100%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#f09433" />
+              <stop offset="25%" stopColor="#e6683c" />
               <stop offset="50%" stopColor="#dc2743" />
+              <stop offset="75%" stopColor="#cc2366" />
               <stop offset="100%" stopColor="#bc1888" />
             </linearGradient>
           </defs>
           <path
-            fill="url(#ig-rm)"
-            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+            fill="url(#ig-grad)"
+            d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
           />
         </svg>
       );
@@ -152,21 +154,21 @@ function EcoIcon({
       return (
         <svg {...p} fill={color}>
           <title>{id}</title>
-          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.65a8.18 8.18 0 004.78 1.52V6.69a4.85 4.85 0 01-1.01 0z" />
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
         </svg>
       );
     case "youtube":
       return (
         <svg {...p} fill={color}>
           <title>{id}</title>
-          <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+          <path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z" />
         </svg>
       );
     case "discord":
       return (
         <svg {...p} fill={color}>
           <title>{id}</title>
-          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.115 18.102.133 18.116a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.126-.094.252-.192.372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.1.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.08.114 18.1.132 18.11a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
         </svg>
       );
     case "slack":
@@ -175,19 +177,35 @@ function EcoIcon({
           <title>{id}</title>
           <path
             fill="#E01E5A"
-            d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313z"
+            d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52z"
+          />
+          <path
+            fill="#E01E5A"
+            d="M6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313z"
           />
           <path
             fill="#36C5F0"
-            d="M8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312z"
+            d="M8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834z"
+          />
+          <path
+            fill="#36C5F0"
+            d="M8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312z"
           />
           <path
             fill="#2EB67D"
-            d="M18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312z"
+            d="M18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834z"
+          />
+          <path
+            fill="#2EB67D"
+            d="M17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312z"
           />
           <path
             fill="#ECB22E"
-            d="M15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"
+            d="M15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52z"
+          />
+          <path
+            fill="#ECB22E"
+            d="M15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"
           />
         </svg>
       );
@@ -244,54 +262,116 @@ function EcoIcon({
   }
 }
 
-function ClawProCenterLogo({ glow }: { glow: boolean }) {
+function CenterChip() {
   return (
     <div
       style={{
-        width: 80,
-        height: 80,
-        borderRadius: "50%",
-        background: "radial-gradient(circle at 40% 35%, #1a0a08, #0a0505)",
-        border: `2px solid ${glow ? "#FF5722" : "rgba(255,87,34,0.4)"}`,
+        width: 128,
+        height: 128,
+        borderRadius: 20,
+        background: "linear-gradient(145deg, #0d1825, #091320, #060f1a)",
+        border: "2px solid rgba(255, 112, 50, 0.55)",
+        boxShadow:
+          "0 0 24px rgba(255,90,30,0.3), 0 0 50px rgba(255,90,30,0.12), inset 0 0 16px rgba(255,90,30,0.06)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: glow
-          ? "0 0 40px 16px rgba(255,87,34,0.7), 0 0 80px 24px rgba(255,87,34,0.3)"
-          : "0 0 20px 4px rgba(255,87,34,0.3)",
-        transition: "box-shadow 0.5s ease, border-color 0.5s ease",
-        position: "relative",
+        position: "relative" as const,
+        animation: "ecoCenterPulse 2.5s ease-in-out infinite",
       }}
     >
-      <AnimatedLobsterSVG width={60} height={52} />
-      <span
-        style={{
-          fontSize: "0.42rem",
-          fontWeight: 700,
-          color: "#FF8A65",
-          letterSpacing: "0.08em",
-          marginTop: 1,
-        }}
-      >
-        ClawPro
-      </span>
+      {/* Corner accent marks (chip-style) */}
+      {[
+        { top: 7, left: 7, corner: "tl" },
+        { top: 7, right: 7, corner: "tr" },
+        { bottom: 7, left: 7, corner: "bl" },
+        { bottom: 7, right: 7, corner: "br" },
+      ].map((pos) => (
+        <div
+          key={pos.corner}
+          style={{
+            position: "absolute" as const,
+            width: 9,
+            height: 9,
+            ...pos,
+            borderTop:
+              pos.top !== undefined
+                ? "1.5px solid rgba(255,130,60,0.65)"
+                : undefined,
+            borderBottom:
+              pos.bottom !== undefined
+                ? "1.5px solid rgba(255,130,60,0.65)"
+                : undefined,
+            borderLeft:
+              pos.left !== undefined
+                ? "1.5px solid rgba(255,130,60,0.65)"
+                : undefined,
+            borderRight:
+              pos.right !== undefined
+                ? "1.5px solid rgba(255,130,60,0.65)"
+                : undefined,
+          }}
+        />
+      ))}
+
+      {/* Circuit trace lines */}
       <div
         style={{
           position: "absolute",
-          inset: -8,
-          borderRadius: "50%",
-          border: "1.5px solid rgba(255,87,34,0.25)",
-          animation: "rmPulse 2s ease-in-out infinite",
+          top: 16,
+          left: 12,
+          right: 12,
+          height: 1,
+          background: "rgba(255,130,60,0.14)",
         }}
       />
       <div
         style={{
           position: "absolute",
-          inset: -18,
-          borderRadius: "50%",
-          border: "1px solid rgba(255,87,34,0.1)",
-          animation: "rmPulse 2s ease-in-out 0.5s infinite",
+          bottom: 16,
+          left: 12,
+          right: 12,
+          height: 1,
+          background: "rgba(255,130,60,0.14)",
+        }}
+      />
+
+      {/* Lobster mascot */}
+      <AnimatedLobsterSVG width={72} height={82} />
+      <span
+        style={{
+          fontSize: "0.44rem",
+          fontWeight: 800,
+          color: "rgba(255, 150, 80, 0.95)",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          marginTop: 1,
+          fontFamily: "system-ui, sans-serif",
+        }}
+      >
+        ClawPro
+      </span>
+
+      {/* Outer glow ring */}
+      <div
+        style={{
+          position: "absolute",
+          inset: -14,
+          borderRadius: 34,
+          border: "1px solid rgba(255,112,50,0.2)",
+          animation: "ecoPulseRing 2.5s ease-in-out infinite",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: -26,
+          borderRadius: 46,
+          border: "1px solid rgba(255,112,50,0.1)",
+          animation: "ecoPulseRing 2.5s ease-in-out infinite 0.6s",
+          pointerEvents: "none",
         }}
       />
     </div>
@@ -299,47 +379,26 @@ function ClawProCenterLogo({ glow }: { glow: boolean }) {
 }
 
 export function RoadmapSection() {
-  const [glowAll, setGlowAll] = useState(false);
-  const [centerGlow, setCenterGlow] = useState(false);
-  const [tick, setTick] = useState(0);
+  const [dotCycle, setDotCycle] = useState(0);
   const styleRef = useRef<HTMLStyleElement | null>(null);
 
+  // Inject keyframes once
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
-      @keyframes rmPulse {
-        0%, 100% { opacity: 0.3; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.05); }
+      @keyframes ecoCenterPulse {
+        0%, 100% { box-shadow: 0 0 24px rgba(255,90,30,0.3), 0 0 50px rgba(255,90,30,0.12); border-color: rgba(255,112,50,0.55); }
+        50% { box-shadow: 0 0 36px rgba(255,90,30,0.5), 0 0 70px rgba(255,90,30,0.2); border-color: rgba(255,130,60,0.8); }
       }
-      @keyframes lineBeam {
-        0% { stroke-dashoffset: var(--len, 300); opacity: 0; }
-        10% { opacity: 1; }
-        80% { opacity: 1; }
-        100% { stroke-dashoffset: 0; opacity: 0.9; }
+      @keyframes ecoPulseRing {
+        0%, 100% { opacity: 0.25; transform: scale(1); }
+        50% { opacity: 0.65; transform: scale(1.06); }
       }
-      @keyframes clawOpenClose {
-        0%, 100% { transform: rotate(0deg); }
-        30%, 70% { transform: rotate(22deg); }
-        50% { transform: rotate(28deg); }
+      @keyframes lsMainFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
       }
-      @keyframes clawOpenCloseL {
-        0%, 100% { transform: rotate(0deg); }
-        30%, 70% { transform: rotate(-22deg); }
-        50% { transform: rotate(-28deg); }
-      }
-      @keyframes eyePulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.6; }
-      }
-      @keyframes tailWiggle {
-        0%, 100% { transform: rotate(0deg); }
-        33% { transform: rotate(5deg); }
-        66% { transform: rotate(-5deg); }
-      }
-      @keyframes antennaWave {
-        0%, 100% { transform: rotate(-8deg); }
-        50% { transform: rotate(8deg); }
-      }
+      .ls-main-anim { animation: lsMainFloat 2.5s ease-in-out infinite; }
     `;
     document.head.appendChild(style);
     styleRef.current = style;
@@ -348,31 +407,24 @@ export function RoadmapSection() {
     };
   }, []);
 
+  // Refresh dots every 3 seconds for re-trigger effect
   useEffect(() => {
-    const id = setInterval(() => {
-      setCenterGlow(true);
-      setGlowAll(true);
-      setTick((t) => t + 1);
-      setTimeout(() => {
-        setCenterGlow(false);
-        setGlowAll(false);
-      }, 1800);
-    }, 3200);
+    const id = setInterval(() => setDotCycle((c) => c + 1), 3000);
     return () => clearInterval(id);
   }, []);
 
-  const SVG_W = 520;
+  const SVG_W = 560;
   const SVG_H = 520;
-  const cx = SVG_W / 2;
-  const cy = SVG_H / 2;
-  const radius = 195;
+  const CCX = SVG_W / 2;
+  const CCY = SVG_H / 2;
+  const RING_R = 186;
   const count = ECOSYSTEM_LOGOS.length;
 
-  const logoPositions = ECOSYSTEM_LOGOS.map((_, i) => {
+  const positions = ECOSYSTEM_LOGOS.map((_, i) => {
     const angle = (2 * Math.PI * i) / count - Math.PI / 2;
     return {
-      x: cx + radius * Math.cos(angle),
-      y: cy + radius * Math.sin(angle),
+      x: CCX + RING_R * Math.cos(angle),
+      y: CCY + RING_R * Math.sin(angle),
     };
   });
 
@@ -380,36 +432,50 @@ export function RoadmapSection() {
     <section
       style={{
         background:
-          "linear-gradient(180deg, #020208 0%, #08050a 50%, #020208 100%)",
+          "linear-gradient(180deg, #050d1f 0%, #0a1528 50%, #050d1f 100%)",
         padding: "80px 20px",
         position: "relative",
         overflow: "hidden",
-        borderTop: "1px solid rgba(255,87,34,0.1)",
       }}
     >
-      {/* Radial glow orb */}
+      {/* Dot-grid background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage:
+            "radial-gradient(circle, rgba(100,180,255,0.055) 1px, transparent 1px)",
+          backgroundSize: "26px 26px",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Ambient center glow */}
       <div
         style={{
           position: "absolute",
           top: "50%",
           left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 600,
-          height: 600,
+          transform: "translate(-50%,-50%)",
+          width: 520,
+          height: 520,
           borderRadius: "50%",
           background:
-            "radial-gradient(circle, rgba(255,87,34,0.06) 0%, rgba(255,87,34,0.02) 40%, transparent 70%)",
+            "radial-gradient(circle, rgba(255,90,30,0.07) 0%, rgba(255,90,30,0.02) 45%, transparent 70%)",
           pointerEvents: "none",
         }}
       />
 
-      <div style={{ textAlign: "center", marginBottom: 52 }}>
+      {/* Section header */}
+      <div
+        style={{ textAlign: "center", marginBottom: 52, position: "relative" }}
+      >
         <p
           style={{
-            fontSize: "0.65rem",
-            letterSpacing: "0.28em",
+            fontSize: "0.63rem",
+            letterSpacing: "0.3em",
             textTransform: "uppercase",
-            color: "rgba(255,138,101,0.7)",
+            color: "rgba(100,180,255,0.55)",
             marginBottom: 12,
             fontFamily: "system-ui, sans-serif",
           }}
@@ -418,35 +484,33 @@ export function RoadmapSection() {
         </p>
         <h2
           style={{
-            fontSize: "clamp(1.5rem, 3vw, 2.4rem)",
+            fontSize: "clamp(1.5rem, 3vw, 2.3rem)",
             fontWeight: 800,
             background:
-              "linear-gradient(135deg, #fff 0%, #FF8A65 40%, #FF5722 100%)",
+              "linear-gradient(135deg, #e2e8f0 0%, #93c5fd 50%, #e2e8f0 100%)",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
             backgroundClip: "text",
+            marginBottom: 16,
             fontFamily: "system-ui, sans-serif",
-            marginBottom: 12,
-            letterSpacing: "-0.02em",
           }}
         >
-          ClawPro Ecosystem Roadmap
+          Powered by Next-Gen AI Infrastructure
         </h2>
-        {/* Decorative line */}
         <div
           style={{
-            width: 120,
+            width: 64,
             height: 2,
             background:
-              "linear-gradient(90deg, transparent, #FF5722, transparent)",
-            margin: "0 auto 12px",
+              "linear-gradient(90deg, transparent, #3b82f6, transparent)",
+            margin: "0 auto 14px",
             borderRadius: 2,
           }}
         />
         <p
           style={{
             fontSize: "0.9rem",
-            color: "rgba(200,180,175,0.7)",
+            color: "rgba(148,185,230,0.55)",
             fontFamily: "system-ui, sans-serif",
           }}
         >
@@ -454,177 +518,233 @@ export function RoadmapSection() {
         </p>
       </div>
 
+      {/* Ecosystem chip board visualization */}
       <div
         style={{
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          overflow: "visible",
+          position: "relative",
         }}
       >
-        <div style={{ position: "relative", width: "100%", maxWidth: 540 }}>
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            maxWidth: 580,
+          }}
+        >
+          {/* SVG layer: connection traces + traveling dots */}
           <svg
             viewBox={`0 0 ${SVG_W} ${SVG_H}`}
             style={{ width: "100%", overflow: "visible" }}
-            aria-label="ClawPro Ecosystem Roadmap"
+            aria-label="ClawPro ecosystem chip board"
             role="img"
           >
             <defs>
               <filter
-                id="logo-glow-rm"
-                x="-50%"
-                y="-50%"
-                width="200%"
-                height="200%"
+                id="dotGlowEco"
+                x="-120%"
+                y="-120%"
+                width="340%"
+                height="340%"
               >
-                <feGaussianBlur stdDeviation="4" result="blur" />
-                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                <feGaussianBlur stdDeviation="2.5" result="b" />
+                <feMerge>
+                  <feMergeNode in="b" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter
+                id="chipGlowEco"
+                x="-30%"
+                y="-30%"
+                width="160%"
+                height="160%"
+              >
+                <feGaussianBlur stdDeviation="3" result="b" />
+                <feMerge>
+                  <feMergeNode in="b" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
               </filter>
             </defs>
 
-            {/* Outer ring */}
+            {/* Outer dashed ring */}
             <circle
-              cx={cx}
-              cy={cy}
-              r={radius + 30}
+              cx={CCX}
+              cy={CCY}
+              r={RING_R + 26}
               fill="none"
-              stroke="rgba(255,87,34,0.08)"
+              stroke="rgba(100,180,255,0.06)"
               strokeWidth="1"
-              strokeDasharray="4 10"
-            />
-            <circle
-              cx={cx}
-              cy={cy}
-              r={radius - 10}
-              fill="none"
-              stroke="rgba(255,87,34,0.04)"
-              strokeWidth="1"
-              strokeDasharray="2 14"
+              strokeDasharray="6 12"
             />
 
-            {/* Faint static lines to all logos */}
-            {ECOSYSTEM_LOGOS.map((logo, logoIdx) => (
-              <line
-                key={`static-${logo.id}`}
-                x1={cx}
-                y1={cy}
-                x2={logoPositions[logoIdx].x}
-                y2={logoPositions[logoIdx].y}
-                stroke="rgba(255,87,34,0.1)"
-                strokeWidth="1"
-              />
-            ))}
-
-            {/* Animated beam lines when glowAll */}
-            {glowAll &&
-              ECOSYSTEM_LOGOS.map((logo, i) => {
-                const pos = logoPositions[i];
-                const len = Math.sqrt((pos.x - cx) ** 2 + (pos.y - cy) ** 2);
-                return (
-                  <g key={`beam-${logo.id}-${tick}`}>
-                    {/* Glow layer */}
-                    <line
-                      x1={cx}
-                      y1={cy}
-                      x2={pos.x}
-                      y2={pos.y}
-                      stroke={`${logo.color}55`}
-                      strokeWidth="5"
-                      strokeLinecap="round"
-                      style={
-                        {
-                          strokeDasharray: len,
-                          animation: `lineBeam 0.9s ease-out ${i * 40}ms forwards`,
-                          "--len": len,
-                        } as React.CSSProperties
-                      }
-                    />
-                    {/* Core beam */}
-                    <line
-                      x1={cx}
-                      y1={cy}
-                      x2={pos.x}
-                      y2={pos.y}
-                      stroke={logo.color}
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      style={
-                        {
-                          strokeDasharray: len,
-                          animation: `lineBeam 0.9s ease-out ${i * 40}ms forwards`,
-                          "--len": len,
-                        } as React.CSSProperties
-                      }
-                    />
-                  </g>
-                );
-              })}
-
-            {/* Logo nodes */}
+            {/* Static trace lines from center to each chip */}
             {ECOSYSTEM_LOGOS.map((logo, i) => {
-              const { x, y } = logoPositions[i];
-              const isGlowing = glowAll;
+              const pos = positions[i];
               return (
-                <g key={logo.id} transform={`translate(${x - 22}, ${y - 22})`}>
-                  {/* Glow ring when all glow */}
-                  {isGlowing && (
-                    <circle
-                      cx={22}
-                      cy={22}
-                      r={27}
-                      fill="none"
-                      stroke={logo.color}
-                      strokeWidth="2"
-                      opacity="0.7"
-                      filter="url(#logo-glow-rm)"
-                      style={
-                        {
-                          animation: `lineBeam 0.9s ease-out ${i * 40}ms forwards`,
-                          strokeDasharray: 170,
-                          "--len": 170,
-                        } as React.CSSProperties
-                      }
-                    />
-                  )}
-                  {isGlowing && (
-                    <circle cx={22} cy={22} r={22} fill={`${logo.color}18`} />
-                  )}
-                  {/* Node bg */}
-                  <rect
-                    x={0}
-                    y={0}
-                    width={44}
-                    height={44}
-                    rx={10}
-                    fill={isGlowing ? `${logo.color}1a` : "#0d1117"}
-                    stroke={isGlowing ? logo.color : "rgba(100,120,140,0.2)"}
-                    strokeWidth={isGlowing ? "1.5" : "1"}
-                    style={{ transition: "all 0.4s" }}
+                <line
+                  key={`trace-${logo.id}`}
+                  x1={CCX}
+                  y1={CCY}
+                  x2={pos.x}
+                  y2={pos.y}
+                  stroke="rgba(100,180,255,0.12)"
+                  strokeWidth="1"
+                />
+              );
+            })}
+
+            {/* Traveling light dots along each trace */}
+            {ECOSYSTEM_LOGOS.map((logo, i) => {
+              const pos = positions[i];
+              const pathData = `M ${CCX} ${CCY} L ${pos.x} ${pos.y}`;
+              return (
+                <circle
+                  key={`travdot-${dotCycle}-${logo.id}`}
+                  r="3"
+                  fill={logo.color}
+                  opacity="0.9"
+                  filter="url(#dotGlowEco)"
+                >
+                  <animateMotion
+                    dur="1.6s"
+                    begin={`${i * 0.08}s`}
+                    repeatCount="indefinite"
+                    path={pathData}
                   />
-                  {/* Icon */}
-                  <foreignObject x={10} y={10} width={24} height={24}>
+                </circle>
+              );
+            })}
+
+            {/* Satellite chip cards */}
+            {ECOSYSTEM_LOGOS.map((logo, i) => {
+              const { x, y } = positions[i];
+              const cw = 66;
+              const ch = 62;
+              return (
+                <g key={logo.id}>
+                  {/* Outer glow halo */}
+                  <rect
+                    x={x - cw / 2 - 5}
+                    y={y - ch / 2 - 5}
+                    width={cw + 10}
+                    height={ch + 10}
+                    rx={16}
+                    fill="none"
+                    stroke={logo.color}
+                    strokeWidth="1"
+                    opacity="0.15"
+                    filter="url(#chipGlowEco)"
+                  />
+                  {/* Chip body */}
+                  <rect
+                    x={x - cw / 2}
+                    y={y - ch / 2}
+                    width={cw}
+                    height={ch}
+                    rx={10}
+                    fill="#060d18"
+                    stroke={logo.color}
+                    strokeWidth="1"
+                    opacity={0.75}
+                  />
+                  {/* Internal circuit accent lines */}
+                  <line
+                    x1={x - cw / 2 + 7}
+                    y1={y - ch / 2 + 16}
+                    x2={x + cw / 2 - 7}
+                    y2={y - ch / 2 + 16}
+                    stroke={logo.color}
+                    strokeWidth="0.5"
+                    opacity="0.18"
+                  />
+                  <line
+                    x1={x - cw / 2 + 7}
+                    y1={y + ch / 2 - 16}
+                    x2={x + cw / 2 - 7}
+                    y2={y + ch / 2 - 16}
+                    stroke={logo.color}
+                    strokeWidth="0.5"
+                    opacity="0.18"
+                  />
+                  {/* Pin connectors on left & right */}
+                  <line
+                    x1={x - cw / 2 - 6}
+                    y1={y - 6}
+                    x2={x - cw / 2}
+                    y2={y - 6}
+                    stroke={logo.color}
+                    strokeWidth="1.2"
+                    opacity="0.35"
+                  />
+                  <line
+                    x1={x - cw / 2 - 6}
+                    y1={y + 6}
+                    x2={x - cw / 2}
+                    y2={y + 6}
+                    stroke={logo.color}
+                    strokeWidth="1.2"
+                    opacity="0.35"
+                  />
+                  <line
+                    x1={x + cw / 2}
+                    y1={y - 6}
+                    x2={x + cw / 2 + 6}
+                    y2={y - 6}
+                    stroke={logo.color}
+                    strokeWidth="1.2"
+                    opacity="0.35"
+                  />
+                  <line
+                    x1={x + cw / 2}
+                    y1={y + 6}
+                    x2={x + cw / 2 + 6}
+                    y2={y + 6}
+                    stroke={logo.color}
+                    strokeWidth="1.2"
+                    opacity="0.35"
+                  />
+                  {/* Icon area */}
+                  <foreignObject
+                    x={x - 13}
+                    y={y - ch / 2 + 14}
+                    width={26}
+                    height={26}
+                  >
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        width: 24,
-                        height: 24,
+                        width: 26,
+                        height: 26,
                       }}
                     >
-                      <EcoIcon
-                        id={logo.id}
-                        color={isGlowing ? logo.color : `${logo.color}bb`}
-                        size={20}
-                      />
+                      <EcoIcon id={logo.id} color={logo.color} size={22} />
                     </div>
                   </foreignObject>
+                  {/* Name label */}
+                  <text
+                    x={x}
+                    y={y + ch / 2 - 8}
+                    textAnchor="middle"
+                    fill={logo.color}
+                    fontSize="7.5"
+                    fontFamily="system-ui, sans-serif"
+                    fontWeight="600"
+                    opacity="0.9"
+                  >
+                    {logo.name}
+                  </text>
                 </g>
               );
             })}
           </svg>
 
-          {/* Center logo - overlaid */}
+          {/* Center chip — HTML overlay for rich styling */}
           <div
             style={{
               position: "absolute",
@@ -634,20 +754,20 @@ export function RoadmapSection() {
               zIndex: 10,
             }}
           >
-            <ClawProCenterLogo glow={centerGlow} />
+            <CenterChip />
           </div>
         </div>
       </div>
 
-      {/* Legend */}
+      {/* Legend pill row */}
       <div
         style={{
           display: "flex",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: "8px 12px",
+          gap: "8px 10px",
           maxWidth: 640,
-          margin: "44px auto 0",
+          margin: "48px auto 0",
         }}
       >
         {ECOSYSTEM_LOGOS.map((logo) => (
@@ -657,16 +777,10 @@ export function RoadmapSection() {
               display: "flex",
               alignItems: "center",
               gap: 6,
-              padding: "5px 12px",
+              padding: "4px 12px",
               borderRadius: 99,
-              background: glowAll
-                ? `${logo.color}18`
-                : "rgba(255,255,255,0.03)",
-              border: `1px solid ${
-                glowAll ? `${logo.color}66` : "rgba(255,255,255,0.07)"
-              }`,
-              boxShadow: glowAll ? `0 0 8px ${logo.color}33` : "none",
-              transition: "all 0.4s ease",
+              background: "rgba(100,180,255,0.04)",
+              border: "1px solid rgba(100,180,255,0.1)",
             }}
           >
             <div
@@ -675,18 +789,14 @@ export function RoadmapSection() {
                 height: 6,
                 borderRadius: "50%",
                 background: logo.color,
-                opacity: glowAll ? 1 : 0.4,
-                boxShadow: glowAll ? `0 0 6px ${logo.color}` : "none",
-                transition: "all 0.4s",
+                opacity: 0.65,
               }}
             />
             <span
               style={{
-                fontSize: "0.68rem",
-                color: glowAll ? logo.color : "rgba(160,180,200,0.55)",
+                fontSize: "0.66rem",
+                color: "rgba(148,185,230,0.55)",
                 fontFamily: "system-ui, sans-serif",
-                transition: "color 0.4s",
-                fontWeight: glowAll ? 600 : 400,
               }}
             >
               {logo.name}

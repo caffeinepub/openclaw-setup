@@ -178,7 +178,7 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
                 "drop-shadow(0 0 16px rgba(220,38,38,0.5)) drop-shadow(0 0 32px rgba(245,158,11,0.3))",
             }}
           >
-            <AnimatedLobsterSVG />
+            <AnimatedLobsterSVG width={160} height={180} />
           </div>
 
           {/* Countdown Timer */}
@@ -399,20 +399,6 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
           0%, 100% { transform: translateY(0px) rotate(-1deg); }
           50% { transform: translateY(-10px) rotate(1deg); }
         }
-        @keyframes clawOpenClose {
-          0%, 100% { transform: rotate(0deg); }
-          30%, 70% { transform: rotate(22deg); }
-          50% { transform: rotate(28deg); }
-        }
-        @keyframes clawOpenCloseL {
-          0%, 100% { transform: rotate(0deg); }
-          30%, 70% { transform: rotate(-22deg); }
-          50% { transform: rotate(-28deg); }
-        }
-        @keyframes eyePulse {
-          0%, 100% { opacity: 1; r: 3; }
-          50% { opacity: 0.6; r: 2.5; }
-        }
         @keyframes handleGlow {
           0%, 100% { filter: drop-shadow(0 0 8px rgba(0,198,255,0.4)); }
           50% { filter: drop-shadow(0 0 20px rgba(0,198,255,0.7)) drop-shadow(0 0 40px rgba(168,85,247,0.4)); }
@@ -430,334 +416,591 @@ export function LobsterPopupCard({ handle, onClose }: LobsterPopupCardProps) {
           60% { background-position: 200% 0; }
           100% { background-position: 200% 0; }
         }
-        @keyframes antennaWave {
-          0%, 100% { transform: rotate(-8deg); }
-          50% { transform: rotate(8deg); }
+        @keyframes lsMainFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-5px); }
         }
-        @keyframes tailWiggle {
-          0%, 100% { transform: rotate(0deg); }
-          33% { transform: rotate(5deg); }
-          66% { transform: rotate(-5deg); }
-        }
+        .ls-main-anim { animation: lsMainFloat 2.5s ease-in-out infinite; }
       `}</style>
     </div>
   );
 }
 
+/**
+ * AnimatedLobsterSVG — elegant, professional lobster mascot with connected claws.
+ * Claws are connected via arm segments (shoulder → elbow → forearm → claw).
+ * Animations: body float, claw pinch, antenna sway, tail fan, eye blink.
+ */
 export function AnimatedLobsterSVG({
-  width = 140,
-  height = 120,
+  width = 160,
+  height = 180,
 }: { width?: number; height?: number }) {
   return (
     <svg
       width={width}
       height={height}
-      viewBox="0 0 140 120"
+      viewBox="0 0 160 180"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      aria-label="Animated lobster"
+      aria-label="ClawPro animated lobster mascot"
       role="img"
     >
       <defs>
-        <radialGradient id="bodyGrad" cx="50%" cy="40%" r="55%">
-          <stop offset="0%" stopColor="#ef4444" />
-          <stop offset="60%" stopColor="#dc2626" />
+        <radialGradient id="lsBodyG" cx="40%" cy="30%" r="70%">
+          <stop offset="0%" stopColor="#f87171" />
+          <stop offset="50%" stopColor="#dc2626" />
+          <stop offset="100%" stopColor="#7f1d1d" />
+        </radialGradient>
+        <radialGradient id="lsHeadG" cx="45%" cy="25%" r="70%">
+          <stop offset="0%" stopColor="#fb923c" />
+          <stop offset="40%" stopColor="#ef4444" />
           <stop offset="100%" stopColor="#991b1b" />
         </radialGradient>
-        <radialGradient id="clawGrad" cx="50%" cy="30%" r="60%">
-          <stop offset="0%" stopColor="#f87171" />
-          <stop offset="100%" stopColor="#b91c1c" />
-        </radialGradient>
-        <radialGradient id="headGrad" cx="50%" cy="30%" r="60%">
+        <radialGradient id="lsClawG" cx="35%" cy="25%" r="70%">
           <stop offset="0%" stopColor="#f97316" />
-          <stop offset="100%" stopColor="#dc2626" />
+          <stop offset="55%" stopColor="#dc2626" />
+          <stop offset="100%" stopColor="#92400e" />
         </radialGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+        <radialGradient id="lsTailG" cx="50%" cy="15%" r="70%">
+          <stop offset="0%" stopColor="#ef4444" />
+          <stop offset="100%" stopColor="#7f1d1d" />
+        </radialGradient>
+        <filter id="lsGlw" x="-25%" y="-25%" width="150%" height="150%">
+          <feGaussianBlur stdDeviation="1.8" result="b" />
           <feMerge>
-            <feMergeNode in="coloredBlur" />
+            <feMergeNode in="b" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
       </defs>
 
-      {/* Left claw arm */}
-      <g
-        style={{
-          transformOrigin: "35px 55px",
-          animation: "clawOpenCloseL 1.5s ease-in-out infinite",
-        }}
-      >
-        <rect
-          x="14"
-          y="51"
-          width="24"
-          height="8"
-          rx="4"
-          fill="#dc2626"
-          filter="url(#glow)"
-        />
-        <ellipse
-          cx="10"
-          cy="50"
-          rx="10"
-          ry="6"
-          fill="url(#clawGrad)"
-          filter="url(#glow)"
-        />
-        <ellipse
-          cx="10"
-          cy="60"
-          rx="8"
-          ry="4"
-          fill="#b91c1c"
-          filter="url(#glow)"
-        />
-        <circle cx="2" cy="50" r="2.5" fill="#f59e0b" />
-      </g>
+      {/* Main body group — floats up/down */}
+      <g className="ls-main-anim">
+        {/* ─── ANTENNAE ─── */}
+        {/* Left antenna — sways */}
+        <g>
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            values="-6 68 29; 6 68 29; -6 68 29"
+            dur="2.4s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keySplines="0.5 0 0.5 1; 0.5 0 0.5 1"
+            keyTimes="0; 0.5; 1"
+          />
+          <path
+            d="M 68 29 Q 55 20 36 8"
+            stroke="#f97316"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 68 29 Q 58 18 44 12"
+            stroke="#fbbf24"
+            strokeWidth="1"
+            strokeLinecap="round"
+            opacity="0.5"
+          />
+          <circle cx="36" cy="8" r="2" fill="#fbbf24" />
+        </g>
+        {/* Right antenna — sways opposite */}
+        <g>
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            values="6 92 29; -6 92 29; 6 92 29"
+            dur="2.4s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keySplines="0.5 0 0.5 1; 0.5 0 0.5 1"
+            keyTimes="0; 0.5; 1"
+          />
+          <path
+            d="M 92 29 Q 105 20 124 8"
+            stroke="#f97316"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 92 29 Q 102 18 116 12"
+            stroke="#fbbf24"
+            strokeWidth="1"
+            strokeLinecap="round"
+            opacity="0.5"
+          />
+          <circle cx="124" cy="8" r="2" fill="#fbbf24" />
+        </g>
 
-      {/* Right claw arm */}
-      <g
-        style={{
-          transformOrigin: "105px 55px",
-          animation: "clawOpenClose 1.5s ease-in-out infinite",
-        }}
-      >
-        <rect
-          x="102"
-          y="51"
-          width="24"
-          height="8"
-          rx="4"
-          fill="#dc2626"
-          filter="url(#glow)"
-        />
+        {/* ─── HEAD ─── */}
+        {/* Head shell */}
         <ellipse
-          cx="130"
-          cy="50"
-          rx="10"
-          ry="6"
-          fill="url(#clawGrad)"
-          filter="url(#glow)"
+          cx="80"
+          cy="45"
+          rx="26"
+          ry="22"
+          fill="url(#lsHeadG)"
+          filter="url(#lsGlw)"
         />
-        <ellipse
-          cx="130"
-          cy="60"
-          rx="8"
-          ry="4"
-          fill="#b91c1c"
-          filter="url(#glow)"
+        {/* Rostrum spike at top */}
+        <polygon points="75,25 80,16 85,25" fill="#f97316" />
+        {/* Head highlight */}
+        <ellipse cx="73" cy="37" rx="11" ry="7" fill="#fb923c" opacity="0.22" />
+        {/* Head lower edge groove */}
+        <path
+          d="M 57 47 Q 80 43 103 47"
+          stroke="#991b1b"
+          strokeWidth="1.5"
+          fill="none"
+          opacity="0.5"
         />
-        <circle cx="138" cy="50" r="2.5" fill="#f59e0b" />
-      </g>
 
-      {/* Body */}
-      <ellipse
-        cx="70"
-        cy="72"
-        rx="22"
-        ry="28"
-        fill="url(#bodyGrad)"
-        filter="url(#glow)"
-      />
-      <path
-        d="M48 68 Q70 64 92 68"
-        stroke="#991b1b"
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.7"
-      />
-      <path
-        d="M48 75 Q70 71 92 75"
-        stroke="#991b1b"
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.7"
-      />
-      <path
-        d="M50 82 Q70 78 90 82"
-        stroke="#991b1b"
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.7"
-      />
-      <path
-        d="M53 89 Q70 85 87 89"
-        stroke="#991b1b"
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.7"
-      />
-      <ellipse cx="70" cy="74" rx="10" ry="14" fill="#f59e0b" opacity="0.18" />
+        {/* Eye stalks */}
+        <rect x="62" y="32" width="5" height="10" rx="2.5" fill="#c2410c" />
+        <rect x="93" y="32" width="5" height="10" rx="2.5" fill="#c2410c" />
 
-      {/* Head */}
-      <ellipse
-        cx="70"
-        cy="48"
-        rx="19"
-        ry="16"
-        fill="url(#headGrad)"
-        filter="url(#glow)"
-      />
-      <path
-        d="M56 44 Q70 38 84 44"
-        stroke="#fbbf24"
-        strokeWidth="1.5"
-        fill="none"
-        opacity="0.6"
-      />
-
-      {/* Legs */}
-      <line
-        x1="55"
-        y1="75"
-        x2="44"
-        y2="90"
-        stroke="#dc2626"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1="85"
-        y1="75"
-        x2="96"
-        y2="90"
-        stroke="#dc2626"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <line
-        x1="53"
-        y1="82"
-        x2="40"
-        y2="96"
-        stroke="#dc2626"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <line
-        x1="87"
-        y1="82"
-        x2="100"
-        y2="96"
-        stroke="#dc2626"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-
-      {/* Tail */}
-      <g
-        style={{
-          transformOrigin: "70px 98px",
-          animation: "tailWiggle 2s ease-in-out infinite",
-        }}
-      >
-        <ellipse
-          cx="70"
-          cy="104"
-          rx="14"
-          ry="8"
-          fill="#dc2626"
-          filter="url(#glow)"
-        />
-        <ellipse
-          cx="58"
-          cy="110"
-          rx="7"
-          ry="5"
-          fill="#b91c1c"
-          transform="rotate(-25 58 110)"
-        />
-        <ellipse
-          cx="82"
-          cy="110"
-          rx="7"
-          ry="5"
-          fill="#b91c1c"
-          transform="rotate(25 82 110)"
-        />
-        <ellipse cx="70" cy="112" rx="5" ry="7" fill="#dc2626" />
-      </g>
-
-      {/* Eyes */}
-      <circle cx="62" cy="40" r="5" fill="#1a0000" />
-      <circle
-        cx="62"
-        cy="40"
-        r="3"
-        fill="#fbbf24"
-        style={{ animation: "eyePulse 1.8s ease-in-out infinite" }}
-      />
-      <circle cx="62" cy="40" r="1.5" fill="#fff" opacity="0.9" />
-      <circle cx="78" cy="40" r="5" fill="#1a0000" />
-      <circle
-        cx="78"
-        cy="40"
-        r="3"
-        fill="#fbbf24"
-        style={{
-          animation: "eyePulse 1.8s ease-in-out infinite",
-          animationDelay: "0.4s",
-        }}
-      />
-      <circle cx="78" cy="40" r="1.5" fill="#fff" opacity="0.9" />
-
-      {/* Antennas */}
-      <g
-        style={{
-          transformOrigin: "62px 36px",
-          animation: "antennaWave 1.8s ease-in-out infinite",
-        }}
-      >
-        <line
-          x1="62"
-          y1="36"
-          x2="48"
-          y2="14"
+        {/* Left eye */}
+        <circle
+          cx="64.5"
+          cy="31"
+          r="6.5"
+          fill="#1a0505"
           stroke="#f59e0b"
+          strokeWidth="1.2"
+        />
+        <circle cx="65" cy="30" r="3.5" fill="#0a0101" />
+        <circle cx="67" cy="28.5" r="1.3" fill="#fff" opacity="0.9" />
+        {/* Left eyelid blink */}
+        <ellipse cx="64.5" cy="31" rx="6.5" ry="0" fill="#b91c1c">
+          <animate
+            attributeName="ry"
+            values="0;0;0;0;0;0;7;0;0;0;0;0"
+            dur="6s"
+            repeatCount="indefinite"
+          />
+        </ellipse>
+
+        {/* Right eye */}
+        <circle
+          cx="95.5"
+          cy="31"
+          r="6.5"
+          fill="#1a0505"
+          stroke="#f59e0b"
+          strokeWidth="1.2"
+        />
+        <circle cx="96" cy="30" r="3.5" fill="#0a0101" />
+        <circle cx="98" cy="28.5" r="1.3" fill="#fff" opacity="0.9" />
+        {/* Right eyelid blink */}
+        <ellipse cx="95.5" cy="31" rx="6.5" ry="0" fill="#b91c1c">
+          <animate
+            attributeName="ry"
+            values="0;0;0;0;0;0;0;7;0;0;0;0"
+            dur="6s"
+            begin="1.4s"
+            repeatCount="indefinite"
+          />
+        </ellipse>
+
+        {/* ─── CARAPACE (thorax) ─── */}
+        <ellipse
+          cx="80"
+          cy="67"
+          rx="22"
+          ry="14"
+          fill="url(#lsBodyG)"
+          filter="url(#lsGlw)"
+        />
+        <path
+          d="M 60 65 Q 80 60 100 65"
+          stroke="#7f1d1d"
+          strokeWidth="1.2"
+          fill="none"
+          opacity="0.5"
+        />
+        {/* Carapace highlight */}
+        <ellipse cx="74" cy="62" rx="10" ry="5" fill="#f87171" opacity="0.15" />
+
+        {/* ─── LEFT ARM (shoulder → upper-arm → elbow → forearm → wrist → claw) ─── */}
+        {/* Shoulder joint on body */}
+        <circle cx="60" cy="66" r="4.5" fill="#b91c1c" filter="url(#lsGlw)" />
+        {/* Upper arm */}
+        <path
+          d="M 58 66 Q 47 63 39 68"
+          stroke="#dc2626"
+          strokeWidth="6.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 58 66 Q 47 63 39 68"
+          stroke="#f87171"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.3"
+        />
+        {/* Elbow joint */}
+        <circle cx="39" cy="68" r="4" fill="#991b1b" filter="url(#lsGlw)" />
+        {/* Forearm */}
+        <path
+          d="M 39 68 Q 33 65 28 63"
+          stroke="#b91c1c"
+          strokeWidth="5.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* Wrist joint */}
+        <circle cx="28" cy="63" r="3.5" fill="#f59e0b" filter="url(#lsGlw)" />
+        {/* LEFT CLAW — pivots at wrist origin (0,0) via translate(28,63) */}
+        <g transform="translate(28,63)">
+          {/* Claw base / merus */}
+          <ellipse
+            cx="-9"
+            cy="0"
+            rx="11"
+            ry="7.5"
+            fill="url(#lsClawG)"
+            filter="url(#lsGlw)"
+          />
+          {/* Lower dactyl (static) */}
+          <path
+            d="M -9 5 Q -19 9 -24 12"
+            stroke="#7f1d1d"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <ellipse
+            cx="-25"
+            cy="13"
+            rx="5.5"
+            ry="3.5"
+            fill="#7f1d1d"
+            transform="rotate(-18 -25 13)"
+          />
+          {/* Upper propodus (animated pinch) */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              values="0 0 0; -24 0 0; 0 0 0"
+              dur="2.2s"
+              repeatCount="indefinite"
+              calcMode="spline"
+              keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"
+              keyTimes="0; 0.5; 1"
+            />
+            <path
+              d="M -9 -4 Q -19 -9 -24 -12"
+              stroke="#f97316"
+              strokeWidth="4"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <ellipse
+              cx="-25"
+              cy="-13"
+              rx="5.5"
+              ry="3.5"
+              fill="#ef4444"
+              transform="rotate(18 -25 -13)"
+            />
+          </g>
+        </g>
+
+        {/* ─── RIGHT ARM ─── */}
+        {/* Shoulder joint on body */}
+        <circle cx="100" cy="66" r="4.5" fill="#b91c1c" filter="url(#lsGlw)" />
+        {/* Upper arm */}
+        <path
+          d="M 102 66 Q 113 63 121 68"
+          stroke="#dc2626"
+          strokeWidth="6.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 102 66 Q 113 63 121 68"
+          stroke="#f87171"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.3"
+        />
+        {/* Elbow joint */}
+        <circle cx="121" cy="68" r="4" fill="#991b1b" filter="url(#lsGlw)" />
+        {/* Forearm */}
+        <path
+          d="M 121 68 Q 127 65 132 63"
+          stroke="#b91c1c"
+          strokeWidth="5.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* Wrist joint */}
+        <circle cx="132" cy="63" r="3.5" fill="#f59e0b" filter="url(#lsGlw)" />
+        {/* RIGHT CLAW — pivots at wrist via translate(132,63) */}
+        <g transform="translate(132,63)">
+          {/* Claw base */}
+          <ellipse
+            cx="9"
+            cy="0"
+            rx="11"
+            ry="7.5"
+            fill="url(#lsClawG)"
+            filter="url(#lsGlw)"
+          />
+          {/* Lower dactyl (static) */}
+          <path
+            d="M 9 5 Q 19 9 24 12"
+            stroke="#7f1d1d"
+            strokeWidth="4"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <ellipse
+            cx="25"
+            cy="13"
+            rx="5.5"
+            ry="3.5"
+            fill="#7f1d1d"
+            transform="rotate(18 25 13)"
+          />
+          {/* Upper propodus (animated pinch) */}
+          <g>
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              values="0 0 0; 24 0 0; 0 0 0"
+              dur="2.2s"
+              begin="0.35s"
+              repeatCount="indefinite"
+              calcMode="spline"
+              keySplines="0.4 0 0.6 1; 0.4 0 0.6 1"
+              keyTimes="0; 0.5; 1"
+            />
+            <path
+              d="M 9 -4 Q 19 -9 24 -12"
+              stroke="#f97316"
+              strokeWidth="4"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <ellipse
+              cx="25"
+              cy="-13"
+              rx="5.5"
+              ry="3.5"
+              fill="#ef4444"
+              transform="rotate(-18 25 -13)"
+            />
+          </g>
+        </g>
+
+        {/* ─── BODY SEGMENTS ─── */}
+        <ellipse
+          cx="80"
+          cy="87"
+          rx="18"
+          ry="14"
+          fill="url(#lsBodyG)"
+          filter="url(#lsGlw)"
+        />
+        <path
+          d="M 63 86 Q 80 82 97 86"
+          stroke="#7f1d1d"
+          strokeWidth="1.2"
+          fill="none"
+          opacity="0.5"
+        />
+        <ellipse
+          cx="80"
+          cy="105"
+          rx="15"
+          ry="12"
+          fill="url(#lsBodyG)"
+          filter="url(#lsGlw)"
+        />
+        <path
+          d="M 66 104 Q 80 100 94 104"
+          stroke="#7f1d1d"
+          strokeWidth="1.2"
+          fill="none"
+          opacity="0.5"
+        />
+        <ellipse
+          cx="80"
+          cy="120"
+          rx="12"
+          ry="10"
+          fill="url(#lsBodyG)"
+          filter="url(#lsGlw)"
+        />
+        <path
+          d="M 69 119 Q 80 115 91 119"
+          stroke="#7f1d1d"
+          strokeWidth="1.2"
+          fill="none"
+          opacity="0.5"
+        />
+        <ellipse cx="80" cy="132" rx="9" ry="7" fill="url(#lsBodyG)" />
+
+        {/* ─── WALKING LEGS (3 pairs) ─── */}
+        <path
+          d="M 64 90 Q 55 98 49 106"
+          stroke="#b91c1c"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 96 90 Q 105 98 111 106"
+          stroke="#b91c1c"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 66 106 Q 57 113 52 119"
+          stroke="#b91c1c"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 94 106 Q 103 113 108 119"
+          stroke="#b91c1c"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 68 120 Q 61 127 57 131"
+          stroke="#b91c1c"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M 92 120 Q 99 127 103 131"
+          stroke="#b91c1c"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* ─── PLEOPODS ─── */}
+        <path
+          d="M 75 133 L 71 143"
+          stroke="#ef4444"
           strokeWidth="1.5"
           strokeLinecap="round"
+          opacity="0.7"
         />
-        <circle cx="48" cy="14" r="2" fill="#fbbf24" />
-      </g>
-      <g
-        style={{
-          transformOrigin: "78px 36px",
-          animation: "antennaWave 1.8s ease-in-out infinite",
-          animationDelay: "0.5s",
-        }}
-      >
-        <line
-          x1="78"
-          y1="36"
-          x2="92"
-          y2="14"
-          stroke="#f59e0b"
+        <path
+          d="M 80 135 L 80 145"
+          stroke="#ef4444"
           strokeWidth="1.5"
           strokeLinecap="round"
+          opacity="0.7"
         />
-        <circle cx="92" cy="14" r="2" fill="#fbbf24" />
+        <path
+          d="M 85 133 L 89 143"
+          stroke="#ef4444"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          opacity="0.7"
+        />
+
+        {/* ─── FAN TAIL ─── */}
+        <g>
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            values="0 80 140; 4 80 140; 0 80 140; -4 80 140; 0 80 140"
+            dur="1.7s"
+            repeatCount="indefinite"
+            calcMode="spline"
+            keySplines="0.5 0 0.5 1; 0.5 0 0.5 1; 0.5 0 0.5 1; 0.5 0 0.5 1"
+            keyTimes="0;0.25;0.5;0.75;1"
+          />
+          {/* Center uropod */}
+          <ellipse
+            cx="80"
+            cy="149"
+            rx="7"
+            ry="11"
+            fill="url(#lsTailG)"
+            stroke="#991b1b"
+            strokeWidth="0.8"
+          />
+          <path
+            d="M 80 141 Q 79 149 80 156 Q 81 149 80 141Z"
+            stroke="#7f1d1d"
+            strokeWidth="0.8"
+            fill="none"
+          />
+          {/* Left inner fan */}
+          <ellipse
+            cx="68"
+            cy="152"
+            rx="8.5"
+            ry="7"
+            fill="url(#lsTailG)"
+            stroke="#991b1b"
+            strokeWidth="0.8"
+            transform="rotate(-20 68 152)"
+          />
+          {/* Right inner fan */}
+          <ellipse
+            cx="92"
+            cy="152"
+            rx="8.5"
+            ry="7"
+            fill="url(#lsTailG)"
+            stroke="#991b1b"
+            strokeWidth="0.8"
+            transform="rotate(20 92 152)"
+          />
+          {/* Left outer fan */}
+          <ellipse
+            cx="57"
+            cy="148"
+            rx="7.5"
+            ry="6"
+            fill="url(#lsTailG)"
+            stroke="#991b1b"
+            strokeWidth="0.8"
+            transform="rotate(-35 57 148)"
+          />
+          {/* Right outer fan */}
+          <ellipse
+            cx="103"
+            cy="148"
+            rx="7.5"
+            ry="6"
+            fill="url(#lsTailG)"
+            stroke="#991b1b"
+            strokeWidth="0.8"
+            transform="rotate(35 103 148)"
+          />
+        </g>
+
+        {/* Belly underside highlight */}
+        <ellipse
+          cx="80"
+          cy="100"
+          rx="7"
+          ry="22"
+          fill="#fca5a5"
+          opacity="0.07"
+        />
+        {/* Shell shine highlights */}
+        <ellipse cx="75" cy="84" rx="5" ry="3" fill="#fff" opacity="0.12" />
+        <ellipse cx="75" cy="103" rx="4" ry="2.5" fill="#fff" opacity="0.09" />
+        <ellipse cx="76" cy="118" rx="3" ry="2" fill="#fff" opacity="0.07" />
       </g>
-      <line
-        x1="64"
-        y1="35"
-        x2="56"
-        y2="22"
-        stroke="#fbbf24"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.7"
-      />
-      <line
-        x1="76"
-        y1="35"
-        x2="84"
-        y2="22"
-        stroke="#fbbf24"
-        strokeWidth="1"
-        strokeLinecap="round"
-        opacity="0.7"
-      />
     </svg>
   );
 }

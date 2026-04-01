@@ -454,7 +454,7 @@ export function CreateAccountModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-start justify-center p-4 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
