@@ -98,6 +98,7 @@ import {
 } from "../hooks/useQueries";
 import { ForumPage } from "./ForumPage";
 import { AnimatedLobsterSVG } from "./LobsterPopupCard";
+import { OpenClawDashboardPanel } from "./OpenClawDashboardPanel";
 import { StarBackground } from "./StarBackground";
 
 // ---- Types ----
@@ -120,7 +121,8 @@ type SidebarItem =
   | "forum"
   | "achievements"
   | "docs"
-  | "profile";
+  | "profile"
+  | "openclaw-api";
 
 interface ChatMessage {
   id: string;
@@ -196,6 +198,14 @@ const NAV_ITEMS: {
     color: "text-red-400",
     glow: "border-red-500/60",
     colorHex: "#ef4444",
+  },
+  {
+    id: "openclaw-api",
+    label: "OpenClaw API",
+    icon: <span style={{ fontSize: "1rem" }}>🦞</span>,
+    color: "text-orange-400",
+    glow: "border-orange-500/60",
+    colorHex: "#ff7043",
   },
   {
     id: "whatsapp",
@@ -1238,6 +1248,9 @@ export function MemberDashboard({
                   />
                 )}
                 {active === "clawbot" && <ClawBotPanel handle={handle} />}
+                {active === "openclaw-api" && (
+                  <OpenClawDashboardPanel handle={handle} />
+                )}
                 {active === "whatsapp" && <WhatsAppPanel />}
                 {active === "telegram" && <TelegramPanel />}
                 {active === "chatgpt" && <ChatGPTPanel />}

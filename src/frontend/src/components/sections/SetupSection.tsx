@@ -9,10 +9,12 @@ import {
   Monitor,
   Smartphone,
   Terminal,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { motion } from "motion/react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDownloadsByOS, useIncrementDownload } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
@@ -194,7 +196,7 @@ const OS_LABELS: Record<OSType, string> = {
   linux: "Linux",
 };
 
-// Android-specific steps (not in translation system)
+// Android-specific steps
 const ANDROID_STEPS = [
   {
     title: "Download from Google Play Store",
@@ -210,6 +212,376 @@ const ANDROID_STEPS = [
   },
   { title: "Configure and Start Automating", note: undefined },
 ];
+
+// ─────────────────────────────────────────────────────────
+// OpenClaw Terminal Component
+// ─────────────────────────────────────────────────────────
+
+type OCSubTab = "one-liner" | "npm" | "hackable" | "macos";
+
+const OC_SUBTAB_LABELS: Record<OCSubTab, string> = {
+  "one-liner": "One-liner",
+  npm: "npm",
+  hackable: "Hackable",
+  macos: "macOS",
+};
+
+interface OCBadge {
+  label: string;
+  bg: string;
+  text: string;
+  border?: string;
+}
+
+const OC_SUBTAB_BADGES: Record<OCSubTab, OCBadge[]> = {
+  "one-liner": [
+    { label: "macOS/Linux", bg: "#ff5722", text: "#fff" },
+    { label: "Windows", bg: "transparent", text: "#94a3b8", border: "#2a3444" },
+    { label: "β BETA", bg: "transparent", text: "#22c55e", border: "#22c55e" },
+  ],
+  npm: [
+    { label: "npm", bg: "#cb3837", text: "#fff" },
+    { label: "pnpm", bg: "transparent", text: "#94a3b8", border: "#2a3444" },
+    { label: "β BETA", bg: "transparent", text: "#22c55e", border: "#22c55e" },
+  ],
+  hackable: [
+    { label: "installer", bg: "#ff5722", text: "#fff" },
+    { label: "pnpm", bg: "transparent", text: "#94a3b8", border: "#2a3444" },
+  ],
+  macos: [
+    {
+      label: "Companion",
+      bg: "transparent",
+      text: "#94a3b8",
+      border: "#2a3444",
+    },
+    { label: "β BETA", bg: "transparent", text: "#22c55e", border: "#22c55e" },
+  ],
+};
+
+interface TerminalLine {
+  type: "comment" | "command";
+  text: string;
+}
+
+const OC_SUBTAB_CONTENT: Record<OCSubTab, TerminalLine[]> = {
+  "one-liner": [
+    {
+      type: "comment",
+      text: "# Living on the edge. Bugs are features you found first. 🦞",
+    },
+    {
+      type: "command",
+      text: "curl -fsSL https://openclaw.ai/install.sh | bash -s -- --beta",
+    },
+  ],
+  npm: [
+    {
+      type: "comment",
+      text: "# Install OpenClaw (beta) — Fresh from the lab 🧪",
+    },
+    { type: "command", text: "npm i -g openclaw@beta" },
+    { type: "comment", text: "# Meet your experimental lobster" },
+    { type: "command", text: "openclaw onboard" },
+  ],
+  hackable: [
+    { type: "comment", text: "# For those who read source code for fun" },
+    {
+      type: "command",
+      text: "curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git",
+    },
+  ],
+  macos: [],
+};
+
+function OpenClawTerminal() {
+  const [subTab, setSubTab] = useState<OCSubTab>("one-liner");
+  const [copied, setCopied] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">(
+    "checking",
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      try {
+        await fetch("https://openclaw.ai", { method: "HEAD", mode: "no-cors" });
+        if (!cancelled) setApiStatus("online");
+      } catch {
+        if (!cancelled) setApiStatus("offline");
+      }
+    };
+    void check();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleCopy = (text: string) => {
+    void navigator.clipboard.writeText(text);
+    setCopied(text);
+    setTimeout(() => setCopied(null), 2000);
+    toast.success("Copied to clipboard!");
+  };
+
+  const lines = OC_SUBTAB_CONTENT[subTab];
+  const commands = lines.filter((l) => l.type === "command").map((l) => l.text);
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: "#0d1117",
+        border: "1px solid #1e2a3a",
+        boxShadow:
+          "0 0 40px rgba(255,69,0,0.12), 0 0 80px rgba(0,229,199,0.05)",
+      }}
+    >
+      {/* Window chrome top bar */}
+      <div
+        className="flex items-center justify-between px-4 py-3"
+        style={{
+          background: "linear-gradient(180deg, #161b22 0%, #0d1117 100%)",
+          borderBottom: "1px solid #1e2a3a",
+        }}
+      >
+        {/* macOS dots */}
+        <div className="flex items-center gap-1.5">
+          <span
+            className="w-3 h-3 rounded-full"
+            style={{ background: "#ff5f57" }}
+          />
+          <span
+            className="w-3 h-3 rounded-full"
+            style={{ background: "#febc2e" }}
+          />
+          <span
+            className="w-3 h-3 rounded-full"
+            style={{ background: "#28c840" }}
+          />
+        </div>
+
+        {/* Sub-tabs */}
+        <div className="flex items-center gap-1">
+          {(["one-liner", "npm", "hackable", "macos"] as OCSubTab[]).map(
+            (tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setSubTab(tab)}
+                className="px-3 py-1 text-xs font-semibold rounded-full transition-all"
+                style={{
+                  background: subTab === tab ? "#00e5c7" : "transparent",
+                  color: subTab === tab ? "#000" : "#6b7a8d",
+                  fontWeight: subTab === tab ? 700 : 400,
+                }}
+              >
+                {OC_SUBTAB_LABELS[tab]}
+              </button>
+            ),
+          )}
+        </div>
+
+        {/* Right side: API status + badges */}
+        <div className="flex items-center gap-1.5">
+          {/* API status */}
+          {apiStatus === "online" && (
+            <span
+              className="flex items-center gap-1 text-[10px] mr-1"
+              style={{ color: "#00e5c7" }}
+            >
+              <Wifi className="w-3 h-3" />
+              Live
+            </span>
+          )}
+          {apiStatus === "offline" && (
+            <span
+              className="flex items-center gap-1 text-[10px] mr-1"
+              style={{ color: "#94a3b8" }}
+            >
+              <WifiOff className="w-3 h-3" />
+              Offline
+            </span>
+          )}
+          {OC_SUBTAB_BADGES[subTab].map((b) => (
+            <span
+              key={b.label}
+              className="px-2 py-0.5 rounded text-[10px] font-bold"
+              style={{
+                background: b.bg,
+                color: b.text,
+                border: b.border ? `1px solid ${b.border}` : undefined,
+              }}
+            >
+              {b.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Terminal body */}
+      <div
+        className="p-6 font-mono relative"
+        style={{ background: "#0a0e13", minHeight: 160 }}
+      >
+        {subTab === "macos" ? (
+          /* macOS companion app */
+          <div className="flex flex-col items-center justify-center py-6 gap-4">
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(255,69,0,0.15), rgba(0,0,0,0.5))",
+                border: "1px solid rgba(255,69,0,0.3)",
+                boxShadow: "0 0 20px rgba(255,69,0,0.2)",
+              }}
+            >
+              🦞
+            </div>
+            <div className="text-center">
+              <h4 className="font-bold text-lg text-white mb-1">
+                Companion App{" "}
+                <span
+                  className="text-xs font-normal px-1.5 py-0.5 rounded"
+                  style={{
+                    background: "rgba(34,197,94,0.15)",
+                    color: "#22c55e",
+                    border: "1px solid rgba(34,197,94,0.3)",
+                  }}
+                >
+                  Beta
+                </span>
+              </h4>
+              <p className="text-sm" style={{ color: "#6b7a8d" }}>
+                Menubar access to your lobster.
+                <br />
+                Works great alongside the CLI.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                window.open("https://openclaw.ai/download/macos", "_blank");
+                toast.success("Opening OpenClaw macOS download...");
+              }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all"
+              style={{
+                background: "linear-gradient(135deg, #dc2626, #991b1b)",
+                color: "#fff",
+                boxShadow: "0 0 20px rgba(220,38,38,0.35)",
+              }}
+              data-ocid="setup.openclaw.download_button"
+            >
+              <Download className="w-4 h-4" />
+              Download for macOS
+            </button>
+            <p className="text-[11px]" style={{ color: "#374151" }}>
+              Requires macOS 15+ · Universal Binary
+            </p>
+          </div>
+        ) : (
+          /* Terminal lines */
+          <div className="space-y-1.5">
+            {lines.map((line, i) =>
+              line.type === "comment" ? (
+                <p
+                  key={`${line.text}-${i}`}
+                  className="text-sm italic"
+                  style={{ color: "#6b7a8d" }}
+                >
+                  {line.text}
+                </p>
+              ) : (
+                <div
+                  key={`${line.text}-${i}`}
+                  className="flex items-center gap-0 group relative"
+                >
+                  <span className="text-sm" style={{ color: "#ff7043" }}>
+                    ${" "}
+                  </span>
+                  <code
+                    className="text-sm font-bold flex-1"
+                    style={{ color: "#00e5c7" }}
+                  >
+                    {line.text}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(line.text)}
+                    className="ml-3 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      color:
+                        copied === line.text
+                          ? "#22c55e"
+                          : "rgba(255,255,255,0.4)",
+                    }}
+                    aria-label="Copy command"
+                  >
+                    {copied === line.text ? (
+                      <Check className="w-3.5 h-3.5" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              ),
+            )}
+          </div>
+        )}
+
+        {/* Copy all button (bottom right) for multi-command tabs */}
+        {commands.length > 1 && subTab !== "macos" && (
+          <button
+            type="button"
+            onClick={() => handleCopy(commands.join("\n"))}
+            className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all"
+            style={{
+              background: "rgba(0,229,199,0.08)",
+              border: "1px solid rgba(0,229,199,0.2)",
+              color: "#00e5c7",
+            }}
+          >
+            {copied === commands.join("\n") ? (
+              <Check className="w-3 h-3" />
+            ) : (
+              <Copy className="w-3 h-3" />
+            )}
+            Copy all
+          </button>
+        )}
+      </div>
+
+      {/* Bottom info bar */}
+      <div
+        className="flex items-center justify-between px-5 py-2.5"
+        style={{
+          background: "#0d1117",
+          borderTop: "1px solid #1e2a3a",
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-lg">🦞</span>
+          <span className="text-xs font-bold" style={{ color: "#ff7043" }}>
+            openclaw.ai
+          </span>
+          <span className="text-[10px]" style={{ color: "#374151" }}>
+            /install.sh · verified
+          </span>
+        </div>
+        <a
+          href="https://openclaw.ai"
+          target="_blank"
+          rel="noreferrer"
+          className="text-[10px] transition-colors hover:opacity-80"
+          style={{ color: "#00e5c7" }}
+        >
+          docs →
+        </a>
+      </div>
+    </div>
+  );
+}
 
 export function SetupSection() {
   const { data: downloadStats } = useDownloadsByOS();
@@ -247,6 +619,13 @@ export function SetupSection() {
         @keyframes osCorner_linux {
           0%, 100% { filter: drop-shadow(0 0 3px #FF6A00) drop-shadow(0 0 6px #FFD700); opacity: 0.55; }
           50% { filter: drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 12px #FF6A00); opacity: 0.85; }
+        }
+        [data-ocid="setup.openclaw.tab"][data-state="active"] {
+          background: linear-gradient(135deg, #ff4500, #ff7043) !important;
+          color: #fff !important;
+          box-shadow: 0 0 14px rgba(255,69,0,0.5), 0 3px 10px rgba(255,112,67,0.3) !important;
+          border-color: #ff4500 !important;
+          transform: translateY(-1px);
         }
         [data-ocid="setup.android.tab"][data-state="active"] {
           background: linear-gradient(135deg, #00FF88, #00CC44) !important;
@@ -309,9 +688,18 @@ export function SetupSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <Tabs defaultValue="android">
+          <Tabs defaultValue="openclaw">
             {/* Pill-shaped glowing tab row */}
             <TabsList className="flex flex-wrap gap-3 justify-center mb-8 bg-transparent border-0 p-0 h-auto">
+              {/* OpenClaw tab - FIRST */}
+              <TabsTrigger
+                value="openclaw"
+                data-ocid="setup.openclaw.tab"
+                className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold border transition-all duration-200 data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground data-[state=inactive]:border-border data-[state=inactive]:shadow-none"
+              >
+                🦞 OpenClaw
+              </TabsTrigger>
+
               {(["android", "windows", "macos", "linux"] as const).map((os) => {
                 const Icon = OS_ICONS[os];
                 return (
@@ -328,6 +716,89 @@ export function SetupSection() {
               })}
             </TabsList>
 
+            {/* OpenClaw tab content */}
+            <TabsContent value="openclaw">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
+                {/* Promo header */}
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <h3 className="text-lg font-bold text-white">
+                      🦞 OpenClaw CLI
+                    </h3>
+                    <p className="text-sm" style={{ color: "#6b7a8d" }}>
+                      Cross-platform AI claw engine · macOS · Linux · Windows
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      className="text-xs"
+                      style={{
+                        background: "rgba(255,69,0,0.15)",
+                        color: "#ff7043",
+                        border: "1px solid rgba(255,69,0,0.3)",
+                      }}
+                    >
+                      β Beta
+                    </Badge>
+                    <Badge
+                      className="text-xs"
+                      style={{
+                        background: "rgba(0,229,199,0.1)",
+                        color: "#00e5c7",
+                        border: "1px solid rgba(0,229,199,0.25)",
+                      }}
+                    >
+                      Open Source
+                    </Badge>
+                  </div>
+                </div>
+                <OpenClawTerminal />
+
+                {/* Integration callout */}
+                <div
+                  className="mt-4 rounded-xl p-4 flex flex-wrap gap-3 items-center"
+                  style={{
+                    background: "rgba(255,69,0,0.06)",
+                    border: "1px solid rgba(255,69,0,0.15)",
+                  }}
+                >
+                  <span
+                    className="text-sm"
+                    style={{ color: "rgba(255,255,255,0.6)" }}
+                  >
+                    Integrated with:
+                  </span>
+                  {["Android", "Windows", "macOS", "Linux"].map((p) => (
+                    <span
+                      key={p}
+                      className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg"
+                      style={{
+                        background: "rgba(0,229,199,0.08)",
+                        border: "1px solid rgba(0,229,199,0.15)",
+                        color: "#00e5c7",
+                      }}
+                    >
+                      <Check className="w-3 h-3" />
+                      {p}
+                    </span>
+                  ))}
+                  <a
+                    href="https://openclaw.ai"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-auto text-xs font-semibold transition-opacity hover:opacity-70"
+                    style={{ color: "#ff7043" }}
+                  >
+                    openclaw.ai →
+                  </a>
+                </div>
+              </motion.div>
+            </TabsContent>
+
             {(["android", "windows", "macos", "linux"] as const).map((os) => {
               const Icon = OS_ICONS[os];
               const stepsData =
@@ -338,7 +809,6 @@ export function SetupSection() {
               return (
                 <TabsContent key={os} value={os}>
                   <div className="relative">
-                    {/* OS-specific spinning corner glows */}
                     <OSCornerGlow os={os} position="tl" animDelay="0s" />
                     <OSCornerGlow os={os} position="tr" animDelay="0.8s" />
                     <OSCornerGlow os={os} position="br" animDelay="1.6s" />
