@@ -101,15 +101,20 @@ export function OpenClawDashboardPanel({
   const [model, setModel] = useState<OCModel>("openclaw-base");
   const [testPrompt, setTestPrompt] = useState("");
   const [testResult, setTestResult] = useState("");
+  const [testError, setTestError] = useState("");
   const [testing, setTesting] = useState(false);
   const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">(
     "checking",
   );
+  const [keyTestStatus, setKeyTestStatus] = useState<
+    "idle" | "testing" | "valid" | "invalid"
+  >("idle");
   const [expandedOs, setExpandedOs] = useState<string | null>(null);
   const [stats, setStats] = useState(loadStats);
   const [copiedOs, setCopiedOs] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Check API status
+  // Check API reachability (no-cors HEAD)
   useEffect(() => {
     let cancelled = false;
     const check = async () => {
@@ -131,13 +136,54 @@ export function OpenClawDashboardPanel({
   const handleSaveKey = () => {
     localStorage.setItem("openclaw_api_key", apiKey);
     setSavedKey(true);
+    setKeyTestStatus("idle");
     toast.success("OpenClaw API key saved!");
+  };
+
+  // Test Connection — pings /v1/models with the stored API key
+  const handleTestConnection = async () => {
+    const key = localStorage.getItem("openclaw_api_key") ?? "";
+    if (!key.trim()) {
+      toast.error("Please save your API key first.");
+      return;
+    }
+    setKeyTestStatus("testing");
+    try {
+      const res = await fetch("https://api.openclaw.ai/v1/models", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${key}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (res.status === 401) {
+        setKeyTestStatus("invalid");
+        toast.error("Invalid API key. Please check your OpenClaw API key.");
+      } else if (res.ok) {
+        setKeyTestStatus("valid");
+        toast.success("API key verified! Connection successful.");
+      } else {
+        setKeyTestStatus("invalid");
+        toast.error(`Connection error: ${res.status} ${res.statusText}`);
+      }
+    } catch {
+      setKeyTestStatus("invalid");
+      toast.error(
+        "Connection failed. Please verify your API key and try again.",
+      );
+    }
   };
 
   const handleTestApi = async () => {
     if (!testPrompt.trim()) return;
     setTesting(true);
     setTestResult("");
+    setTestError("");
+
+    // Cancel any in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     const key = localStorage.getItem("openclaw_api_key") ?? "";
     const newStats = {
@@ -147,30 +193,61 @@ export function OpenClawDashboardPanel({
     setStats(newStats);
     saveStats(newStats);
 
-    if (key) {
+    if (key.trim()) {
       try {
-        const res = await fetch("https://api.openclaw.ai/v1/chat", {
+        const res = await fetch("https://api.openclaw.ai/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${key}`,
           },
-          body: JSON.stringify({ message: testPrompt, model }),
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "user", content: testPrompt }],
+            max_tokens: 512,
+          }),
+          signal: controller.signal,
         });
+
+        if (res.status === 401) {
+          setTestError("Invalid API key. Please check your OpenClaw API key.");
+          setTesting(false);
+          return;
+        }
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => res.statusText);
+          setTestError(`Error ${res.status}: ${errText}`);
+          setTesting(false);
+          return;
+        }
+
         const data = (await res.json()) as {
+          choices?: { message?: { content?: string } }[];
           response?: string;
           message?: string;
           error?: string;
         };
-        setTestResult(
-          data.response ?? data.message ?? JSON.stringify(data, null, 2),
-        );
-      } catch {
-        setTestResult(
-          `[Demo Response]\nHello from OpenClaw ${model}! 🦞\nYou said: "${testPrompt}"\n\n(Add a real API key for live responses)`,
+
+        // Handle OpenAI-compatible response format
+        const content =
+          data.choices?.[0]?.message?.content ??
+          data.response ??
+          data.message ??
+          JSON.stringify(data, null, 2);
+
+        setTestResult(content);
+      } catch (err) {
+        if ((err as Error).name === "AbortError") {
+          setTesting(false);
+          return;
+        }
+        setTestError(
+          "Connection failed. Please verify your API key and try again.",
         );
       }
     } else {
+      // No API key — show demo response
       await new Promise((r) => setTimeout(r, 800));
       setTestResult(
         `[Demo Response]\nHello from OpenClaw ${model}! 🦞\nYou said: "${testPrompt}"\n\n(Add your API key above for live responses)`,
@@ -348,6 +425,61 @@ export function OpenClawDashboardPanel({
             Save
           </button>
         </div>
+
+        {/* Test Connection button */}
+        <div className="flex items-center gap-3 mt-3">
+          <button
+            type="button"
+            onClick={() => void handleTestConnection()}
+            disabled={!savedKey || keyTestStatus === "testing"}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={{
+              background: savedKey
+                ? "rgba(0,229,199,0.1)"
+                : "rgba(255,255,255,0.04)",
+              border: `1px solid ${savedKey ? "rgba(0,229,199,0.3)" : "rgba(255,255,255,0.08)"}`,
+              color: savedKey ? "#00e5c7" : "rgba(255,255,255,0.2)",
+            }}
+            data-ocid="openclaw.api.test_connection_button"
+          >
+            {keyTestStatus === "testing" ? (
+              <span
+                className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full"
+                style={{ animation: "spin 0.8s linear infinite" }}
+              />
+            ) : keyTestStatus === "valid" ? (
+              <Check className="w-3 h-3" />
+            ) : keyTestStatus === "invalid" ? (
+              <WifiOff className="w-3 h-3" />
+            ) : (
+              <Wifi className="w-3 h-3" />
+            )}
+            {keyTestStatus === "testing"
+              ? "Testing..."
+              : keyTestStatus === "valid"
+                ? "Key Valid ✓"
+                : keyTestStatus === "invalid"
+                  ? "Key Invalid ✗"
+                  : "Test Connection"}
+          </button>
+          {keyTestStatus === "valid" && (
+            <span
+              className="text-[10px]"
+              style={{ color: "rgba(0,229,199,0.7)" }}
+            >
+              Your API key is working correctly
+            </span>
+          )}
+          {keyTestStatus === "invalid" && (
+            <span
+              className="text-[10px]"
+              style={{ color: "rgba(255,100,100,0.7)" }}
+            >
+              Please check your API key
+            </span>
+          )}
+        </div>
+
         <p
           className="text-[10px] mt-2"
           style={{ color: "rgba(255,255,255,0.25)" }}
@@ -478,6 +610,24 @@ export function OpenClawDashboardPanel({
           )}
           {testing ? "Testing..." : "Test API"}
         </button>
+
+        {/* Error state */}
+        {testError && (
+          <div
+            className="mt-3 rounded-xl p-3 text-xs whitespace-pre-wrap"
+            style={{
+              background: "rgba(255,50,50,0.08)",
+              border: "1px solid rgba(255,100,100,0.25)",
+              color: "#ff6464",
+              animation: "oc-slide-in 0.3s ease",
+            }}
+            data-ocid="openclaw.test.error_state"
+          >
+            ⚠️ {testError}
+          </div>
+        )}
+
+        {/* Result state */}
         {testResult && (
           <div
             className="mt-3 rounded-xl p-3 font-mono text-xs whitespace-pre-wrap"

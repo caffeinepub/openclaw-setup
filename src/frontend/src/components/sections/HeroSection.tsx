@@ -1768,24 +1768,24 @@ function UnifiedClaimSearchCard({
                 className="w-full font-semibold h-10 text-sm relative overflow-hidden transition-all duration-300"
                 style={{
                   background:
-                    "linear-gradient(135deg, #00c6ff, #0072ff, #a855f7)",
+                    "linear-gradient(135deg, #0ea5e9, #2563eb, #1d4ed8)",
                   color: "#fff",
-                  border: "1px solid rgba(0,198,255,0.5)",
+                  border: "none",
                   boxShadow:
-                    "0 0 20px rgba(0,198,255,0.6), 0 0 40px rgba(0,114,255,0.3), 0 4px 16px rgba(0,0,0,0.5)",
+                    "0 0 20px rgba(14,165,233,0.6), 0 0 40px rgba(37,99,235,0.3), 0 4px 16px rgba(0,0,0,0.5)",
                   animation: "btnPulse 1.8s ease-in-out infinite",
                   opacity: saveProfile.isPending || !handle.trim() ? 0.6 : 1,
                 }}
                 onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLElement;
                   el.style.boxShadow =
-                    "0 0 35px rgba(0,198,255,0.9), 0 0 70px rgba(0,114,255,0.5), 0 6px 20px rgba(0,0,0,0.6)";
+                    "0 0 35px rgba(14,165,233,0.9), 0 0 70px rgba(37,99,235,0.5), 0 6px 20px rgba(0,0,0,0.6)";
                   el.style.transform = "translateY(-2px)";
                 }}
                 onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLElement;
                   el.style.boxShadow =
-                    "0 0 20px rgba(0,198,255,0.6), 0 0 40px rgba(0,114,255,0.3), 0 4px 16px rgba(0,0,0,0.5)";
+                    "0 0 20px rgba(14,165,233,0.6), 0 0 40px rgba(37,99,235,0.3), 0 4px 16px rgba(0,0,0,0.5)";
                   el.style.transform = "translateY(0)";
                 }}
               >
@@ -2154,13 +2154,10 @@ export function HeroSection({
                   onClick={onGoToDashboard}
                   className="font-bold text-base px-8 transition-all duration-200 group relative overflow-hidden"
                   style={{
-                    background:
-                      "linear-gradient(135deg, #06b6d4, #3b82f6, #7c3aed)",
-                    backgroundSize: "200% 200%",
-                    animation: "heroDashBtnShift 3s ease infinite",
+                    background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
                     color: "white",
                     boxShadow:
-                      "0 0 24px rgba(6,182,212,0.45), 0 0 48px rgba(124,58,237,0.2)",
+                      "0 0 24px rgba(14,165,233,0.5), 0 0 48px rgba(37,99,235,0.25)",
                     border: "none",
                   }}
                 >

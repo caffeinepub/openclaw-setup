@@ -1683,7 +1683,7 @@ export function PricingSection({
       bgGradient: "from-slate-500/10 via-slate-400/3 to-transparent",
       badgeClass: "bg-slate-500/15 text-slate-300 border-slate-500/30",
       buttonClass:
-        "bg-slate-600/80 hover:bg-slate-500 text-white border-slate-500/40 hover:shadow-[0_0_10px_oklch(0.55_0.03_240/0.35)]",
+        "bg-[#0ea5e9] hover:bg-[#2563eb] text-white font-bold shadow-[0_0_20px_rgba(14,165,233,0.5)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transition-all duration-300",
       popular: false,
     },
     {
@@ -1699,7 +1699,7 @@ export function PricingSection({
       bgGradient: "from-amber-500/12 via-amber-400/5 to-transparent",
       badgeClass: "bg-amber-500/15 text-amber-300 border-amber-500/30",
       buttonClass:
-        "bg-amber-500 hover:bg-amber-400 text-black font-bold shadow-[0_0_14px_oklch(0.78_0.18_85/0.28)] hover:shadow-[0_0_22px_oklch(0.78_0.18_85/0.45)]",
+        "bg-[#0ea5e9] hover:bg-[#2563eb] text-white font-bold shadow-[0_0_20px_rgba(14,165,233,0.5)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transition-all duration-300",
       popular: true,
     },
     {
@@ -1715,7 +1715,7 @@ export function PricingSection({
       bgGradient: "from-violet-500/12 via-violet-400/5 to-transparent",
       badgeClass: "bg-violet-500/15 text-violet-300 border-violet-500/30",
       buttonClass:
-        "bg-violet-600 hover:bg-violet-500 text-white shadow-[0_0_14px_oklch(0.6_0.22_290/0.28)] hover:shadow-[0_0_22px_oklch(0.6_0.22_290/0.45)]",
+        "bg-[#0ea5e9] hover:bg-[#2563eb] text-white font-bold shadow-[0_0_20px_rgba(14,165,233,0.5)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transition-all duration-300",
       popular: false,
     },
   ];

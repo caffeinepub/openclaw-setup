@@ -46,6 +46,14 @@ const NAV_LINKS = [
   { label: "Docs", href: "#docs" },
 ];
 
+// Bright blue style shared across Dashboard button
+const BLUE_BTN_STYLE = {
+  background: "linear-gradient(135deg, #0ea5e9, #2563eb)",
+  color: "white",
+  boxShadow: "0 0 16px rgba(14,165,233,0.4)",
+  border: "none",
+} as const;
+
 interface NavbarProps {
   onAdminClick: () => void;
   onAdminDashboardClick: () => void;
@@ -220,12 +228,12 @@ export function Navbar({
                 <Shield className="w-4 h-4 mr-1.5" />
                 Admin
               </Button>
-              {/* Dashboard - cyan */}
+              {/* Dashboard - bright blue */}
               <Button
                 size="sm"
-                variant="outline"
                 onClick={onDashboardClick}
-                className="border-cyan/40 text-cyan hover:bg-cyan/10 font-semibold"
+                className="font-semibold"
+                style={BLUE_BTN_STYLE}
                 data-ocid="nav.dashboard.button"
               >
                 <LayoutDashboard className="w-4 h-4 mr-1.5" />
@@ -349,15 +357,15 @@ export function Navbar({
                   <Shield className="w-4 h-4 mr-1.5" />
                   Admin
                 </Button>
-                {/* Dashboard */}
+                {/* Dashboard - bright blue */}
                 <Button
                   size="sm"
-                  variant="outline"
                   onClick={() => {
                     setIsMobileOpen(false);
                     onDashboardClick();
                   }}
-                  className="w-full border-cyan/40 text-cyan"
+                  className="w-full font-semibold"
+                  style={BLUE_BTN_STYLE}
                   data-ocid="nav.dashboard.button"
                 >
                   <LayoutDashboard className="w-4 h-4 mr-1.5" />
