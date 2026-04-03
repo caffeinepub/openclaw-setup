@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { MembershipTier } from "../../backend.d";
 import { useMyMembership } from "../../hooks/useMembership";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { AnimatedLobsterSVG } from "../LobsterPopupCard";
 
 interface Platform {
   id: string;
@@ -42,6 +43,22 @@ interface PlatformDetails {
 }
 
 const PLATFORM_DETAILS: Record<string, PlatformDetails> = {
+  openclaw: {
+    id: "openclaw",
+    features: [
+      "Native AI engine for ClawPro",
+      "Automation and workflow bots",
+      "Multi-platform API integration",
+      "Real-time data processing",
+      "Custom bot scripting",
+    ],
+    useCases: [
+      "AI-powered automation workflows",
+      "Custom chatbot deployment",
+      "API integration hub",
+    ],
+    status: "available" as const,
+  },
   facebook: {
     id: "facebook",
     features: [
@@ -366,6 +383,14 @@ const PLATFORM_DETAILS: Record<string, PlatformDetails> = {
 
 const PLATFORMS: Platform[] = [
   {
+    id: "openclaw",
+    name: "OpenClaw",
+    desc: "ClawPro native AI engine — automation & bots",
+    icon: "openclaw",
+    bgColor: "rgba(220,38,38,0.12)",
+    iconBg: "rgba(220,38,38,0.2)",
+  },
+  {
     id: "facebook",
     name: "Facebook",
     desc: "Automate posts and manage pages",
@@ -551,6 +576,7 @@ function PlatformIcon({
   const svgSize = size * 0.59;
 
   const svgIcons: Record<string, React.ReactNode> = {
+    openclaw: <AnimatedLobsterSVG width={svgSize} height={svgSize * 0.9} />,
     fb: (
       <svg
         role="img"

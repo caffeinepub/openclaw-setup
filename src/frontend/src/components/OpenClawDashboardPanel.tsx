@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { AnimatedLobsterSVG } from "./LobsterPopupCard";
 
 // ── Types ─────────────────────────────────────────────────────────────────
 
@@ -287,7 +288,7 @@ export function OpenClawDashboardPanel({
       >
         <div className="flex items-center gap-4">
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
+            className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
             style={{
               background:
                 "radial-gradient(circle, rgba(255,112,67,0.2), rgba(0,0,0,0.5))",
@@ -295,7 +296,7 @@ export function OpenClawDashboardPanel({
               border: "1px solid rgba(255,112,67,0.3)",
             }}
           >
-            🦞
+            <AnimatedLobsterSVG width={48} height={44} />
           </div>
           <div>
             <h2 className="text-xl font-bold" style={{ color: "#ff7043" }}>

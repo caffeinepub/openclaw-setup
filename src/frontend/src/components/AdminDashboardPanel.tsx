@@ -584,8 +584,10 @@ export function AdminDashboardPanel({ onClose }: AdminDashboardPanelProps) {
                 onClick={() => {
                   flashButton("home");
                   setTimeout(() => {
-                    window.location.hash = "#/";
-                  }, 80);
+                    window.location.hash = "";
+                    window.location.href =
+                      window.location.origin + window.location.pathname;
+                  }, 300);
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-cyan-500/25"
                 style={{

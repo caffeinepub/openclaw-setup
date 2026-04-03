@@ -171,161 +171,16 @@ function usePartnerApis(): PartnerApiData {
 }
 
 function OpenClawLogo({ size = 32 }: { size?: number }) {
-  const w = size * 3.2;
-  const h = size;
   return (
-    <svg
-      width={w}
-      height={h}
-      viewBox="0 0 100 32"
-      fill="none"
-      role="img"
-      aria-label="OpenClaw.ai"
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
-      <title>OpenClaw.ai</title>
-      <defs>
-        <radialGradient id="lobster-body" cx="50%" cy="40%">
-          <stop offset="0%" stopColor="#FF8A65" />
-          <stop offset="60%" stopColor="#FF5722" />
-          <stop offset="100%" stopColor="#E64A19" />
-        </radialGradient>
-        <radialGradient id="lobster-claw" cx="50%" cy="50%">
-          <stop offset="0%" stopColor="#FF7043" />
-          <stop offset="100%" stopColor="#BF360C" />
-        </radialGradient>
-      </defs>
-      {/* Body */}
-      <ellipse cx="16" cy="17" rx="7" ry="9" fill="url(#lobster-body)" />
-      {/* Head */}
-      <ellipse cx="16" cy="8.5" rx="5" ry="4.5" fill="#FF7043" />
-      {/* Eyes */}
-      <circle cx="13.5" cy="7" r="1.2" fill="#fff" />
-      <circle cx="18.5" cy="7" r="1.2" fill="#fff" />
-      <circle cx="13.8" cy="7" r="0.6" fill="#1a1a1a" />
-      <circle cx="18.8" cy="7" r="0.6" fill="#1a1a1a" />
-      {/* Antennae */}
-      <line
-        x1="13"
-        y1="6"
-        x2="8"
-        y2="2"
-        stroke="#FF8A65"
-        strokeWidth="0.8"
-        strokeLinecap="round"
-      />
-      <line
-        x1="19"
-        y1="6"
-        x2="24"
-        y2="2"
-        stroke="#FF8A65"
-        strokeWidth="0.8"
-        strokeLinecap="round"
-      />
-      {/* Left claw */}
-      <ellipse
-        cx="7"
-        cy="14"
-        rx="3.5"
-        ry="2.5"
-        fill="url(#lobster-claw)"
-        transform="rotate(-30 7 14)"
-      />
-      <ellipse
-        cx="5"
-        cy="11"
-        rx="2.5"
-        ry="1.8"
-        fill="#BF360C"
-        transform="rotate(-45 5 11)"
-      />
-      {/* Right claw */}
-      <ellipse
-        cx="25"
-        cy="14"
-        rx="3.5"
-        ry="2.5"
-        fill="url(#lobster-claw)"
-        transform="rotate(30 25 14)"
-      />
-      <ellipse
-        cx="27"
-        cy="11"
-        rx="2.5"
-        ry="1.8"
-        fill="#BF360C"
-        transform="rotate(45 27 11)"
-      />
-      {/* Legs */}
-      <line
-        x1="11"
-        y1="20"
-        x2="7"
-        y2="24"
-        stroke="#E64A19"
-        strokeWidth="0.9"
-        strokeLinecap="round"
-      />
-      <line
-        x1="13"
-        y1="22"
-        x2="10"
-        y2="27"
-        stroke="#E64A19"
-        strokeWidth="0.9"
-        strokeLinecap="round"
-      />
-      <line
-        x1="19"
-        y1="22"
-        x2="22"
-        y2="27"
-        stroke="#E64A19"
-        strokeWidth="0.9"
-        strokeLinecap="round"
-      />
-      <line
-        x1="21"
-        y1="20"
-        x2="25"
-        y2="24"
-        stroke="#E64A19"
-        strokeWidth="0.9"
-        strokeLinecap="round"
-      />
-      {/* Tail */}
-      <path d="M12 25 Q16 30 20 25 Q16 32 12 25Z" fill="#FF5722" />
-      {/* Tail fan */}
-      <path
-        d="M10 26 Q16 31.5 22 26"
-        stroke="#FF7043"
-        strokeWidth="0.8"
-        fill="none"
-      />
-      {/* Text */}
-      <text
-        x="34"
-        y="14"
-        fill="#FF8A65"
-        fontSize="7.5"
-        fontWeight="700"
-        fontFamily="system-ui, sans-serif"
-        letterSpacing="0.2"
-      >
-        OpenClaw
-      </text>
-      <text
-        x="34"
-        y="24"
-        fill="#FFAB91"
-        fontSize="6.5"
-        fontWeight="500"
-        fontFamily="system-ui, sans-serif"
-        letterSpacing="0.3"
-      >
-        .ai
-      </text>
-    </svg>
+      <AnimatedLobsterSVG width={size * 1.1} height={size} />
+    </div>
   );
 }
 

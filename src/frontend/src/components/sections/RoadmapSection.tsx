@@ -32,81 +32,17 @@ function EcoIcon({
   switch (id) {
     case "openclaw":
       return (
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 32 32"
-          fill="none"
-          role="img"
-          aria-label="openclaw"
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: size,
+            height: size,
+          }}
         >
-          <title>openclaw</title>
-          <defs>
-            <radialGradient id="eco-lb-body2" cx="50%" cy="40%">
-              <stop offset="0%" stopColor="#FF8A65" />
-              <stop offset="60%" stopColor="#FF5722" />
-              <stop offset="100%" stopColor="#E64A19" />
-            </radialGradient>
-            <radialGradient id="eco-lb-claw2" cx="50%" cy="50%">
-              <stop offset="0%" stopColor="#FF7043" />
-              <stop offset="100%" stopColor="#BF360C" />
-            </radialGradient>
-          </defs>
-          <ellipse cx="16" cy="18" rx="5" ry="7" fill="url(#eco-lb-body2)" />
-          <ellipse cx="16" cy="11" rx="4" ry="4" fill="#FF7043" />
-          <circle cx="14" cy="10" r="1" fill="#fff" />
-          <circle cx="18" cy="10" r="1" fill="#fff" />
-          <circle cx="14.3" cy="10" r="0.5" fill="#1a1a1a" />
-          <circle cx="18.3" cy="10" r="0.5" fill="#1a1a1a" />
-          <line
-            x1="13"
-            y1="8"
-            x2="9"
-            y2="4"
-            stroke="#FF8A65"
-            strokeWidth="0.8"
-            strokeLinecap="round"
-          />
-          <line
-            x1="19"
-            y1="8"
-            x2="23"
-            y2="4"
-            stroke="#FF8A65"
-            strokeWidth="0.8"
-            strokeLinecap="round"
-          />
-          <path
-            d="M 11 14 Q 8 13 7 15"
-            stroke="#BF360C"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <ellipse
-            cx="6"
-            cy="15"
-            rx="2.5"
-            ry="1.8"
-            fill="url(#eco-lb-claw2)"
-            transform="rotate(-20 6 15)"
-          />
-          <path
-            d="M 21 14 Q 24 13 25 15"
-            stroke="#BF360C"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <ellipse
-            cx="26"
-            cy="15"
-            rx="2.5"
-            ry="1.8"
-            fill="url(#eco-lb-claw2)"
-            transform="rotate(20 26 15)"
-          />
-        </svg>
+          <AnimatedLobsterSVG width={size} height={size * 0.9} />
+        </div>
       );
     case "facebook":
       return (

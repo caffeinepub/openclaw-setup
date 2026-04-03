@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useDownloadsByOS, useIncrementDownload } from "../../hooks/useQueries";
 import { useLanguage } from "../../i18n/LanguageContext";
+import { AnimatedLobsterSVG } from "../LobsterPopupCard";
 
 // ── OS Corner Glow ──
 type OSCornerPos = "tl" | "tr" | "bl" | "br";
@@ -428,7 +429,7 @@ function OpenClawTerminal() {
           /* macOS companion app */
           <div className="flex flex-col items-center justify-center py-6 gap-4">
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center"
               style={{
                 background:
                   "radial-gradient(circle, rgba(255,69,0,0.15), rgba(0,0,0,0.5))",
@@ -436,7 +437,7 @@ function OpenClawTerminal() {
                 boxShadow: "0 0 20px rgba(255,69,0,0.2)",
               }}
             >
-              🦞
+              <AnimatedLobsterSVG width={48} height={44} />
             </div>
             <div className="text-center">
               <h4 className="font-bold text-lg text-white mb-1">
@@ -561,7 +562,9 @@ function OpenClawTerminal() {
         }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-lg">🦞</span>
+          <span className="flex items-center">
+            <AnimatedLobsterSVG width={24} height={22} />
+          </span>
           <span className="text-xs font-bold" style={{ color: "#ff7043" }}>
             openclaw.ai
           </span>
@@ -697,7 +700,7 @@ export function SetupSection() {
                 data-ocid="setup.openclaw.tab"
                 className="flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold border transition-all duration-200 data-[state=inactive]:bg-muted/30 data-[state=inactive]:text-muted-foreground data-[state=inactive]:border-border data-[state=inactive]:shadow-none"
               >
-                🦞 OpenClaw
+                <AnimatedLobsterSVG width={20} height={18} /> OpenClaw
               </TabsTrigger>
 
               {(["android", "windows", "macos", "linux"] as const).map((os) => {
@@ -727,7 +730,10 @@ export function SetupSection() {
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <h3 className="text-lg font-bold text-white">
-                      🦞 OpenClaw CLI
+                      <span className="flex items-center gap-2">
+                        <AnimatedLobsterSVG width={22} height={20} /> OpenClaw
+                        CLI
+                      </span>
                     </h3>
                     <p className="text-sm" style={{ color: "#6b7a8d" }}>
                       Cross-platform AI claw engine · macOS · Linux · Windows
